@@ -1,0 +1,111 @@
+package main.java.nl.uu.iss.ga.model.data;
+
+import main.java.nl.uu.iss.ga.model.data.dictionary.*;
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface;
+import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
+
+import java.util.Map;
+
+public class Person implements Context {
+    private static final String VA_PERSON_HEADERS =
+            "hid,pid,serialno,person_number,record_type,age,relationship,sex,school_enrollment,grade_level_attending,employment_status,occupation_socp";
+    private static final String[] VA_PERSON_HEADER_INDICES = VA_PERSON_HEADERS.split(ParserUtil.SPLIT_CHAR);
+
+    private Household household;
+    private int pid;
+    private int serialno;
+    private int person_number;
+    private int age;
+    private Relationship relationship; // TODO translate
+    private Gender sex; // TODO translate
+    private SchoolEnrollment school_enrollment; // TODO translate
+    private GradeLevel grade_level; // TODO translate
+    private EmploymentStatus employment_status; // TODO translate;
+    private String occupation_socp; // TODO translate and get class instead of occupation itself
+
+    public Person(
+            Household household,
+                  int pid,
+                  int serialno,
+            int age,
+            Relationship relationship,
+            Gender sex,
+            SchoolEnrollment school_enrollment,
+            GradeLevel grade_level,
+            EmploymentStatus employment_status,
+            String occupation_socp
+    ) {
+        this.household = household;
+        this.pid = pid;
+        this.serialno = serialno;
+        this.age = age;
+        this.relationship = relationship;
+        this.sex = sex;
+        this.school_enrollment = school_enrollment;
+        this.grade_level = grade_level;
+        this.employment_status = employment_status;
+        this.occupation_socp = occupation_socp;
+    }
+
+    public Household getHousehold() {
+        return household;
+    }
+
+    public int getPid() {
+        return pid;
+    }
+
+    public int getSerialno() {
+        return serialno;
+    }
+
+    public int getPerson_number() {
+        return person_number;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public Relationship getRelationship() {
+        return relationship;
+    }
+
+    public Gender getSex() {
+        return sex;
+    }
+
+    public SchoolEnrollment getSchool_enrollment() {
+        return school_enrollment;
+    }
+
+    public GradeLevel getGrade_level() {
+        return grade_level;
+    }
+
+    public EmploymentStatus getEmployment_status() {
+        return employment_status;
+    }
+
+    public String getOccupation_socp() {
+        return occupation_socp;
+    }
+
+    public static Person fromLine(Map<Integer, Household> households, String line) {
+        Map<String, String> keyValue = ParserUtil.zipLine(VA_PERSON_HEADER_INDICES, line);
+        return new Person(
+                households.get(ParserUtil.parseAsInt(keyValue.get("hid"))),
+                ParserUtil.parseAsInt(keyValue.get("pid")),
+                ParserUtil.parseAsInt(keyValue.get("serialno")),
+                ParserUtil.parseAsInt(keyValue.get("age")),
+                CodeTypeInterface.parseAsEnum(Relationship.class, keyValue.get("relationship")),
+                CodeTypeInterface.parseAsEnum(Gender.class, keyValue.get("sex")),
+                StringCodeTypeInterface.parseAsEnum(SchoolEnrollment.class, keyValue.get("school_enrollment")),
+                StringCodeTypeInterface.parseAsEnum(GradeLevel.class, keyValue.get("grade_level_attending")),
+                StringCodeTypeInterface.parseAsEnum(EmploymentStatus.class, keyValue.get("employment_status")),
+                keyValue.get("occupation_socp")
+        );
+    }
+}

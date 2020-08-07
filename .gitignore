@@ -1,0 +1,18 @@
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+# https://github.com/takari/maven-wrapper#usage-without-binary-jar
+.mvn/wrapper/maven-wrapper.jar
+
+.idea
+
+src/main/resources/va_household.csv
+src/main/resources/va_person.csv
+src/main/resources/va_adult_weekly_activity_sample.csv
+
