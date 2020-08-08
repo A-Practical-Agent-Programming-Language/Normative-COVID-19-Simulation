@@ -86,8 +86,7 @@ public class Activity extends Goal {
 
     @Override
     public boolean isAchieved(AgentContextInterface agentContextInterface) {
-        // When is an activity achieved? Presumably never? If it is achieved,
-        // should a similar new goal be adopted for the week after?
+        // Activity should never be associated with a plan as a goal, and should never be achieved
         return false;
     }
 }

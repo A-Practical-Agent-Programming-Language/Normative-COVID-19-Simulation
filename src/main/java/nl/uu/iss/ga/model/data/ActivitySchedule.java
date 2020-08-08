@@ -1,7 +1,5 @@
 package main.java.nl.uu.iss.ga.model.data;
 
-import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
-
 import java.util.SortedMap;
 
 public class ActivitySchedule {

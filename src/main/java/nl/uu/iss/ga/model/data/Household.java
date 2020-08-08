@@ -39,7 +39,7 @@ public class Household {
      * Housing Unit Weight replicate 1
      * -9999..09999 .Integer weight of housing unit
      */
-//    private final int hh_unit_wt; // TODO translate
+//    private final int hh_unit_wt; //
 
     /**
      * Lot size
@@ -98,7 +98,7 @@ public class Household {
      * 2 .No
      * 9 .Case is from 2016 or later
       */
-    private final BusinessOnProperty business; // TODO translate
+    private final BusinessOnProperty business;
 
     /**
      * HFL Numeric

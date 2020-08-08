@@ -18,11 +18,11 @@ public class Person implements Context {
     private int serialno;
     private int person_number;
     private int age;
-    private Relationship relationship; // TODO translate
-    private Gender sex; // TODO translate
-    private SchoolEnrollment school_enrollment; // TODO translate
-    private GradeLevel grade_level; // TODO translate
-    private EmploymentStatus employment_status; // TODO translate;
+    private Relationship relationship;
+    private Gender sex;
+    private SchoolEnrollment school_enrollment;
+    private GradeLevel grade_level;
+    private EmploymentStatus employment_status;
     private String occupation_socp; // TODO translate and get class instead of occupation itself
 
     public Person(
