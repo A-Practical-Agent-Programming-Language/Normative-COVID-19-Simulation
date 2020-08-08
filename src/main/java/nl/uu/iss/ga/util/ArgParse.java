@@ -8,6 +8,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.Random;
 
 public class ArgParse {
 
@@ -22,6 +23,11 @@ public class ArgParse {
 
     @Arg(dest = "seed")
     private long seed;
+
+    @Arg(dest = "threads")
+    private int threads;
+
+    private Random random = null;
 
     public ArgParse(String[] args) {
         ArgumentParser p = getParser();
@@ -48,6 +54,19 @@ public class ArgParse {
 
     public long getSeed() {
         return seed;
+    }
+
+    public Random getRandom() {
+        if(this.random == null) {
+            this.random = new Random();
+            if(this.seed >= 0)
+                this.random.setSeed(this.seed);
+        }
+        return this.random;
+    }
+
+    public int getThreads() {
+        return threads;
     }
 
     private void verifyFiles() {
@@ -109,8 +128,15 @@ public class ArgParse {
                 .type(Long.TYPE)
                 .required(false)
                 .dest("seed")
-                .setDefault(42)
-                .help("Specify a seed to use for random operations");
+                .setDefault(-1)
+                .help("Specify a seed to use for random operations. Default is -1, indicating no seed is used");
+
+        parser.addArgument("--threads", "-t")
+                .type(Integer.class)
+                .required(false)
+                .setDefault(8)
+                .dest("threads")
+                .help("Specify the number of threads to use for execution");
 
         return parser;
     }

@@ -1,15 +1,11 @@
 package main.java.nl.uu.iss.ga.model.reader;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
-import main.java.nl.uu.iss.ga.model.data.Person;
-import main.java.nl.uu.iss.ga.model.data.TripActivity;
+import main.java.nl.uu.iss.ga.model.data.*;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -39,8 +35,6 @@ public class ActivityFileReader {
                 Scanner s = new Scanner(is);
         ) {
             return iterateActivities(s);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,7 +46,7 @@ public class ActivityFileReader {
         s.nextLine(); // Skip headers
 
         List<ActivitySchedule> schedules = new LinkedList<>();
-        SortedMap<Integer, Activity> activities = new TreeMap<>();
+        SortedMap<ActivityTime, Activity> activities = new TreeMap<>();
 
         int currentPersonIndex = -1;
         while(s.hasNextLine()) {

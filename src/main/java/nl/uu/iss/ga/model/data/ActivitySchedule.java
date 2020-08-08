@@ -7,9 +7,9 @@ import java.util.SortedMap;
 public class ActivitySchedule {
     private final int household;
     private final int person;
-    private final SortedMap<Integer, Activity> schedule;
+    private final SortedMap<ActivityTime, Activity> schedule;
 
-    public ActivitySchedule(int household, int person, SortedMap<Integer, Activity> schedule) {
+    public ActivitySchedule(int household, int person, SortedMap<ActivityTime, Activity> schedule) {
         this.household = household;
         this.person = person;
         this.schedule = schedule;
@@ -23,7 +23,7 @@ public class ActivitySchedule {
         return person;
     }
 
-    public SortedMap<Integer, Activity> getSchedule() {
+    public SortedMap<ActivityTime, Activity> getSchedule() {
         return schedule;
     }
 }

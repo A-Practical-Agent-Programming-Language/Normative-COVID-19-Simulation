@@ -15,14 +15,14 @@ public class Activity extends Goal {
     private final int hid;
     private final ActivityType activityType;
     private final DetailedActivity detailed_activity;
-    private final int start_time;
+    private final ActivityTime start_time;
     private final int duration;
 
     private final int month;
     private final int day;
     private final int survey_id;
 
-    public Activity(int pid, int hid, ActivityType activityType, DetailedActivity detailed_activity, int start_time, int duration, int month, int day, int survey_id) {
+    public Activity(int pid, int hid, ActivityType activityType, DetailedActivity detailed_activity, ActivityTime start_time, int duration, int month, int day, int survey_id) {
         this.pid = pid;
         this.hid = hid;
         this.activityType = activityType;
@@ -50,7 +50,7 @@ public class Activity extends Goal {
         return detailed_activity;
     }
 
-    public int getStart_time() {
+    public ActivityTime getStart_time() {
         return start_time;
     }
 
@@ -76,7 +76,7 @@ public class Activity extends Goal {
                 ParserUtil.parseAsInt(keyValue.get("hid")),
                 CodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
                 CodeTypeInterface.parseAsEnum(DetailedActivity.class, keyValue.get("detailed_activity")),
-                ParserUtil.parseAsInt(keyValue.get("start_time")),
+                new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time"))),
                 ParserUtil.parseAsInt(keyValue.get("duration")),
                 ParserUtil.parseAsInt(keyValue.get("month")),
                 ParserUtil.parseAsInt(keyValue.get("day")),

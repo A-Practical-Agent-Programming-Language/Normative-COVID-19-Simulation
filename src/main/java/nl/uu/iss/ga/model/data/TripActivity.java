@@ -18,7 +18,7 @@ public class TripActivity extends Activity {
             int hid,
             ActivityType activityType,
             DetailedActivity detailed_activity,
-            int start_time,
+            ActivityTime start_time,
             int duration,
             int month,
             int day,
