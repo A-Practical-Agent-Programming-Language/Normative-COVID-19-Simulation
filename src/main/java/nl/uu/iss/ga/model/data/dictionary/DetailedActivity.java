@@ -37,7 +37,9 @@ public enum DetailedActivity implements CodeTypeInterface {
     ATTEND_ADULT_CARE(10),
 
     /** with non-existent activity_type 7 **/
-    RELIGIOUS_OR_OTHER_COMMUNITY_ACTIVITIES(19);
+    RELIGIOUS_OR_OTHER_COMMUNITY_ACTIVITIES(19),
+
+    NOT_IN_DICTIONARY(-999);
 
     private final int code;
 

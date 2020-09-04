@@ -16,14 +16,6 @@ public class ExecuteScheduledActivityPlan extends RunOncePlan {
     @Override
     public Object executeOnce(PlanToAgentInterface planToAgentInterface) throws PlanExecutionError {
         // TODO reasoning about maintaining distance and wearing mask here?
-
-//        System.out.printf("%s\tExecuting %s %s activity of %s: %s\n",
-//                planToAgentInterface.getAgentID(),
-//                activity.getStart_time().getDayOfWeek(),
-//                activity.getStart_time().getArmy_time_of_day(),
-//                activity.getActivityType(),
-//                activity.getDetailed_activity());
-
-        return activity.getDetailed_activity().toString();
+        return activity.toString();
     }
 }

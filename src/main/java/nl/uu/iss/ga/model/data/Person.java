@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class Person implements Context {
     private static final String VA_PERSON_HEADERS =
-            "hid,pid,serialno,person_number,record_type,age,relationship,sex,school_enrollment,grade_level_attending,employment_status,occupation_socp";
+            "hid,pid,serialno,person_number,record_type,age,relationship,sex,school_enrollment,grade_level_attending,employment_status,employment_socp,cell_id,designation";
     private static final String[] VA_PERSON_HEADER_INDICES = VA_PERSON_HEADERS.split(ParserUtil.SPLIT_CHAR);
 
     private Household household;

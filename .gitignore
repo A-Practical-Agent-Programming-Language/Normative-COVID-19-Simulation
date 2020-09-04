@@ -9,10 +9,14 @@ buildNumber.properties
 .mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
+*.iml
 
 .idea
 
 src/main/resources/va_household.csv
 src/main/resources/va_person.csv
 src/main/resources/va_adult_weekly_activity_sample.csv
+
+src/main/resources/va_examples
+src/main/resources/charlottesville_examples
 

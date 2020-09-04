@@ -2,6 +2,8 @@ package main.java.nl.uu.iss.ga.model.reader;
 
 import main.java.nl.uu.iss.ga.model.data.*;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
+import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 
 import java.io.File;
@@ -18,10 +20,12 @@ public class ActivityFileReader {
     private final File activityScheduleFile;
     private final Map<Integer, Person> personMap;
     private final List<ActivitySchedule> activitySchedules;
+    private final Map<Integer, Map<Integer, LocationEntry>> locationMap;
 
-    public ActivityFileReader(File activityScheduleFile, Map<Integer, Person> personMap) {
+    public ActivityFileReader(File activityScheduleFile, Map<Integer, Person> personMap, Map<Integer, Map<Integer, LocationEntry>> locationMap) {
         this.activityScheduleFile = activityScheduleFile;
         this.personMap = personMap;
+        this.locationMap = locationMap;
         this.activitySchedules = readActivities();
     }
 
@@ -52,8 +56,8 @@ public class ActivityFileReader {
         while(s.hasNextLine()) {
             String line = s.nextLine();
             Map<String, String> keyValue = ParserUtil.zipLine(VA_ACTIVITY_HEADER_INDICES, line);
-            Activity activity = getActivityFromLine(keyValue);
 
+            Activity activity = getActivityFromLine(keyValue);
             if(activity.getPid() != currentPersonIndex) {
                 // Reset
                 if(!activities.isEmpty()) {
@@ -72,11 +76,25 @@ public class ActivityFileReader {
         return schedules;
     }
 
+    public Map<Integer, ActivityType> failedDetailedActivities = new HashMap<>();
+
     private Activity getActivityFromLine(Map<String, String> keyValue) {
         Activity activity = Activity.fromLine(keyValue);
         if (activity.getActivityType().equals(ActivityType.TRIP)) {
             activity = TripActivity.fromLine(activity, keyValue);
+        } else {
+            activity.setLocation(this.locationMap.get(activity.getPid()).get(activity.getActivityNumber()));
         }
+        if(activity.getDetailed_activity() == null && activity.getActivityType().equals(ActivityType.TRIP)) {
+            activity.setDetailed_activity(DetailedActivity.TRIP);
+        } else if (activity.getDetailed_activity() == null) {
+            int detailedActivityNumber = ParserUtil.parseAsInt(keyValue.get("detailed_activity"));
+            if (!this.failedDetailedActivities.containsKey(ParserUtil.parseAsInt(keyValue.get("detailed_activity")))) {
+                this.failedDetailedActivities.put(detailedActivityNumber, activity.getActivityType());
+            }
+            activity.setDetailed_activity(DetailedActivity.NOT_IN_DICTIONARY);
+        }
+
         return activity;
     }
 }

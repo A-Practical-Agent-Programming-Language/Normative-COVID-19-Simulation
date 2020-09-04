@@ -16,6 +16,7 @@ public class TripActivity extends Activity {
     public TripActivity(
             int pid,
             int hid,
+            int activityNumber,
             ActivityType activityType,
             DetailedActivity detailed_activity,
             ActivityTime start_time,
@@ -27,7 +28,7 @@ public class TripActivity extends Activity {
             boolean personWasDriver,
             boolean personWasPassenger
     ) {
-        super(pid, hid, activityType, detailed_activity, start_time, duration, month, day, survey_id);
+        super(pid, hid, activityNumber, activityType, detailed_activity, start_time, duration, month, day, survey_id);
         this.mode = mode;
         this.personWasDriver = personWasDriver;
         this.personWasPassenger = personWasPassenger;
@@ -37,6 +38,7 @@ public class TripActivity extends Activity {
         super(
                 baseActivity.getPid(),
                 baseActivity.getHid(),
+                baseActivity.getActivityNumber(),
                 baseActivity.getActivityType(),
                 baseActivity.getDetailed_activity(),
                 baseActivity.getStart_time(),
@@ -50,6 +52,17 @@ public class TripActivity extends Activity {
         this.personWasPassenger = personWasPassenger;
     }
 
+    public TransportMode getMode() {
+        return mode;
+    }
+
+    public boolean isPersonWasDriver() {
+        return personWasDriver;
+    }
+
+    public boolean isPersonWasPassenger() {
+        return personWasPassenger;
+    }
 
     public static TripActivity fromLine(Activity baseActivity, Map<String, String> keyValue) {
         return new TripActivity(

@@ -8,6 +8,8 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class ArgParse {
@@ -19,7 +21,10 @@ public class ArgParse {
     private File householdsFile;
 
     @Arg(dest = "activityfile")
-    private File activityFile;
+    private List<File> activityFiles;
+
+    @Arg(dest = "locationsfile")
+    private File locationsfile;
 
     @Arg(dest = "seed")
     private long seed;
@@ -48,8 +53,12 @@ public class ArgParse {
         return householdsFile;
     }
 
-    public File getActivityFile() {
-        return activityFile;
+    public List<File> getActivityFiles() {
+        return activityFiles;
+    }
+
+    public File getLocationsfile() {
+        return locationsfile;
     }
 
     public long getSeed() {
@@ -71,9 +80,15 @@ public class ArgParse {
 
     private void verifyFiles() {
         try {
-            this.activityFile = findFile(this.activityFile);
+            List<File> files = new ArrayList<>();
+            for (File activityFile : this.activityFiles) {
+                File file = findFile(activityFile);
+                files.add(file);
+            }
+            this.activityFiles = files;
             this.householdsFile = findFile(this.householdsFile);
             this.personsFile = findFile(this.personsFile);
+            this.locationsfile = findFile(this.locationsfile);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             getParser().printHelp();
@@ -86,7 +101,7 @@ public class ArgParse {
         if(f.getAbsoluteFile().exists()) {
             existingFile = f;
         } else if (!f.isAbsolute()) {
-            URL r = getClass().getClassLoader().getResource(f.getName());
+            URL r = getClass().getClassLoader().getResource(f.toString());
             if (r != null) {
                 f = new File(r.getFile()).getAbsoluteFile();
                 if (f.exists())
@@ -106,6 +121,7 @@ public class ArgParse {
                 .description("A ecological simulation environment for simulation of human acceptance of measures" +
                         " aimed at reducing spread of novel diseases");
 
+        // TODO should be able to take list of arguments
         parser.addArgument("--personsfile", "-pf")
                 .type(File.class)
                 .required(true)
@@ -122,7 +138,14 @@ public class ArgParse {
                 .type(File.class)
                 .required(true)
                 .dest("activityfile")
-                .help("Specify the location of the file containing all the activities of all the agents in the artificial population");
+                .nargs("+")
+                .help("Specify the location of the file(s) containing all the activities of all the agents in the artificial population");
+
+        parser.addArgument("--locationsfile", "-lf")
+                .type(File.class)
+                .required(true)
+                .dest("locationsfile")
+                .help("Specify the location of the file containing all the activity locations of all the agents in the artificial population");
 
         parser.addArgument("--seed", "-s")
                 .type(Long.TYPE)

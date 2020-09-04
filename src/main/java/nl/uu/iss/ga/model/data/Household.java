@@ -9,7 +9,7 @@ import java.util.Map;
 public class Household {
 
     private static final String VA_HOUSEHOLD_HEADERS =
-            "admin1,admin2,admin3,admin4,hid,serialno,puma,record_type,hh_unit_wt,hh_size,vehicles,hh_income,units_in_structure,business,heating_fuel,household_language,family_type_and_employment_status,workers_in_family";
+            "admin1,admin2,admin3,admin4,hid,serialno,puma,record_type,hh_unit_wt,hh_size,vehicles,hh_income,units_in_structure,business,heating_fuel,household_language,family_type_and_employment_status,workers_in_family,rlid,residence_longitude,residence_latitude";
     private static final String[] VA_HOUSEHOLD_HEADER_INDICES = VA_HOUSEHOLD_HEADERS.split(ParserUtil.SPLIT_CHAR);
 
     //    private final int admin1; // TODO translate

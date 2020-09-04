@@ -4,6 +4,7 @@ import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
 import main.java.nl.uu.iss.ga.model.reader.ActivityFileReader;
 import main.java.nl.uu.iss.ga.model.reader.HouseholdReader;
+import main.java.nl.uu.iss.ga.model.reader.LocationFileReader;
 import main.java.nl.uu.iss.ga.model.reader.PersonReader;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.DiseaseRiskContext;
@@ -19,10 +20,15 @@ import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.*;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Simulation {
+
+    private static final int N_ITERATIONS = 100;
 
     public static void main(String[] args) {
         ArgParse parser = new ArgParse(args);
@@ -32,7 +38,8 @@ public class Simulation {
     private ArgParse arguments;
     private HouseholdReader householdReader;
     private PersonReader personReader;
-    private ActivityFileReader activityFileReader;
+    private LocationFileReader locationFileReader;
+    private List<ActivityFileReader> activityFileReaders;
 
     private Platform platform;
     private TickExecutor tickExecutor;
@@ -43,7 +50,12 @@ public class Simulation {
         this.arguments = arguments;
         this.householdReader = new HouseholdReader(arguments.getHouseholdsFile());
         this.personReader = new PersonReader(arguments.getPersonsFile(), this.householdReader.getHouseholds());
-        this.activityFileReader = new ActivityFileReader(arguments.getActivityFile(), this.personReader.getPersons());
+        this.locationFileReader = new LocationFileReader(arguments.getLocationsfile());
+        this.activityFileReaders = new ArrayList<>();
+        for(File f : arguments.getActivityFiles()) {
+            this.activityFileReaders.add(
+                    new ActivityFileReader(f, this.personReader.getPersons(), this.locationFileReader.getLocations()));
+        }
 
         preparePlatform();
         createAgents();
@@ -56,8 +68,8 @@ public class Simulation {
         this.tickExecutor = getLocalTickExecutor(); // TODO make it use Matrix is specified in args
         this.platform = Platform.newPlatform(tickExecutor, messenger);
 
-        this.environmentInterface = new EnvironmentInterface();
-        this.simulationEngine = new DefaultSimulationEngine(this.platform, 100, this.environmentInterface);
+        this.environmentInterface = new EnvironmentInterface(this.locationFileReader.getLocationsByIDMap());
+        this.simulationEngine = new DefaultSimulationEngine(this.platform, N_ITERATIONS, this.environmentInterface);
     }
 
     private TickExecutor getLocalTickExecutor() {
@@ -69,8 +81,10 @@ public class Simulation {
     }
 
     private void createAgents() {
-        for(ActivitySchedule schedule : this.activityFileReader.getActivitySchedules()) {
-            createAgentFromSchedule(schedule);
+        for(ActivityFileReader activityFileReader : this.activityFileReaders) {
+            for (ActivitySchedule schedule : activityFileReader.getActivitySchedules()) {
+                createAgentFromSchedule(schedule);
+            }
         }
     }
 
@@ -92,6 +106,23 @@ public class Simulation {
             }
         } catch (URISyntaxException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * There are a number of detailedActivity codes for which I do not currently have the translation.
+     * This is not necessarily a problem, since we will hardly be using these detailed activities.
+     *
+     * This method prints those codes, along with the ActivityType they were paired with.
+     */
+    private void printUnknownDetailedActivityNumbers() {
+        for(ActivityFileReader reader : this.activityFileReaders) {
+            if(reader.failedDetailedActivities.size() > 0) {
+                System.out.println("Found the following detailed activity numbers that are not in the dictionary");
+                for(int missedNumbers : reader.failedDetailedActivities.keySet()) {
+                    System.out.printf("\t%d \t%s\n", missedNumbers, reader.failedDetailedActivities.get(missedNumbers).toString());
+                }
+            }
         }
     }
 

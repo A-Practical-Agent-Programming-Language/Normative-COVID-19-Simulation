@@ -26,6 +26,10 @@ public class ParserUtil {
         }
     }
 
+    public static double parseAsDouble(String doubleValue) {
+        return Double.parseDouble(doubleValue);
+    }
+
     /**
      * TODO, this is used for flag parameters, with 1 = True, 0 = False. However, driver and passenger flag both sometimes appear as -1 or 2???
      * @param intValue

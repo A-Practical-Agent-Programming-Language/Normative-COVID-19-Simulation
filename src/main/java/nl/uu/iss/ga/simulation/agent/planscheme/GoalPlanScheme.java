@@ -1,6 +1,7 @@
 package main.java.nl.uu.iss.ga.simulation.agent.planscheme;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
+import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.ExecuteScheduledActivityPlan;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
@@ -16,8 +17,10 @@ public class GoalPlanScheme implements PlanScheme {
             Activity activity = (Activity) trigger;
 
             BeliefContext context = agentContextInterface.getContext(BeliefContext.class);
-            if(activity.getStart_time().getDayOfWeek().equals(context.getEnvironmentInterface().getToday())) {
-                return new ExecuteScheduledActivityPlan(activity);
+            if(!activity.getActivityType().equals(ActivityType.TRIP)) { // TRIP activities do not have to be sent to environment
+                if (activity.getStart_time().getDayOfWeek().equals(context.getEnvironmentInterface().getToday())) {
+                    return new ExecuteScheduledActivityPlan(activity);
+                }
             }
         }
 
