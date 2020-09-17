@@ -13,9 +13,11 @@ public class HouseholdReader {
 
     private final File householdFile;
     private final Map<Integer, Household> households;
+    private double fractionConservative;
 
-    public HouseholdReader(File householdFile) {
+    public HouseholdReader(File householdFile, double fractionConservative) {
         this.householdFile = householdFile;
+        this.fractionConservative = fractionConservative;
         this.households = readHouseholds();
     }
 
@@ -41,6 +43,7 @@ public class HouseholdReader {
         while(s.hasNextLine()) {
             Household h = Household.fromCSVLine(s.nextLine());
             householdMap.put(h.getHid(), h);
+            h.setLiberal(Math.random() < this.fractionConservative);
         }
         return householdMap;
     }

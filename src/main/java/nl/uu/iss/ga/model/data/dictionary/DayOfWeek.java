@@ -5,13 +5,14 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 
 public enum DayOfWeek implements CodeTypeInterface {
 
-    SUNDAY(1),
-    MONDAY(2),
-    TUESDAY(3),
-    WEDNSDAY(4),
-    THURSDAY(5),
-    FRIDAY(6),
-    SATURDAY(7);
+    MONDAY(1),
+    TUESDAY(2),
+    WEDNSDAY(3),
+    THURSDAY(4),
+    FRIDAY(5),
+    SATURDAY(6),
+    SUNDAY(7);
+
 
     private int code;
 

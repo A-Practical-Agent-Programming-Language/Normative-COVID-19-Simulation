@@ -2,7 +2,7 @@ package main.java.nl.uu.iss.ga.model.data;
 
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 
-public class ActivityTime implements Comparable<ActivityTime> {
+public class ActivityTime implements Comparable<ActivityTime>, Cloneable {
 
     public static final int SECONDS_IN_DAY = 60 * 60 * 24;
     public static final int SECONDS_IN_HOUR = 60 * 60;
@@ -57,5 +57,10 @@ public class ActivityTime implements Comparable<ActivityTime> {
     public int compareTo(ActivityTime activityTime) {
         if(this.seconds == activityTime.seconds) return 0;
         else return this.seconds - activityTime.seconds;
+    }
+
+    @Override
+    protected ActivityTime clone() {
+        return new ActivityTime(this.seconds);
     }
 }

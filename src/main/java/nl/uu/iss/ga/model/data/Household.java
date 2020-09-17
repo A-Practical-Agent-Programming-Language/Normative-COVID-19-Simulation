@@ -255,4 +255,16 @@ public class Household {
         );
     }
 
+    /**
+     * NON-data driven parameters
+     */
+    private Boolean liberal = null; // false if conservative
+
+    public boolean isLiberal() {
+        return liberal;
+    }
+
+    public void setLiberal(boolean liberal) {
+        this.liberal = liberal;
+    }
 }

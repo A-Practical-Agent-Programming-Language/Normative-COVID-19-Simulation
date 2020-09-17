@@ -4,7 +4,15 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import main.java.nl.uu.iss.ga.model.norm.MaintainDistanceNorm;
+import main.java.nl.uu.iss.ga.model.norm.Norm;
+import main.java.nl.uu.iss.ga.model.norm.NormNotificationTrigger;
+import main.java.nl.uu.iss.ga.model.norm.WearMaskNorm;
+import main.java.nl.uu.iss.ga.model.norm.closure.OfficesClosed;
+import main.java.nl.uu.iss.ga.model.norm.closure.SchoolsClosed;
+import main.java.nl.uu.iss.ga.model.norm.closure.TakeawayOnly;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
 
 import java.util.*;
@@ -12,8 +20,13 @@ import java.util.stream.Collectors;
 
 public class EnvironmentInterface implements TickHookProcessor {
 
+    private static final int INITIATE_NORMS = 30; // TODO too hardcoded. Should be per norm
+
+    private Platform platform;
+    private Random rnd;
+
     long currentTick = 0;
-    DayOfWeek today = DayOfWeek.SUNDAY;
+    DayOfWeek today = DayOfWeek.MONDAY;
 
     private Map<Integer, LocationEntry> locationEntryMap;
 
@@ -25,14 +38,32 @@ public class EnvironmentInterface implements TickHookProcessor {
         return today;
     }
 
-    public EnvironmentInterface(Map<Integer, LocationEntry> locationEntryMap) {
+    public EnvironmentInterface(Platform platform, Random rnd, Map<Integer, LocationEntry> locationEntryMap) {
         this.locationEntryMap = locationEntryMap;
+        this.platform = platform;
+        this.rnd = rnd;
     }
 
     @Override
     public void tickPreHook(long l) {
         this.currentTick = l;
         this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int)(currentTick % 7 + 1));
+        if(this.currentTick == INITIATE_NORMS) {
+//            Norm maskNorm = new Norm("WEAR_MASK", Norm.NORM_TYPE.OBLIGATION);
+//            Norm distanceNorm = new Norm("MAINTAIN_DISTANCE", Norm.NORM_TYPE.OBLIGATION);
+            Norm maskNorm = new WearMaskNorm();
+            Norm distanceNorm = new MaintainDistanceNorm();
+            Norm schoolsClosed = new SchoolsClosed();
+            Norm officesClosed = new OfficesClosed();
+            Norm restaurantsClosed = new TakeawayOnly();
+            this.platform.getAgents().values().forEach(x -> {
+                x.addExternalTrigger(new NormNotificationTrigger(maskNorm));
+                x.addExternalTrigger(new NormNotificationTrigger(distanceNorm));
+                x.addExternalTrigger(new NormNotificationTrigger(schoolsClosed));
+                x.addExternalTrigger(new NormNotificationTrigger(officesClosed));
+                x.addExternalTrigger(new NormNotificationTrigger(restaurantsClosed));
+            });
+        }
     }
 
     @Override
@@ -46,6 +77,10 @@ public class EnvironmentInterface implements TickHookProcessor {
 //        calculateTickRadia(hashMap);
 
         calculateAverageTickRadius(hashMap);
+    }
+
+    public Random getRnd() {
+        return rnd;
     }
 
     private void calculateAverageTickRadius(HashMap<AgentID, List<String>> hashMap) {
@@ -98,8 +133,8 @@ public class EnvironmentInterface implements TickHookProcessor {
      */
     private List<LocationEntry> getLocationsForAgentForTick(List<String> actions) {
         return actions.stream()
-                .map(x -> this.locationEntryMap.get(ParserUtil.parseAsInt(x.split(";")[2]))).
-                filter(x -> !(x.getLongitude() == 0.0 || x.getLatitude() == 0.0))
+                .map(x -> this.locationEntryMap.get(ParserUtil.parseAsInt(x.split(";")[2])))
+                .filter(x -> !(x.getLongitude() == 0d && x.getLatitude() == 0d))
                 .collect(Collectors.toList());
     }
 

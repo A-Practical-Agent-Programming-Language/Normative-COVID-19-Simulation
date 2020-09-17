@@ -12,15 +12,15 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;
 
 import java.util.Map;
 
-public class Activity extends Goal {
+public class Activity extends Goal implements Cloneable {
 
     private final int pid;
     private final int hid;
     private final int activityNumber;
-    private final ActivityType activityType;
+    private ActivityType activityType;
     private DetailedActivity detailed_activity;
-    private final ActivityTime start_time;
-    private final int duration;
+    private ActivityTime start_time;
+    private int duration;
 
     private final int month;
     private final int day;
@@ -57,6 +57,10 @@ public class Activity extends Goal {
         return activityType;
     }
 
+    public void setActivityType(ActivityType activityType) {
+        this.activityType = activityType;
+    }
+
     public DetailedActivity getDetailed_activity() {
         return detailed_activity;
     }
@@ -69,8 +73,16 @@ public class Activity extends Goal {
         return start_time;
     }
 
+    public void setStart_time(ActivityTime start_time) {
+        this.start_time = start_time;
+    }
+
     public int getDuration() {
         return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 
     public int getMonth() {
@@ -124,6 +136,22 @@ public class Activity extends Goal {
                 this.location.getLocationID(),
                 RiskMitigationPolicy.NONE,
                 DiseaseState.SUSCEPTIBLE
+        );
+    }
+
+    @Override
+    protected Activity clone() {
+        return new Activity(
+                this.pid,
+                this.hid,
+                this.activityNumber,
+                this.activityType,
+                this.detailed_activity,
+                this.start_time.clone(),
+                this.duration,
+                this.month,
+                this.day,
+                this.survey_id
         );
     }
 }
