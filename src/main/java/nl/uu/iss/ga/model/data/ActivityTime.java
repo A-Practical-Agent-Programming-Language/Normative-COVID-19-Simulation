@@ -28,6 +28,10 @@ public class ActivityTime implements Comparable<ActivityTime>, Cloneable {
         return seconds;
     }
 
+    public int getSecondsToday() {
+        return this.hour_of_day * 60 * 60 + this.minute_of_hour * 60 + this.seconds_of_minute;
+    }
+
     public int getHour_of_day() {
         return hour_of_day;
     }
@@ -46,6 +50,10 @@ public class ActivityTime implements Comparable<ActivityTime>, Cloneable {
 
     public DayOfWeek getDayOfWeek() {
         return dayOfWeek;
+    }
+
+    public int getDurationUntilEndOfDay() {
+        return 24 * 60 * 60 - this.getSecondsToday() - 1;
     }
 
     @Override

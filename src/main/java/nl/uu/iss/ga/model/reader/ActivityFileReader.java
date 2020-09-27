@@ -79,6 +79,8 @@ public class ActivityFileReader {
     public Map<Integer, ActivityType> failedDetailedActivities = new HashMap<>();
 
     private Activity getActivityFromLine(Map<String, String> keyValue) {
+        // TODO make last activity of day HOME, until end of day
+        // TODO make first activity HOME activity starting from 0 at that day
         Activity activity = Activity.fromLine(keyValue);
         if (activity.getActivityType().equals(ActivityType.TRIP)) {
             activity = TripActivity.fromLine(activity, keyValue);

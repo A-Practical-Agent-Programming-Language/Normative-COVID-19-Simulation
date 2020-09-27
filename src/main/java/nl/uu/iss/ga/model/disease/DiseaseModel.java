@@ -1,6 +1,6 @@
 package main.java.nl.uu.iss.ga.model.disease;
 
-import main.java.nl.uu.iss.ga.simulation.agent.environment.EnvironmentInterface;
+import main.java.nl.uu.iss.ga.simulation.environment.EnvironmentInterface;
 
 public class DiseaseModel {
     private RiskMitigationPolicy policy;

@@ -2,6 +2,7 @@ package main.java.nl.uu.iss.ga.util;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.annotation.Arg;
+import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 
@@ -32,6 +33,18 @@ public class ArgParse {
     @Arg(dest = "threads")
     private int threads;
 
+    @Arg(dest = "iterations")
+    private int iterations;
+
+    @Arg(dest = "factionliberal")
+    private double fractionliberal;
+
+    @Arg(dest = "modeliberal")
+    private double modeliberal;
+
+    @Arg(dest = "modeconservative")
+    private double modeconservative;
+
     private Random random = null;
 
     public ArgParse(String[] args) {
@@ -61,6 +74,18 @@ public class ArgParse {
         return locationsfile;
     }
 
+    public double getFractionliberal() {
+        return fractionliberal;
+    }
+
+    public double getModeliberal() {
+        return modeliberal;
+    }
+
+    public double getModeconservative() {
+        return modeconservative;
+    }
+
     public long getSeed() {
         return seed;
     }
@@ -76,6 +101,10 @@ public class ArgParse {
 
     public int getThreads() {
         return threads;
+    }
+
+    public int getIterations() {
+        return iterations;
     }
 
     private void verifyFiles() {
@@ -121,40 +150,81 @@ public class ArgParse {
                 .description("A ecological simulation environment for simulation of human acceptance of measures" +
                         " aimed at reducing spread of novel diseases");
 
-        // TODO should be able to take list of arguments
-        parser.addArgument("--personsfile", "-pf")
+        ArgumentGroup schedulefiles = parser.addArgumentGroup("Activity Schedule files")
+                .description("The input files specifying the default behavior");
+        schedulefiles.addArgument("--personsfile", "-pf")
                 .type(File.class)
                 .required(true)
                 .dest("personsfile")
                 .help("Specify the location of the file containing the details of individual agents in the artificial population");
 
-        parser.addArgument("--householdsfile", "-hf")
+        schedulefiles.addArgument("--householdsfile", "-hf")
                 .type(File.class)
                 .required(true)
                 .dest("householdsfile")
                 .help("Specify the location of the file containing the details of the households in the artificial population");
 
-        parser.addArgument("--activityfile", "-af")
+        schedulefiles.addArgument("--activityfile", "-af")
                 .type(File.class)
                 .required(true)
                 .dest("activityfile")
                 .nargs("+")
                 .help("Specify the location of the file(s) containing all the activities of all the agents in the artificial population");
 
-        parser.addArgument("--locationsfile", "-lf")
+        schedulefiles.addArgument("--locationsfile", "-lf")
                 .type(File.class)
                 .required(true)
                 .dest("locationsfile")
                 .help("Specify the location of the file containing all the activity locations of all the agents in the artificial population");
 
-        parser.addArgument("--seed", "-s")
+        ArgumentGroup parameters = parser.addArgumentGroup("Tunable parameters")
+                .description("The parameters that define the distributions from which agent properties will " +
+                        "be randomly sampled. These parameters dictate probabilities for various reasoning " +
+                        "factors that determine how agents will deviate from default behavior");
+        parameters.addArgument("--fraction-liberal", "-l")
+                .dest("fractionliberal")
+                .type(Double.class)
+                .required(false)
+                .setDefault(.5)
+                .help("Probability that a household will be assigned liberal. The remaining houeholds will be " +
+                        "assigned as conversative");
+
+        parameters.addArgument("--liberal-mode", "-lm")
+                .dest("modeliberal")
+                .type(Double.class)
+                .required(false)
+                .setDefault(.6)
+                .help("The value towards which the normal distribution from which government attitude for liberal " +
+                        "agents will be sampled. A sampled value of 1 indicates agent is highly likely to follow " +
+                        "government directives while a value of 0 indicates the agent is highly unlikely to follow " +
+                        "agent directives");
+
+        parameters.addArgument("--conservative-mode", "-cm")
+                .dest("modeconservative")
+                .type(Double.class)
+                .required(false)
+                .setDefault(.6)
+                .help("The value towards which the normal distribution from which government attitude for conservative " +
+                        "agents will be sampled. A sampled value of 1 indicates agent is highly likely to follow " +
+                        "government directives while a value of 0 indicates the agent is highly unlikely to follow " +
+                        "agent directives");
+
+        ArgumentGroup optimization = parser.addArgumentGroup("Runtime optimization");
+        optimization.addArgument("--iterations", "-i")
+                .type(Integer.class)
+                .required(false)
+                .dest("iterations")
+                .setDefault(100)
+                .help("Specify the number of iterations to run this simulation");
+
+        optimization.addArgument("--seed", "-s")
                 .type(Long.TYPE)
                 .required(false)
                 .dest("seed")
                 .setDefault(-1)
                 .help("Specify a seed to use for random operations. Default is -1, indicating no seed is used");
 
-        parser.addArgument("--threads", "-t")
+        optimization.addArgument("--threads", "-t")
                 .type(Integer.class)
                 .required(false)
                 .setDefault(8)

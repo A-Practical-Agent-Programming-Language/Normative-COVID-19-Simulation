@@ -72,4 +72,23 @@ public class TripActivity extends Activity {
                 ParserUtil.parseIntAsBoolean(keyValue.get("passenger_flag"))
         );
     }
+
+    @Override
+    public TripActivity clone() {
+        return new TripActivity(
+                super.clone(),
+                this.mode,
+                this.personWasDriver,
+                this.personWasPassenger
+        );
+    }
+
+    @Override
+    public String toString() {
+        return "TripActivity{" +
+                "mode=" + mode +
+                ", personWasDriver=" + personWasDriver +
+                ", personWasPassenger=" + personWasPassenger +
+                '}';
+    }
 }

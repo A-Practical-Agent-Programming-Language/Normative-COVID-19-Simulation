@@ -15,9 +15,11 @@ public enum DayOfWeek implements CodeTypeInterface {
 
 
     private int code;
+    private int dayStartsSecondsSinceSundayMidnight;
 
     DayOfWeek(int code) {
         this.code = code;
+        this.dayStartsSecondsSinceSundayMidnight = (this.code - 1) * 24 * 60 * 60;
     }
 
     @Override
@@ -27,6 +29,10 @@ public enum DayOfWeek implements CodeTypeInterface {
 
     public static DayOfWeek fromSecondsSinceSundayMidnight(int secondsSinceSundayMidnight) {
         return CodeTypeInterface.parseAsEnum(DayOfWeek.class, secondsSinceSundayMidnight / ActivityTime.SECONDS_IN_DAY + 1);
+    }
+
+    public int getSecondsSinceMidnightForDayStart() {
+        return this.dayStartsSecondsSinceSundayMidnight;
     }
 
 

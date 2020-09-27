@@ -1,12 +1,11 @@
 package main.java.nl.uu.iss.ga.simulation.agent.context;
 
+import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Contains the agents beliefs regarding institutional norms,
@@ -14,26 +13,59 @@ import java.util.Map;
  */
 public class NormContext implements Context {
 
-    private Map<Norm, Double> attitudeTowardsNormMap = new HashMap<>();
+    private List<Norm> regimentedNorms = new ArrayList<>();
+    private List<NonRegimentedNorm> nonRegimentedNorms = new ArrayList<>();
 
     /**
      * Add a new norm and set the agent's attitude towards that norm
      *
      * @param norm      Norm
-     * @param attitude  Attitude value between -3 and 3
      */
-    public void addNorm(Norm norm, double attitude) {
-        if(attitude < -3 || attitude > 3) {
-            throw new IllegalArgumentException("Attitude must be value between -3 and 3. Got " + attitude);
+    public void addNorm(Norm norm) {
+        this.regimentedNorms.add(norm);
+    }
+
+    public void addNorm(NonRegimentedNorm norm) {
+        this.nonRegimentedNorms.add(norm);
+    }
+
+    public <T extends Norm> T replaceNorm(T newNorm) {
+        T removed = null;
+        for(Norm norm : this.regimentedNorms) {
+            if(norm.getClass().equals(newNorm.getClass())) {
+                removed = (T) norm;
+                this.regimentedNorms.remove(norm);
+                break;
+            }
         }
-        this.attitudeTowardsNormMap.put(norm, attitude);
+        addNorm(newNorm);
+        return removed;
     }
 
-    public double getAttitudeForNorm(Norm norm) {
-        return this.attitudeTowardsNormMap.get(norm);
+    public <T extends NonRegimentedNorm> T replaceNorm(T newNorm) {
+        T removed = null;
+        for(Norm norm : this.nonRegimentedNorms) {
+            if(norm.getClass().equals(newNorm.getClass())) {
+                removed = (T) norm;
+                this.nonRegimentedNorms.remove(norm);
+                break;
+            }
+        }
+        addNorm(newNorm);
+        return removed;
     }
 
-    public List<Norm> getActiveNorms() {
-        return new ArrayList<>(this.attitudeTowardsNormMap.keySet());
+    public List<Norm> getNorms() {
+        ArrayList<Norm> norms = new ArrayList<>(this.regimentedNorms);
+        norms.addAll(this.nonRegimentedNorms);
+        return norms;
+    }
+
+    public List<Norm> getRegimentedNorms() {
+        return new ArrayList<>(regimentedNorms);
+    }
+
+    public List<NonRegimentedNorm> getNonRegimentedNorms() {
+        return new ArrayList<>(nonRegimentedNorms);
     }
 }

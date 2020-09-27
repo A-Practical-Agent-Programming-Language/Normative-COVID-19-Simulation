@@ -108,4 +108,10 @@ public class Person implements Context {
                 keyValue.get("occupation_socp")
         );
     }
+
+    public double fixedAgeRisk() {
+        // https://www.desmos.com/calculator/fry7sc859n
+        double x = Math.pow(Math.E, (.1 * this.age - 5));
+        return x / (x + 1);
+    }
 }

@@ -2,11 +2,9 @@ package main.java.nl.uu.iss.ga.model.data;
 
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
-import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
-import main.java.nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;
 
@@ -129,19 +127,21 @@ public class Activity extends Goal implements Cloneable {
     @Override
     public String toString() {
         // start_time, duration, location, mask_state, disease_state
+        if(this.location == null) {
+            System.out.println("Got null location for some reason");
+        }
         return String.format(
-                "%s;%d;%d;%s;%s",
-                this.start_time.getArmy_time_of_day(),
-                this.duration,
-                this.location.getLocationID(),
-                RiskMitigationPolicy.NONE,
-                DiseaseState.SUSCEPTIBLE
+                "%s (%s) %s - %s",
+                this.getActivityType(),
+                this.getDetailed_activity(),
+                this.start_time,
+                new ActivityTime(this.start_time.getSeconds() + this.duration)
         );
     }
 
     @Override
     protected Activity clone() {
-        return new Activity(
+        Activity activity = new Activity(
                 this.pid,
                 this.hid,
                 this.activityNumber,
@@ -153,5 +153,7 @@ public class Activity extends Goal implements Cloneable {
                 this.day,
                 this.survey_id
         );
+        activity.setLocation(this.location);
+        return activity;
     }
 }
