@@ -12,22 +12,22 @@ public class LocationEntry {
     private static final String[] LOCATION_HEADER_INDICES = LOCATION_HEADERS.split(ParserUtil.SPLIT_CHAR);
 
     // Required for matching
-    private final int pid;
+    private final Long pid;
     private final int activity_number;
 
     // Redundant. May serve as check
-    private final int hid;
+    private final Long hid;
     private final ActivityType activity_type;
     private final ActivityTime starttime;
     private final int duration;
     private final TransportMode travelmode;
 
     // Actual location data
-    private final int lid;
+    private final Long lid;
     private final double longitude;
     private final double latitude;
 
-    public LocationEntry(int hid, int pid, int activity_number, ActivityType activity_type, ActivityTime starttime, int duration, int lid, double longitude, double latitude, TransportMode travelmode) {
+    public LocationEntry(Long hid, Long pid, int activity_number, ActivityType activity_type, ActivityTime starttime, int duration, Long lid, double longitude, double latitude, TransportMode travelmode) {
         this.pid = pid;
         this.activity_number = activity_number;
         this.hid = hid;
@@ -40,7 +40,7 @@ public class LocationEntry {
         this.latitude = latitude;
     }
 
-    public int getPid() {
+    public Long getPid() {
         return pid;
     }
 
@@ -48,7 +48,7 @@ public class LocationEntry {
         return activity_number;
     }
 
-    public int getHid() {
+    public Long getHid() {
         return hid;
     }
 
@@ -68,7 +68,7 @@ public class LocationEntry {
         return travelmode;
     }
 
-    public int getLocationID() {
+    public Long getLocationID() {
         return lid;
     }
 
@@ -83,13 +83,13 @@ public class LocationEntry {
     public static LocationEntry fromLine(String line) {
         Map<String, String> keyValue = ParserUtil.zipLine(LOCATION_HEADER_INDICES, line);
         return new LocationEntry(
-                ParserUtil.parseAsInt(keyValue.get("hid")),
-                ParserUtil.parseAsInt(keyValue.get("pid")),
+                ParserUtil.parseAsLong(keyValue.get("hid")),
+                ParserUtil.parseAsLong(keyValue.get("pid")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 CodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
                 new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time"))),
                 ParserUtil.parseAsInt(keyValue.get("duration")),
-                ParserUtil.parseAsInt(keyValue.get("lid")),
+                ParserUtil.parseAsLong(keyValue.get("lid")),
                 ParserUtil.parseAsDouble(keyValue.get("longitude")),
                 ParserUtil.parseAsDouble(keyValue.get("latitude")),
                 CodeTypeInterface.parseAsEnum(TransportMode.class, keyValue.get("travel_mode"))

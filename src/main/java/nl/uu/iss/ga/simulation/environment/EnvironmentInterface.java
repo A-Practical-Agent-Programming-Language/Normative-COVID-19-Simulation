@@ -27,14 +27,14 @@ import java.util.stream.Collectors;
 public class EnvironmentInterface implements TickHookProcessor<CandidateActivity> {
 
     private static final int INITIATE_NORMS = 3; // TODO too hardcoded. Should be per norm
+    private final AgentStateMap agentStateMap;
 
     private Platform platform;
-    private Random rnd;
 
     long currentTick = 0;
     DayOfWeek today = DayOfWeek.MONDAY;
 
-    private Map<Integer, LocationEntry> locationEntryMap;
+    private Map<Long, LocationEntry> locationEntryMap;
 
     public long getCurrentTick() {
         return currentTick;
@@ -44,10 +44,10 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         return today;
     }
 
-    public EnvironmentInterface(Platform platform, Random rnd, Map<Integer, LocationEntry> locationEntryMap) {
+    public EnvironmentInterface(Platform platform, AgentStateMap agentStateMap, Map<Long, LocationEntry> locationEntryMap) {
         this.locationEntryMap = locationEntryMap;
         this.platform = platform;
-        this.rnd = rnd;
+        this.agentStateMap = agentStateMap;
     }
 
     @Override
@@ -76,7 +76,6 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         }
     }
 
-
     @Override
     public void tickPostHook(long tick, int lastTickDuration, HashMap<AgentID, List<CandidateActivity>> hashMap) {
 //        System.out.printf("Tick %d took %d milliseconds for %d agents (roughly %fms per agent)%n", tick, lastTickDuration, hashMap.size(), (double)lastTickDuration / hashMap.size());
@@ -88,10 +87,11 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 //        System.out.printf("Stored locations in %d milliseconds%n", System.currentTimeMillis() - startCalculate);
     }
 
+    // TODO simulate agent visit output
     private void storeLocationData(HashMap<AgentID, List<CandidateActivity>> hashMap) {
         for(List<CandidateActivity> actions : hashMap.values()) {
             for(CandidateActivity action : actions) {
-                int locationID = action.getActivity().getLocation().getLocationID();
+                long locationID = action.getActivity().getLocation().getLocationID();
                 RiskMitigationPolicy p = action.getRiskMitigationPolicy();
                 DiseaseState state = action.getDiseaseState();
 
@@ -100,14 +100,14 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                 } else {
                     this.locationHistory.put(locationID, new LocationHistory(this.currentTick));
                 }
-                this.locationHistory.get(locationID).setVisited(p.isMask(), p.isDistance(), state.equals(DiseaseState.INFECTED));
+                this.locationHistory.get(locationID).setVisited(p.isMask(), p.isDistance(), state.equals(DiseaseState.INFECTED_SYMPTOMATIC));
             }
         }
     }
 
-    private ConcurrentHashMap<Integer, LocationHistory> locationHistory = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, LocationHistory> locationHistory = new ConcurrentHashMap<>();
 
-    public LocationHistory getLocationHistory(int locationID) {
+    public LocationHistory getLocationHistory(long locationID) {
         if(this.locationHistory.containsKey(locationID)) {
             return this.locationHistory.get(locationID);
         } else {
@@ -188,10 +188,6 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             }
             return value;
         }
-    }
-
-    public Random getRnd() {
-        return rnd;
     }
 
     private void calculateAverageTickRadius(HashMap<AgentID, List<CandidateActivity>> hashMap) {

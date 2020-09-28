@@ -8,21 +8,21 @@ import java.util.List;
 import java.util.SortedMap;
 
 public class ActivitySchedule implements Context {
-    private final int household;
-    private final int person;
+    private final long household;
+    private final long person;
     private final SortedMap<ActivityTime, Activity> schedule;
 
-    public ActivitySchedule(int household, int person, SortedMap<ActivityTime, Activity> schedule) {
+    public ActivitySchedule(long household, long person, SortedMap<ActivityTime, Activity> schedule) {
         this.household = household;
         this.person = person;
         this.schedule = schedule;
     }
 
-    public int getHousehold() {
+    public long getHousehold() {
         return household;
     }
 
-    public int getPerson() {
+    public long getPerson() {
         return person;
     }
 

@@ -12,8 +12,8 @@ import java.util.Map;
 
 public class Activity extends Goal implements Cloneable {
 
-    private final int pid;
-    private final int hid;
+    private final long pid;
+    private final long hid;
     private final int activityNumber;
     private ActivityType activityType;
     private DetailedActivity detailed_activity;
@@ -26,7 +26,7 @@ public class Activity extends Goal implements Cloneable {
 
     private LocationEntry location;
 
-    public Activity(int pid, int hid, int activityNumber, ActivityType activityType, DetailedActivity detailed_activity, ActivityTime start_time, int duration, int month, int day, int survey_id) {
+    public Activity(long pid, long hid, int activityNumber, ActivityType activityType, DetailedActivity detailed_activity, ActivityTime start_time, int duration, int month, int day, int survey_id) {
         this.pid = pid;
         this.hid = hid;
         this.activityNumber = activityNumber;
@@ -39,11 +39,11 @@ public class Activity extends Goal implements Cloneable {
         this.survey_id = survey_id;
     }
 
-    public int getPid() {
+    public long getPid() {
         return pid;
     }
 
-    public int getHid() {
+    public long getHid() {
         return hid;
     }
 
@@ -105,8 +105,8 @@ public class Activity extends Goal implements Cloneable {
 
     public static Activity fromLine(Map<String, String> keyValue) {
         return new Activity(
-                ParserUtil.parseAsInt(keyValue.get("pid")),
-                ParserUtil.parseAsInt(keyValue.get("hid")),
+                ParserUtil.parseAsLong(keyValue.get("pid")),
+                ParserUtil.parseAsLong(keyValue.get("hid")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 CodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
                 CodeTypeInterface.parseAsEnum(DetailedActivity.class, keyValue.get("detailed_activity")),

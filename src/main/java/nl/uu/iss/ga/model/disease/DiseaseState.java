@@ -1,10 +1,13 @@
 package main.java.nl.uu.iss.ga.model.disease;
 
-public enum DiseaseState {
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
+
+public enum DiseaseState implements CodeTypeInterface {
     SUSCEPTIBLE(0),
     EXPOSED(1),
-    INFECTED(2),
-    RECOVERED(3);
+    INFECTED_SYMPTOMATIC(2),
+    INFECTED_ASYMPTOMATIC(3),
+    RECOVERED(4);
 
     private final int code;
 

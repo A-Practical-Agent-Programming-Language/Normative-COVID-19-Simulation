@@ -5,29 +5,34 @@ import main.java.nl.uu.iss.ga.model.data.Household;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
 public class HouseholdReader {
 
-    private final File householdFile;
-    private final Map<Integer, Household> households;
+    private final List<File> householdFiles;
+    private final Map<Long, Household> households;
     private double fractionConservative;
 
-    public HouseholdReader(File householdFile, double fractionConservative) {
-        this.householdFile = householdFile;
+    public HouseholdReader(List<File> householdFiles, double fractionConservative) {
+        this.householdFiles = householdFiles;
         this.fractionConservative = fractionConservative;
-        this.households = readHouseholds();
+
+        this.households = new TreeMap<>();
+        for(File f : this.householdFiles) {
+            this.households.putAll(readHouseholds(f));
+        }
     }
 
-    public Map<Integer, Household> getHouseholds() {
+    public Map<Long, Household> getHouseholds() {
         return households;
     }
 
-    private Map<Integer, Household> readHouseholds() {
+    private Map<Long, Household> readHouseholds(File householdFile) {
         try(
-                FileInputStream is = new FileInputStream(this.householdFile);
+                FileInputStream is = new FileInputStream(householdFile);
                 Scanner s = new Scanner(is);
         ) {
             return iterateHouseholds(s);
@@ -37,8 +42,8 @@ public class HouseholdReader {
         return new TreeMap<>();
     }
 
-    private Map<Integer, Household> iterateHouseholds(Scanner s) {
-        Map<Integer, Household> householdMap = new TreeMap<>();
+    private Map<Long, Household> iterateHouseholds(Scanner s) {
+        Map<Long, Household> householdMap = new TreeMap<>();
         s.nextLine(); // Skip header
         while(s.hasNextLine()) {
             Household h = Household.fromCSVLine(s.nextLine());

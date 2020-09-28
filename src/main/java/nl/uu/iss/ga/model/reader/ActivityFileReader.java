@@ -17,25 +17,29 @@ public class ActivityFileReader {
             "hid,pid,activity_number,activity_type,detailed_activity,start_time,duration,mode,driver_flag,passenger_flag,month,day,survey_id";
     public static final String[] VA_ACTIVITY_HEADER_INDICES = VA_ACTIVITY_HEADERS.split(ParserUtil.SPLIT_CHAR);
 
-    private final File activityScheduleFile;
-    private final Map<Integer, Person> personMap;
+    private final List<File> activityScheduleFiles;
+    private final Map<Long, Person> personMap;
     private final List<ActivitySchedule> activitySchedules;
-    private final Map<Integer, Map<Integer, LocationEntry>> locationMap;
+    private final Map<Long, Map<Integer, LocationEntry>> locationMap;
 
-    public ActivityFileReader(File activityScheduleFile, Map<Integer, Person> personMap, Map<Integer, Map<Integer, LocationEntry>> locationMap) {
-        this.activityScheduleFile = activityScheduleFile;
+    public ActivityFileReader(List<File> activityScheduleFiles, Map<Long, Person> personMap, Map<Long, Map<Integer, LocationEntry>> locationMap) {
+        this.activityScheduleFiles = activityScheduleFiles;
         this.personMap = personMap;
         this.locationMap = locationMap;
-        this.activitySchedules = readActivities();
+
+        this.activitySchedules = new ArrayList<>();
+        for(File f : this.activityScheduleFiles) {
+            this.activitySchedules.addAll(readActivities(f));
+        }
     }
 
     public List<ActivitySchedule> getActivitySchedules() {
         return activitySchedules;
     }
 
-    private List<ActivitySchedule> readActivities() {
+    private List<ActivitySchedule> readActivities(File activityScheduleFile) {
         try(
-                FileInputStream is = new FileInputStream(this.activityScheduleFile);
+                FileInputStream is = new FileInputStream(activityScheduleFile);
                 Scanner s = new Scanner(is);
         ) {
             return iterateActivities(s);
@@ -52,7 +56,7 @@ public class ActivityFileReader {
         List<ActivitySchedule> schedules = new LinkedList<>();
         SortedMap<ActivityTime, Activity> activities = new TreeMap<>();
 
-        int currentPersonIndex = -1;
+        long currentPersonIndex = -1;
         while(s.hasNextLine()) {
             String line = s.nextLine();
             Map<String, String> keyValue = ParserUtil.zipLine(VA_ACTIVITY_HEADER_INDICES, line);

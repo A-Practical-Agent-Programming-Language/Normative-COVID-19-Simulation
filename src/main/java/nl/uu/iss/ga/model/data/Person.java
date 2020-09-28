@@ -14,7 +14,7 @@ public class Person implements Context {
     private static final String[] VA_PERSON_HEADER_INDICES = VA_PERSON_HEADERS.split(ParserUtil.SPLIT_CHAR);
 
     private Household household;
-    private int pid;
+    private Long pid;
     private int serialno;
     private int person_number;
     private int age;
@@ -27,8 +27,8 @@ public class Person implements Context {
 
     public Person(
             Household household,
-                  int pid,
-                  int serialno,
+            Long pid,
+            int serialno,
             int age,
             Relationship relationship,
             Gender sex,
@@ -53,7 +53,7 @@ public class Person implements Context {
         return household;
     }
 
-    public int getPid() {
+    public Long getPid() {
         return pid;
     }
 
@@ -93,11 +93,11 @@ public class Person implements Context {
         return occupation_socp;
     }
 
-    public static Person fromLine(Map<Integer, Household> households, String line) {
+    public static Person fromLine(Map<Long, Household> households, String line) {
         Map<String, String> keyValue = ParserUtil.zipLine(VA_PERSON_HEADER_INDICES, line);
         return new Person(
-                households.get(ParserUtil.parseAsInt(keyValue.get("hid"))),
-                ParserUtil.parseAsInt(keyValue.get("pid")),
+                households.get(ParserUtil.parseAsLong(keyValue.get("hid"))),
+                ParserUtil.parseAsLong(keyValue.get("pid")),
                 ParserUtil.parseAsInt(keyValue.get("serialno")),
                 ParserUtil.parseAsInt(keyValue.get("age")),
                 CodeTypeInterface.parseAsEnum(Relationship.class, keyValue.get("relationship")),

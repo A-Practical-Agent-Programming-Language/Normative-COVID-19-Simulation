@@ -6,29 +6,34 @@ import main.java.nl.uu.iss.ga.model.data.Person;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
 public class PersonReader {
 
-    private final File personsFile;
-    private final Map<Integer, Household> householdMap;
-    private final Map<Integer, Person> persons;
+    private final List<File> personsFiles;
+    private final Map<Long, Household> householdMap;
+    private final Map<Long, Person> persons;
 
-    public PersonReader(File personsFile, Map<Integer, Household> householdMap) {
-        this.personsFile = personsFile;
+    public PersonReader(List<File> personsFiles, Map<Long, Household> householdMap) {
+        this.personsFiles = personsFiles;
         this.householdMap = householdMap;
-        this.persons = readPersons();
+
+        this.persons = new TreeMap<>();
+        for(File f : this.personsFiles) {
+            this.persons.putAll(readPersons(f));
+        }
     }
 
-    public Map<Integer, Person> getPersons() {
+    public Map<Long, Person> getPersons() {
         return persons;
     }
 
-    private Map<Integer, Person> readPersons() {
+    private Map<Long, Person> readPersons(File personsFile) {
         try(
-                FileInputStream is = new FileInputStream(this.personsFile);
+                FileInputStream is = new FileInputStream(personsFile);
                 Scanner s = new Scanner(is);
         ) {
             return iteratePersons(s);
@@ -38,8 +43,8 @@ public class PersonReader {
         return new TreeMap<>();
     }
 
-    private Map<Integer, Person> iteratePersons(Scanner s) {
-        Map<Integer, Person> householdMap = new TreeMap<>();
+    private Map<Long, Person> iteratePersons(Scanner s) {
+        Map<Long, Person> householdMap = new TreeMap<>();
         s.nextLine(); // Skip header
         while(s.hasNextLine()) {
             Person p = Person.fromLine(this.householdMap, s.nextLine());

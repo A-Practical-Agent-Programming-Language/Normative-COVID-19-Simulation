@@ -26,6 +26,14 @@ public class ParserUtil {
         }
     }
 
+    public static long parseAsLong(String longValue) {
+        try {
+            return Long.parseLong(longValue);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
     public static double parseAsDouble(String doubleValue) {
         return Double.parseDouble(doubleValue);
     }

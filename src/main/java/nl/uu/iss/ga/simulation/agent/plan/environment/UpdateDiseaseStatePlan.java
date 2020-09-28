@@ -23,7 +23,7 @@ public class UpdateDiseaseStatePlan extends RunOncePlan<CandidateActivity> {
         context.setState(trigger.getNewDiseaseState());
 
         // TODO will agents always believe they are symptomatic?
-        context.setSymptomatic(trigger.getNewDiseaseState().equals(DiseaseState.INFECTED) && trigger.isSymptomatic());
+        context.setSymptomatic(trigger.getNewDiseaseState().equals(DiseaseState.INFECTED_SYMPTOMATIC) && trigger.isSymptomatic());
 
         return null;
     }

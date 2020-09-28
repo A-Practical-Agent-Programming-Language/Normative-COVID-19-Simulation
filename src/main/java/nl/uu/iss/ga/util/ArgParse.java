@@ -2,6 +2,7 @@ package main.java.nl.uu.iss.ga.util;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.annotation.Arg;
+import net.sourceforge.argparse4j.impl.action.StoreTrueArgumentAction;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -15,17 +16,20 @@ import java.util.Random;
 
 public class ArgParse {
 
-    @Arg(dest = "personsfile")
-    private File personsFile;
+    @Arg(dest = "personsfiles")
+    private List<File> personsFiles;
 
     @Arg(dest = "householdsfile")
-    private File householdsFile;
+    private List<File> householdsFiles;
 
-    @Arg(dest = "activityfile")
+    @Arg(dest = "activityfiles")
     private List<File> activityFiles;
 
-    @Arg(dest = "locationsfile")
-    private File locationsfile;
+    @Arg(dest = "locationsfiles")
+    private List<File> locationsfiles;
+
+    @Arg(dest = "statefiles")
+    private List<File> statefiles;
 
     @Arg(dest = "seed")
     private long seed;
@@ -45,6 +49,9 @@ public class ArgParse {
     @Arg(dest = "modeconservative")
     private double modeconservative;
 
+    @Arg(dest = "connectpansim")
+    private boolean connectpansim;
+
     private Random random = null;
 
     public ArgParse(String[] args) {
@@ -58,20 +65,24 @@ public class ArgParse {
         }
     }
 
-    public File getPersonsFile() {
-        return personsFile;
+    public List<File> getPersonsFiles() {
+        return personsFiles;
     }
 
-    public File getHouseholdsFile() {
-        return householdsFile;
+    public List<File> getHouseholdsFiles() {
+        return householdsFiles;
     }
 
     public List<File> getActivityFiles() {
         return activityFiles;
     }
 
-    public File getLocationsfile() {
-        return locationsfile;
+    public List<File> getLocationsfiles() {
+        return locationsfiles;
+    }
+
+    public List<File> getStatefiles() {
+        return statefiles;
     }
 
     public double getFractionliberal() {
@@ -84,6 +95,10 @@ public class ArgParse {
 
     public double getModeconservative() {
         return modeconservative;
+    }
+
+    public boolean isConnectpansim() {
+        return connectpansim;
     }
 
     public long getSeed() {
@@ -109,20 +124,24 @@ public class ArgParse {
 
     private void verifyFiles() {
         try {
-            List<File> files = new ArrayList<>();
-            for (File activityFile : this.activityFiles) {
-                File file = findFile(activityFile);
-                files.add(file);
-            }
-            this.activityFiles = files;
-            this.householdsFile = findFile(this.householdsFile);
-            this.personsFile = findFile(this.personsFile);
-            this.locationsfile = findFile(this.locationsfile);
+            this.activityFiles = findFilesInList(this.activityFiles);
+            this.householdsFiles = findFilesInList(this.householdsFiles);
+            this.personsFiles = findFilesInList(this.personsFiles);
+            this.locationsfiles = findFilesInList(this.locationsfiles);
+            this.statefiles = findFilesInList(this.statefiles);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             getParser().printHelp();
             System.exit(1);
         }
+    }
+
+    private List<File> findFilesInList(List<File> files) throws FileNotFoundException {
+        List<File> verifiedFiles = new ArrayList<>();
+        for(File f : files) {
+            verifiedFiles.add(findFile(f));
+        }
+        return verifiedFiles;
     }
 
     private File findFile(File f) throws FileNotFoundException {
@@ -155,26 +174,36 @@ public class ArgParse {
         schedulefiles.addArgument("--personsfile", "-pf")
                 .type(File.class)
                 .required(true)
-                .dest("personsfile")
+                .dest("personsfiles")
+                .nargs("+")
                 .help("Specify the location of the file containing the details of individual agents in the artificial population");
 
         schedulefiles.addArgument("--householdsfile", "-hf")
                 .type(File.class)
                 .required(true)
-                .dest("householdsfile")
+                .dest("householdsfiles")
+                .nargs("+")
                 .help("Specify the location of the file containing the details of the households in the artificial population");
 
         schedulefiles.addArgument("--activityfile", "-af")
                 .type(File.class)
                 .required(true)
-                .dest("activityfile")
+                .dest("activityfiles")
                 .nargs("+")
                 .help("Specify the location of the file(s) containing all the activities of all the agents in the artificial population");
 
         schedulefiles.addArgument("--locationsfile", "-lf")
                 .type(File.class)
                 .required(true)
-                .dest("locationsfile")
+                .dest("locationsfiles")
+                .nargs("+")
+                .help("Specify the location of the file containing all the activity locations of all the agents in the artificial population");
+
+        schedulefiles.addArgument("--statefile", "-sf")
+                .type(File.class)
+                .required(false)
+                .dest("statefiles")
+                .nargs("+")
                 .help("Specify the location of the file containing all the activity locations of all the agents in the artificial population");
 
         ArgumentGroup parameters = parser.addArgumentGroup("Tunable parameters")
@@ -214,7 +243,7 @@ public class ArgParse {
                 .type(Integer.class)
                 .required(false)
                 .dest("iterations")
-                .setDefault(100)
+                .setDefault(Integer.MAX_VALUE)
                 .help("Specify the number of iterations to run this simulation");
 
         optimization.addArgument("--seed", "-s")
@@ -230,6 +259,16 @@ public class ArgParse {
                 .setDefault(8)
                 .dest("threads")
                 .help("Specify the number of threads to use for execution");
+
+        optimization.addArgument("--connect-pansim", "-c")
+                .type(Boolean.class)
+                .required(false)
+                .setDefault(false)
+                .action(new StoreTrueArgumentAction())
+                .dest("connectpansim")
+                .help("If this argument is present, the simulation will run in PANSIM mode, meaning it will send" +
+                        "the generated behavior to the PANSIM environment. If absent, no PANSIM connection is required," +
+                        "but behavior is not interpreted");
 
         return parser;
     }

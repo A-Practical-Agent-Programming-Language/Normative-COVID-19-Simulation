@@ -17,7 +17,7 @@ public class Household {
 //    private final int admin3; // TODO translate
 //    private final int admin4; // TODO translate
 
-    private final int hid;
+    private final Long hid;
 
     /**
      * Housing unit/GQ person serial number
@@ -163,7 +163,7 @@ public class Household {
     private final int workers_in_family;
 
     public Household(
-            int hid,
+            Long hid,
             int serialno,
             int puma,
             UnitSize hh_size,
@@ -189,7 +189,7 @@ public class Household {
         this.workers_in_family = workers_in_family;
     }
 
-    public int getHid() {
+    public Long getHid() {
         return hid;
     }
 
@@ -240,7 +240,7 @@ public class Household {
     public static Household fromCSVLine(String line) {
         Map<String ,String> keyValue = ParserUtil.zipLine(VA_HOUSEHOLD_HEADER_INDICES, line);
         return new Household(
-                ParserUtil.parseAsInt(keyValue.get("hid")),
+                ParserUtil.parseAsLong(keyValue.get("hid")),
                 ParserUtil.parseAsInt(keyValue.get("serialno")),
                 ParserUtil.parseAsInt(keyValue.get("puma")),
                 StringCodeTypeInterface.parseAsEnum(UnitSize.class, keyValue.get("hh_size")),
