@@ -1,82 +1,42 @@
-usage: 2APL/SimpleEpiDemic Disease Simulation
-       [-h] --personsfile PERSONSFILES [PERSONSFILES ...]
-       --householdsfile HOUSEHOLDSFILES [HOUSEHOLDSFILES ...]
-       --activityfile ACTIVITYFILES [ACTIVITYFILES ...]
-       --locationsfile LOCATIONSFILES [LOCATIONSFILES ...]
-       [--statefile STATEFILES [STATEFILES ...]]
-       [--fraction-liberal FRACTIONLIBERAL] [--liberal-mode MODELIBERAL]
-       [--conservative-mode MODECONSERVATIVE] [--iterations ITERATIONS]
-       [--seed SEED] [--threads THREADS] [--connect-pansim]
 
-A ecological simulation environment for  simulation  of human acceptance of
-measures aimed at reducing spread of novel diseases
 
-named arguments:
-  -h, --help             show this help message and exit
+# Invoking program
+See manual.txt for command line arguments, or call --help when running the application
+Note the flag `-c` (or `--connect-pansim`) should be used to share data with the [PanSim](https://github.com/parantapa/pansim) simulation environment.
 
-Activity Schedule files:
-  The input files specifying the default behavior
+# Prerequisites
+This manual assumes Maven is installed for easy package management
 
-  --personsfile PERSONSFILES [PERSONSFILES ...], -pf PERSONSFILES [PERSONSFILES ...]
-                         Specify the location  of  the  file containing the
-                         details of  individual  agents  in  the artificial
-                         population
-  --householdsfile HOUSEHOLDSFILES [HOUSEHOLDSFILES ...], -hf HOUSEHOLDSFILES [HOUSEHOLDSFILES ...]
-                         Specify the location  of  the  file containing the
-                         details  of  the  households   in  the  artificial
-                         population
-  --activityfile ACTIVITYFILES [ACTIVITYFILES ...], -af ACTIVITYFILES [ACTIVITYFILES ...]
-                         Specify the  location  of  the  file(s) containing
-                         all the  activities  of  all  the  agents  in  the
-                         artificial population
-  --locationsfile LOCATIONSFILES [LOCATIONSFILES ...], -lf LOCATIONSFILES [LOCATIONSFILES ...]
-                         Specify the location  of  the  file containing all
-                         the activity locations of  all  the  agents in the
-                         artificial population
-  --statefile STATEFILES [STATEFILES ...], -sf STATEFILES [STATEFILES ...]
-                         Specify the location  of  the  file containing all
-                         the activity locations of  all  the  agents in the
-                         artificial population
+Prerequisites:
+* Java 14+ (not tested with lower versions)
+* Sim2APL
+* (Maven)
 
-Tunable parameters:
-  The parameters that define the  distributions from which agent properties
-  will be randomly  sampled.  These  parameters  dictate  probabilities for
-  various reasoning factors that  determine  how  agents  will deviate from
-  default behavior
+## Sim2APL
+Download Sim2APL from Bitbucket, and checkout the `feature/generic-plan-return` branch.
 
-  --fraction-liberal FRACTIONLIBERAL, -l FRACTIONLIBERAL
-                         Probability that  a  household  will  be  assigned
-                         liberal. The remaining houeholds  will be assigned
-                         as conversative (default: 0.5)
-  --liberal-mode MODELIBERAL, -lm MODELIBERAL
-                         The value towards  which  the  normal distribution
-                         from which government attitude  for liberal agents
-                         will be sampled. A  sampled  value  of 1 indicates
-                         agent  is  highly  likely   to  follow  government
-                         directives while a value of  0 indicates the agent
-                         is highly  unlikely  to  follow  agent  directives
-                         (default: 0.6)
-  --conservative-mode MODECONSERVATIVE, -cm MODECONSERVATIVE
-                         The value towards  which  the  normal distribution
-                         from which  government  attitude  for conservative
-                         agents will  be  sampled.  A  sampled  value  of 1
-                         indicates  agent  is   highly   likely  to  follow
-                         government  directives   while   a   value   of  0
-                         indicates the agent is  highly  unlikely to follow
-                         agent directives (default: 0.6)
+```bash
+$ git clone https://AJdeMooij@bitbucket.org/goldenagents/sim2apl.git 
+$ cd sim2apl
+$ git checkout origin/feature/generic-plan-return -b feature/generic-plan-return
+```
 
-Runtime optimization:
-  --iterations ITERATIONS, -i ITERATIONS
-                         Specify the  number  of  iterations  to  run  this
-                         simulation (default: 100)
-  --seed SEED, -s SEED   Specify a  seed  to  use  for  random  operations.
-                         Default  is  -1,  indicating   no   seed  is  used
-                         (default: -1)
-  --threads THREADS, -t THREADS
-                         Specify  the  number   of   threads   to  use  for
-                         execution (default: 8)
-  --connect-pansim, -c   If this argument is  present,  the simulation will
-                         run  in  PANSIM  mode,  meaning  it  will  sendthe
-                         generated behavior to  the  PANSIM environment. If
-                         absent,  no  PANSIM   connection  is  required,but
-                         behavior is not interpreted (default: false)
+Install the package using Maven:
+
+```bash
+$ mvn -U clean install
+```
+
+This will automatically add the library to your local Maven repository, so no further action is required here.
+
+## This library
+Clone the master branch of this library and install with Maven, or open in an IDE with Maven support (e.g. VSCode, Idea Intellij, Eclipse or NetBeans) and let the IDE set up the project.
+
+```bash
+$ git clone https://AJdeMooij@bitbucket.org/goldenagents/sim2apl-episimpledemics.git
+$ cd sim2apl-episimpledemics
+$ mvn -U clean install
+```
+
+The application requires various arguments, either when invoked from the command line or when used in an IDE.
+See [manual.txt](manual.txt) for more information, or invoke the program with the argument `--help`
