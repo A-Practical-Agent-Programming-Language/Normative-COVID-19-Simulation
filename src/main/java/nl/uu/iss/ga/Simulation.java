@@ -79,7 +79,7 @@ public class Simulation {
         this.tickExecutor = new DefaultBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getRandom());
         this.platform = Platform.newPlatform(tickExecutor, messenger);
 
-        this.environmentInterface = new EnvironmentInterface(platform, this.observationNotifier, this.agentStateMap, this.locationFileReader.getLocationsByIDMap());
+        this.environmentInterface = new EnvironmentInterface(platform, this.observationNotifier, this.agentStateMap, !this.arguments.isConnectpansim());
         this.simulationEngine = arguments.isConnectpansim() ? getPansimSimulationEngine() : getLocalSimulationEngine();
 
         this.observationNotifier = new DirectObservationNotifierNotifier(this.platform);
@@ -90,7 +90,7 @@ public class Simulation {
     }
 
     private SimulationEngine<CandidateActivity> getPansimSimulationEngine() {
-        return new PansimSimulationEngine(this.platform, this.observationNotifier, this.agentStateMap, new TickHookProcessor[]{this.environmentInterface});
+        return new PansimSimulationEngine(this.platform, this.observationNotifier, this.agentStateMap, this.environmentInterface);
     }
 
     private void createAgents() {
