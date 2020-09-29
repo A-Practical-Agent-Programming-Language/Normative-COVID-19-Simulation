@@ -26,8 +26,8 @@ public class ExecuteScheduledActivityPlan extends RunOncePlan<CandidateActivity>
         ActivitySchedule schedule = planToAgentInterface.getContext(ActivitySchedule.class);
 
         // TODO this also needs to be applied in GoHomePlan
-        if (!context.testIsDayOfWeek(beliefContext.getEnvironmentInterface().getToday())) {
-            context.resetDaySchedule(beliefContext.getEnvironmentInterface().getToday());
+        if (!context.testIsDayOfWeek(beliefContext.getToday())) {
+            context.resetDaySchedule(beliefContext.getToday());
         }
 
         if (context.isAdjustTime()) {
@@ -64,8 +64,8 @@ public class ExecuteScheduledActivityPlan extends RunOncePlan<CandidateActivity>
 
         // Sanity check
         if (
-                !activity.getActivity().getStart_time().getDayOfWeek().equals(beliefContext.getEnvironmentInterface().getToday()) ||
-                        !new ActivityTime(activity.getActivity().getStart_time().getSeconds() + activity.getActivity().getDuration() -1 ).getDayOfWeek().equals(beliefContext.getEnvironmentInterface().getToday())
+                !activity.getActivity().getStart_time().getDayOfWeek().equals(beliefContext.getToday()) ||
+                        !new ActivityTime(activity.getActivity().getStart_time().getSeconds() + activity.getActivity().getDuration() -1 ).getDayOfWeek().equals(beliefContext.getToday())
         ) {
             System.err.println("Scheduled: Day changed when shifting time?");
         }

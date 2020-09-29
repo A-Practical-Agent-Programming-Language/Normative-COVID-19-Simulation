@@ -9,10 +9,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AgentStateMap {
 
-    private Map<Long, AgentID> pidToAgentMap;
+    private final Map<Long, AgentID> pidToAgentMap;
     private Map<AgentID, AgentState> agentStateMap;
     private Map<Long, AgentState> pidStateMap;
 
@@ -26,16 +27,15 @@ public class AgentStateMap {
 
     public AgentStateMap(Map<Long, Person> personMap, Random rnd) {
         reset();
-        this.pidToAgentMap = new HashMap<>();
+        this.pidToAgentMap = new ConcurrentHashMap<>();
         for(long pid : personMap.keySet()) {
-            AgentState state = new AgentState(pid, 0, DiseaseState.SUSCEPTIBLE, null, 0, rnd.nextInt());
+            AgentState state = new AgentState(pid, 0, DiseaseState.SUSCEPTIBLE, DiseaseState.NOT_SET, -1, rnd.nextInt());
             this.pidStateMap.put(pid, state);
         }
     }
 
     public void fromDataFrame(StateDataFrame dataFrame) throws IOException {
         reset();
-
         for(int i = 0; i < dataFrame.getSchemaRoot().getRowCount(); i++) {
             AgentState state = dataFrame.getAgentState(i);
             AgentID aid = this.pidToAgentMap.get(state.getPid());
@@ -44,12 +44,28 @@ public class AgentStateMap {
         }
     }
 
+    public List<AgentState> getAllAgentStates() {
+        return new ArrayList<>(this.pidStateMap.values());
+    }
+
+    public int getNumberOfStates() {
+        return this.pidStateMap.size();
+    }
+
     public void addAgent(AgentID aid, long pid) {
         if(this.pidToAgentMap.containsKey(pid)) {
-            System.err.printf("Adding agent to PID %d, but agent already exists%n", pid);
+            System.err.printf("WARNING: Adding agent to PID %d, but agent already exists%n", pid);
         }
         this.pidToAgentMap.put(pid, aid);
         this.agentStateMap.put(aid, this.pidStateMap.get(pid));
+    }
+
+    public Random getRandom(AgentID agentID) {
+        return this.agentStateMap.get(agentID).getRandom();
+    }
+
+    public boolean isSymptomatic(AgentID agentID) {
+        return this.agentStateMap.get(agentID).getState().equals(DiseaseState.INFECTED_SYMPTOMATIC);
     }
 
     private void readStateFile(File stateFile, Random rnd) {
@@ -72,7 +88,7 @@ public class AgentStateMap {
     }
 
     private void reset() {
-        this.agentStateMap = new HashMap<>();
-        this.pidStateMap = new HashMap<>();
+        this.agentStateMap = new ConcurrentHashMap<>();
+        this.pidStateMap = new ConcurrentHashMap<>();
     }
 }

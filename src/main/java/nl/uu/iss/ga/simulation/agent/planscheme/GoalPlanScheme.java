@@ -31,7 +31,7 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
             Activity activity = (Activity) trigger;
             BeliefContext context = agentContextInterface.getContext(BeliefContext.class);
 
-            if(context.getEnvironmentInterface().getToday().equals(activity.getStart_time().getDayOfWeek())) {
+            if(context.getToday().equals(activity.getStart_time().getDayOfWeek())) {
                 // Trigger applies to today
 
                 if (activity.getActivityType().equals(ActivityType.TRIP)) {

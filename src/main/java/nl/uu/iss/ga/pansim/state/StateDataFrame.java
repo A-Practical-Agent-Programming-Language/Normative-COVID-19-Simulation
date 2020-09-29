@@ -1,6 +1,5 @@
 package main.java.nl.uu.iss.ga.pansim.state;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.simulation.environment.AgentState;
@@ -80,6 +79,19 @@ public class StateDataFrame {
         seed = (BigIntVector) schemaRoot.getVector("seed");
     }
 
+    public static StateDataFrame fromAgentStateMap(List<AgentState> agentStates, BufferAllocator allocator) {
+        int max_rows = agentStates.size();
+        StateDataFrame dataFrame = new StateDataFrame(max_rows, allocator);
+
+        int i = 0;
+        for(AgentState state : agentStates) {
+            dataFrame.addRow(i, state);
+            i++;
+        }
+        dataFrame.setValueCount(i);
+        return dataFrame;
+    }
+
     public AgentState getAgentState(int row) {
         return new AgentState(
                 pid.get(row),
@@ -91,8 +103,13 @@ public class StateDataFrame {
         );
     }
 
-    public void addRow(int index, CandidateActivity activity) {
-
+    public void addRow(int index, AgentState state) {
+        this.pid.set(index, state.getPid());
+        this.group.set(index, state.getGroup());
+        this.current_state.set(index, state.getState().getCode());
+        this.next_state.set(index, state.getNextState().getCode());
+        this.dwell_time.set(index, state.getDwell_time());
+        this.seed.set(index, state.getRandom().nextInt());
     }
 
     public void setValueCount(int count) {

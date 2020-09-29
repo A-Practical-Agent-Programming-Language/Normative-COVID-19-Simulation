@@ -57,8 +57,8 @@ public class AgentState {
                 ParserUtil.parseAsLong(keyValue.get("pid")),
                 ParserUtil.parseAsInt(keyValue.get("group")),
                 CodeTypeInterface.parseAsEnum(DiseaseState.class, keyValue.get("start_state")),
-                null,
-                0,
+                DiseaseState.NOT_SET,
+                -1,
                 seed
         );
     }

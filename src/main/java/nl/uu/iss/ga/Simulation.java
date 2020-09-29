@@ -12,7 +12,6 @@ import main.java.nl.uu.iss.ga.model.reader.PersonReader;
 import main.java.nl.uu.iss.ga.pansim.PansimSimulationEngine;
 import main.java.nl.uu.iss.ga.simulation.agent.context.*;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
-import main.java.nl.uu.iss.ga.simulation.agent.planscheme.ExternalTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.environment.AgentStateMap;
@@ -64,7 +63,7 @@ public class Simulation {
         this.activityFileReader = new ActivityFileReader(arguments.getActivityFiles(),
                 this.personReader.getPersons(), this.locationFileReader.getLocations());
 
-        this.agentStateMap = arguments.getStatefiles().isEmpty() ?
+        this.agentStateMap = arguments.getStatefiles() == null || arguments.getStatefiles().isEmpty() ?
                 new AgentStateMap(this.personReader.getPersons(), arguments.getRandom()) :
                 new AgentStateMap(arguments.getStatefiles(), arguments.getRandom());
 
@@ -78,11 +77,9 @@ public class Simulation {
         DefaultMessenger messenger = new DefaultMessenger();
         this.tickExecutor = new DefaultBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getRandom());
         this.platform = Platform.newPlatform(tickExecutor, messenger);
-
+        this.observationNotifier = new DirectObservationNotifierNotifier(this.platform);
         this.environmentInterface = new EnvironmentInterface(platform, this.observationNotifier, this.agentStateMap, !this.arguments.isConnectpansim());
         this.simulationEngine = arguments.isConnectpansim() ? getPansimSimulationEngine() : getLocalSimulationEngine();
-
-        this.observationNotifier = new DirectObservationNotifierNotifier(this.platform);
     }
 
     private SimulationEngine<CandidateActivity> getLocalSimulationEngine() {
@@ -104,23 +101,21 @@ public class Simulation {
         boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
         double initialGovernmentAttitude = Methods.nextSkewedBoundedDouble(
                 arguments.getRandom(), isLiberal ? arguments.getModeliberal() : arguments.getModeconservative());
+        LocationEntry homeLocation = findHomeLocation(schedule);
 
         NormContext normContext = new NormContext();
         LocationHistoryContext locationHistoryContext = new LocationHistoryContext();
-
-        LocationEntry homeLocation = findHomeLocation(schedule);
+        BeliefContext beliefContext = new BeliefContext(this.environmentInterface, homeLocation,
+                initialGovernmentAttitude);
         AgentArguments<CandidateActivity> arguments = new AgentArguments<CandidateActivity>()
                 .addContext(this.personReader.getPersons().get(schedule.getPerson()))
                 .addContext(schedule)
                 .addContext(normContext)
                 .addContext(locationHistoryContext)
-                .addContext(new DiseaseRiskContext())
-                .addContext(new BeliefContext(this.environmentInterface, homeLocation,
-                        initialGovernmentAttitude))
+                .addContext(beliefContext)
                 .addContext(new DayPlanContext())
                 .addExternalTriggerPlanScheme(new NormPlanScheme())
                 .addExternalTriggerPlanScheme(new EnvironmentTriggerPlanScheme())
-                .addExternalTriggerPlanScheme(new ExternalTriggerPlanScheme())
                 .addGoalPlanScheme(new GoalPlanScheme());
         try {
             URI uri = new URI(null, String.format("agent-%04d", schedule.getPerson()),
@@ -131,6 +126,7 @@ public class Simulation {
                 agent.adoptGoal(activity);
             }
             this.agentStateMap.addAgent(aid, schedule.getPerson());
+            beliefContext.setAgentID(aid);
             ((DirectObservationNotifierNotifier) this.observationNotifier).addNormContext(aid, schedule.getPerson(), normContext);
             ((DirectObservationNotifierNotifier) this.observationNotifier).addLocationHistoryContext(aid, schedule.getPerson(), locationHistoryContext);
         } catch (URISyntaxException e) {

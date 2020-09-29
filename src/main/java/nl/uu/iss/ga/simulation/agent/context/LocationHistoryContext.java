@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
+import java.util.function.Supplier;
 import java.util.stream.*;
 
 public class LocationHistoryContext implements Context {
@@ -71,8 +72,9 @@ public class LocationHistoryContext implements Context {
     }
 
     public double getLastDaysSeenAverage(int n) {
-        Stream<Double> s = this.locationHistory.values().stream().map(x -> x.getLastDaysSeenAverage(this.lastDayTick, n)).filter(x -> x != 0d);
-        return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0;
+        Supplier<Stream<Double>> s = () -> this.locationHistory.values().stream()
+                .map(x -> x.getLastDaysSeenAverage(this.lastDayTick, n)).filter(x -> x != 0d);
+        return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
     }
 
     public double getLastDaysSeenAtAverage(int n, long locationID) {
@@ -104,8 +106,9 @@ public class LocationHistoryContext implements Context {
     }
 
     public double getLastDaysSeenMaskAverage(int n) {
-        Stream<Double> s = this.locationHistory.keySet().stream().map(x -> this.getLastDaysSeenMaskAverageAt(n, x)).filter(x -> x != 0d);
-        return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0d;
+        Supplier<Stream<Double>> s = () -> this.locationHistory.keySet().stream()
+                .map(x -> this.getLastDaysSeenMaskAverageAt(n, x)).filter(x -> x != 0d);
+        return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0d;
     }
 
     public double getLastDaysSeenMaskAverageAt(int n, long locationID) {
@@ -122,8 +125,9 @@ public class LocationHistoryContext implements Context {
     }
 
     public double getLastDaysFractionMask(int n) {
-        Stream<Double> s = this.locationHistory.keySet().stream().map(x -> this.getLastDaysFractionMaskAt(n, x)).filter(x -> x != 0d);
-        return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0;
+        Supplier<Stream<Double>> s = () -> this.locationHistory.keySet().stream()
+                .map(x -> this.getLastDaysFractionMaskAt(n, x)).filter(x -> x != 0d);
+        return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
     }
 
     public double getLastDaysFractionMaskAt(int n, long locationID) {
@@ -155,8 +159,9 @@ public class LocationHistoryContext implements Context {
     }
 
     public double getLastDaysSeenDistancingAverage(int n) {
-        Stream<Double> s = this.locationHistory.keySet().stream().map(x -> this.getLastDaysSeenDistancingAverageAt(n, x)).filter(x -> x != 0d);
-        return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0d;
+        Supplier<Stream<Double>> s = () -> this.locationHistory.keySet().stream()
+                .map(x -> this.getLastDaysSeenDistancingAverageAt(n, x)).filter(x -> x != 0d);
+        return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0d;
     }
 
     public double getLastDaysSeenDistancingAverageAt(int n, long locationID) {
@@ -173,8 +178,9 @@ public class LocationHistoryContext implements Context {
     }
 
     public double getLastDaysFractionDistancing(int n) {
-        Stream<Double> s = this.locationHistory.keySet().stream().map(x -> this.getLastDaysFractionDistancingAt(n, x)).filter(x -> x != 0d);
-        return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0;
+        Supplier<Stream<Double>> s = () -> this.locationHistory.keySet().stream()
+                .map(x -> this.getLastDaysFractionDistancingAt(n, x)).filter(x -> x != 0d);
+        return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
     }
 
     public double getLastDaysFractionDistancingAt(int n, long locationID) {
@@ -206,8 +212,9 @@ public class LocationHistoryContext implements Context {
     }
 
     public double getLastDaysSeenSymptomaticAverage(int n) {
-        Stream<Double> s = this.locationHistory.keySet().stream().map(x -> this.getLastDaysSeenSymptomaticAverageAt(n, x)).filter(x -> x != 0d);
-        return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0d;
+        Supplier<Stream<Double>> s = () -> this.locationHistory.keySet().stream()
+                .map(x -> this.getLastDaysSeenSymptomaticAverageAt(n, x)).filter(x -> x != 0d);
+        return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0d;
     }
 
     public double getLastDaysSeenSymptomaticAverageAt(int n, long locationID) {
@@ -224,8 +231,9 @@ public class LocationHistoryContext implements Context {
     }
 
     public double getLastDaysFractionSymptomatic(int n) {
-        Stream<Double> s = this.locationHistory.keySet().stream().map(x -> this.getLastDaysFractionSymptomaticAt(n, x)).filter(x -> x != 0d);
-        return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0;
+        Supplier<Stream<Double>> s = () -> this.locationHistory.keySet().stream()
+                .map(x -> this.getLastDaysFractionSymptomaticAt(n, x)).filter(x -> x != 0d);
+        return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
     }
 
     public double getLastDaysFractionSymptomaticAt(int n, long locationID) {
@@ -270,12 +278,12 @@ public class LocationHistoryContext implements Context {
         }
 
         public int getLastDaysSeen(long lastTick, int n) {
-            return getCountForDaysStream(lastTick, n, this::getLastDaySeen).reduce(Integer::sum).orElse(0);
+            return getCountForDaysStream(lastTick, n, this::getLastDaySeen).get().reduce(Integer::sum).orElse(0);
         }
 
         public double getLastDaysSeenAverage(long lastTick, int n) {
-            IntStream s = getCountForDaysStream(lastTick, n, this::getLastDaySeen);
-            return s.count() > 0 ? (double) s.reduce(Integer::sum).orElse(0) / s.count() : 0;
+            Supplier<IntStream> s = getCountForDaysStream(lastTick, n, this::getLastDaySeen);
+            return s.get().count() > 0 ? (double) s.get().reduce(Integer::sum).orElse(0) / s.get().count() : 0;
         }
 
         /*
@@ -289,12 +297,12 @@ public class LocationHistoryContext implements Context {
         }
 
         public int getLastDaysSeenMask(long lastTick, int n) {
-            return getCountForDaysStream(lastTick, n, this::getLastDaySeenMask).reduce(Integer::sum).orElse(0);
+            return getCountForDaysStream(lastTick, n, this::getLastDaySeenMask).get().reduce(Integer::sum).orElse(0);
         }
 
         public double getLastDaysSeenMaskAverage(long lastTick, int n) {
-            IntStream s = getCountForDaysStream(lastTick, n, this::getLastDaySeenMask);
-            return s.count() > 0 ? (double) s.reduce(Integer::sum).orElse(0) / s.count() : 0;
+            Supplier<IntStream> s = getCountForDaysStream(lastTick, n, this::getLastDaySeenMask);
+            return s.get().count() > 0 ? (double) s.get().reduce(Integer::sum).orElse(0) / s.get().count() : 0;
         }
 
         public double getLastDayFractionMask(long tick) {
@@ -306,8 +314,8 @@ public class LocationHistoryContext implements Context {
         }
 
         public double getLastDaysFractionMask(long lastTick, int n) {
-            DoubleStream s = getFractionOfSeenStream(lastTick, n, this::getLastDayFractionMask);
-            return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0;
+            Supplier<DoubleStream> s = getFractionOfSeenStream(lastTick, n, this::getLastDayFractionMask);
+            return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
         }
 
         /*
@@ -321,12 +329,12 @@ public class LocationHistoryContext implements Context {
         }
 
         public int getLastDaysSeenDistancing(long lastTick, int n) {
-            return getCountForDaysStream(lastTick, n, this::getLastDaySeenDistancing).reduce(Integer::sum).orElse(0);
+            return getCountForDaysStream(lastTick, n, this::getLastDaySeenDistancing).get().reduce(Integer::sum).orElse(0);
         }
 
         public double getLastDaysSeenDistancingAverage(long lastTick, int n) {
-            IntStream s = getCountForDaysStream(lastTick, n, this::getLastDaySeenDistancing);
-            return s.count() > 0 ? (double) s.reduce(Integer::sum).orElse(0) / s.count() : 0;
+            Supplier<IntStream> s = getCountForDaysStream(lastTick, n, this::getLastDaySeenDistancing);
+            return s.get().count() > 0 ? (double) s.get().reduce(Integer::sum).orElse(0) / s.get().count() : 0;
         }
 
         public double getLastDayFractionDistancing(long tick) {
@@ -338,8 +346,8 @@ public class LocationHistoryContext implements Context {
         }
 
         public double getLastDaysFractionDistancing(long lastTick, int n) {
-            DoubleStream s = getFractionOfSeenStream(lastTick, n, this::getLastDayFractionDistancing);
-            return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0;
+            Supplier<DoubleStream> s = getFractionOfSeenStream(lastTick, n, this::getLastDayFractionDistancing);
+            return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
         }
 
         /*
@@ -353,12 +361,12 @@ public class LocationHistoryContext implements Context {
         }
 
         public int getLastDaysSeenSymptomatic(long lastTick, int n) {
-            return getCountForDaysStream(lastTick, n, this::getLastDaySeenSymptomatic).reduce(Integer::sum).orElse(0);
+            return getCountForDaysStream(lastTick, n, this::getLastDaySeenSymptomatic).get().reduce(Integer::sum).orElse(0);
         }
 
         public double getLastDaysSeenSymptomaticAverage(long lastTick, int n) {
-            IntStream s = getCountForDaysStream(lastTick, n, this::getLastDaySeenSymptomatic);
-            return s.count() > 0 ? (double) s.reduce(Integer::sum).orElse(0) / s.count() : 0;
+            Supplier<IntStream> s = getCountForDaysStream(lastTick, n, this::getLastDaySeenSymptomatic);
+            return s.get().count() > 0 ? (double) s.get().reduce(Integer::sum).orElse(0) / s.get().count() : 0;
         }
 
         public double getLastDayFractionSymptomatic(long tick) {
@@ -370,8 +378,8 @@ public class LocationHistoryContext implements Context {
         }
 
         public double getLastDaysFractionSymptomatic(long lastTick, int n) {
-            DoubleStream s = getFractionOfSeenStream(lastTick, n, this::getLastDayFractionSymptomatic);
-            return s.count() > 0 ? s.reduce(Double::sum).orElse(0d) / s.count() : 0;
+            Supplier<DoubleStream> s = getFractionOfSeenStream(lastTick, n, this::getLastDayFractionSymptomatic);
+            return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
         }
 
         /*
@@ -380,14 +388,14 @@ public class LocationHistoryContext implements Context {
          * ==================================
          */
 
-        private IntStream getCountForDaysStream(long lastTick, int n, LongToIntFunction f) {
-            return LongStream.rangeClosed(lastTick - n, lastTick)
+        private Supplier<IntStream> getCountForDaysStream(long lastTick, int n, LongToIntFunction f) {
+            return () -> LongStream.rangeClosed(lastTick - n, lastTick)
                     .filter(this.locationHistory::containsKey)
                     .mapToInt(f);
         }
 
-        private DoubleStream getFractionOfSeenStream(long lastTick, int n, LongToDoubleFunction f) {
-            return LongStream.rangeClosed(lastTick - n, lastTick)
+        private Supplier<DoubleStream> getFractionOfSeenStream(long lastTick, int n, LongToDoubleFunction f) {
+            return () -> LongStream.rangeClosed(lastTick - n, lastTick)
                     .filter(this.locationHistory::containsKey)
                     .mapToDouble(f)
                     .filter(x -> x != 0d);

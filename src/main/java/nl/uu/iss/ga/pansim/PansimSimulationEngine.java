@@ -41,24 +41,36 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.observationNotifier = observationNotifier;
         gatewayServer.start();
         this.executor = platform.getTickExecutor();
-        System.out.println("Pansim Behavior Server Started");
+    }
+
+    private void runFirstTick() {
+        try {
+            byte[] first_state_df_raw = StateDataFrame.fromAgentStateMap(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
+            byte[] null_visit_output_raw = new VisitResultDataFrame(this.allocator).toBytes();
+            this.runBehaviorModel(first_state_df_raw, null_visit_output_raw);
+            System.out.println("Pansim Behavior Server Started");
+        } catch (IOException e) {
+            System.err.println("Running first state already failed");
+            e.printStackTrace();
+            System.exit(3);
+        }
     }
 
     public void runBehaviorModel(byte[] cur_state_df_raw, byte[] visit_output_df_raw) throws IOException {
-        StateDataFrame cur_state_df = new StateDataFrame(cur_state_df_raw, allocator);
+        this.agentStateMap.fromDataFrame(new StateDataFrame(cur_state_df_raw, allocator));
         VisitResultDataFrame visit_output_df = new VisitResultDataFrame(visit_output_df_raw, allocator);
-
         process_visit_output(visit_output_df);
 
-        System.out.printf("Received new state dataframe with %d rows\n", cur_state_df.getSchemaRoot().getRowCount());
+        System.out.printf("Received new state dataframe with %d rows\n", this.agentStateMap.getNumberOfStates());
         System.out.printf("Received new visit output dataframe with %d rows\n", visit_output_df.getSchemaRoot().getRowCount());
-
 
         processTickPreHooks(this.executor.getCurrentTick());
         HashMap<AgentID, List<CandidateActivity>> agentActions = this.executor.doTick();
         processTickPostHook(this.executor.getCurrentTick(), this.executor.getLastTickDuration(), agentActions);
+
+        // Prepare results for pansim
         this.next_visit_df_raw = VisitDataFrame.fromAgentActions(agentActions, allocator).toBytes();
-        this.next_state_df_raw = cur_state_df.toBytes();
+        this.next_state_df_raw = StateDataFrame.fromAgentStateMap(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
     }
 
     public byte[] getNextStateDataFrame() {
@@ -89,6 +101,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     @Override
     public boolean start() {
+        runFirstTick();
         return true;
     }
 }

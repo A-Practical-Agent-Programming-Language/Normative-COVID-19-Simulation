@@ -29,8 +29,8 @@ public class CancelActivityPlan extends RunOncePlan<CandidateActivity> {
         DayPlanContext context = planToAgentInterface.getContext(DayPlanContext.class);
         BeliefContext beliefContext = planToAgentInterface.getContext(BeliefContext.class);
 
-        if (!context.testIsDayOfWeek(beliefContext.getEnvironmentInterface().getToday())) {
-            context.resetDaySchedule(beliefContext.getEnvironmentInterface().getToday());
+        if (!context.testIsDayOfWeek(beliefContext.getToday())) {
+            context.resetDaySchedule(beliefContext.getToday());
         }
 
         CandidateActivity lastActivity = context.getLastActivity();
@@ -51,7 +51,7 @@ public class CancelActivityPlan extends RunOncePlan<CandidateActivity> {
                 this.activity.getActivity().getActivityType().equals(ActivityType.WORK) ||
                 this.activity.getActivity().getActivityType().equals(ActivityType.HOME) ||
                 (lastActivity != null && lastActivity.getActivity().getActivityType().equals(ActivityType.HOME)) ||
-                beliefContext.getEnvironmentInterface().getRnd().nextDouble() < GO_HOME_IF_CANCELLED_PROBABILITY
+                beliefContext.getRandom().nextDouble() < GO_HOME_IF_CANCELLED_PROBABILITY
         ) {
             this.activity.makeHome(new AgentContextInterface<>(planToAgentInterface.getAgent()));
 

@@ -21,10 +21,8 @@ public class DirectObservationNotifierNotifier implements ObservationNotifier {
     private Map<AgentID, LocationHistoryContext> agentHistoryContextMap;
     private Map<AgentID, NormContext> agentNormContextMap;
 
-    private Platform platform;
-
     public DirectObservationNotifierNotifier(Platform platform) {
-        this.platform = platform;
+        this.pidAgentMap = new HashMap<>();
         this.agentHistoryContextMap = new HashMap<>();
         this.agentNormContextMap = new HashMap<>();
     }

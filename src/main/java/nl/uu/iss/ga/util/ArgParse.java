@@ -19,7 +19,7 @@ public class ArgParse {
     @Arg(dest = "personsfiles")
     private List<File> personsFiles;
 
-    @Arg(dest = "householdsfile")
+    @Arg(dest = "householdsfiles")
     private List<File> householdsFiles;
 
     @Arg(dest = "activityfiles")
@@ -128,9 +128,11 @@ public class ArgParse {
             this.householdsFiles = findFilesInList(this.householdsFiles);
             this.personsFiles = findFilesInList(this.personsFiles);
             this.locationsfiles = findFilesInList(this.locationsfiles);
-            this.statefiles = findFilesInList(this.statefiles);
+            if(this.statefiles != null) {
+                this.statefiles = findFilesInList(this.statefiles);
+            }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
             getParser().printHelp();
             System.exit(1);
         }

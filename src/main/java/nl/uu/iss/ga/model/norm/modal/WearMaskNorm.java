@@ -1,6 +1,7 @@
 package main.java.nl.uu.iss.ga.model.norm.modal;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.simulation.environment.EnvironmentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
@@ -14,7 +15,12 @@ public class WearMaskNorm extends ModalNorm {
     }
 
     @Override
-    double getNDaysWithMode(EnvironmentInterface.LocationHistory history, int days) {
-        return history.getMaskLastNDays(days);
+    double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, int days) {
+        return locationHistoryContext.getLastDaysFractionMask(days);
+    }
+
+    @Override
+    double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, long locationID, int days) {
+        return locationHistoryContext.getLastDaysFractionMaskAt(days, locationID);
     }
 }

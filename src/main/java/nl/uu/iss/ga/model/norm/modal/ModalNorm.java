@@ -5,11 +5,12 @@ import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.DiseaseRiskContext;
-import main.java.nl.uu.iss.ga.simulation.environment.EnvironmentInterface;
+import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public abstract class ModalNorm extends NonRegimentedNorm {
+
+    protected static final int DAYS_LOOKBACK = 14;
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
@@ -19,13 +20,12 @@ public abstract class ModalNorm extends NonRegimentedNorm {
     @Override
     public double calculateAttitude(AgentContextInterface<CandidateActivity> agentContextInterface, Activity activity) {
         BeliefContext beliefContext = agentContextInterface.getContext(BeliefContext.class);
-        DiseaseRiskContext diseaseRiskContext = agentContextInterface.getContext(DiseaseRiskContext.class);
+        LocationHistoryContext locationHistoryContext = agentContextInterface.getContext(LocationHistoryContext.class);
 
-        EnvironmentInterface.LocationHistory history = beliefContext.getEnvironmentInterface().getLocationHistory(activity.getLocation().getLocationID());
+        // TODO only look at current location?
+        double fractionMode = getFractionWithModeLastDays(locationHistoryContext, DAYS_LOOKBACK);
 
-        double fractionMode = history == null ? 1 : getNDaysWithMode(history, 4) / (double) history.getVisitedLastNDays(4);
-
-        if(diseaseRiskContext.isSymptomatic()) {
+        if(beliefContext.isSymptomatic()) {
                 // TODO skew a bit, but how much?
                 fractionMode += Math.random() * beliefContext.getGovernmentTrustFactor();
         }
@@ -35,7 +35,8 @@ public abstract class ModalNorm extends NonRegimentedNorm {
         return attitude;
     }
 
-    abstract double getNDaysWithMode(EnvironmentInterface.LocationHistory history, int days);
+    abstract double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, int days);
 
+    abstract double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, long locationID, int days);
 
 }

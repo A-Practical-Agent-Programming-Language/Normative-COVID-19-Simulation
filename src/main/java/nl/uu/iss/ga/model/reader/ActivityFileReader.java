@@ -62,6 +62,7 @@ public class ActivityFileReader {
             Map<String, String> keyValue = ParserUtil.zipLine(VA_ACTIVITY_HEADER_INDICES, line);
 
             Activity activity = getActivityFromLine(keyValue);
+
             if(activity.getPid() != currentPersonIndex) {
                 // Reset
                 if(!activities.isEmpty()) {
@@ -77,14 +78,20 @@ public class ActivityFileReader {
             activities.put(activity.getStart_time(), activity);
         }
 
+        if(!activities.isEmpty()) {
+            schedules.add(new ActivitySchedule(
+                    activities.get(activities.lastKey()).getHid(),
+                    currentPersonIndex,
+                    activities
+            ));
+        }
+
         return schedules;
     }
 
     public Map<Integer, ActivityType> failedDetailedActivities = new HashMap<>();
 
     private Activity getActivityFromLine(Map<String, String> keyValue) {
-        // TODO make last activity of day HOME, until end of day
-        // TODO make first activity HOME activity starting from 0 at that day
         Activity activity = Activity.fromLine(keyValue);
         if (activity.getActivityType().equals(ActivityType.TRIP)) {
             activity = TripActivity.fromLine(activity, keyValue);

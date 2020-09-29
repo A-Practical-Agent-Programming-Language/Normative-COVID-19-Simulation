@@ -5,7 +5,6 @@ import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.DiseaseRiskContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public class IfSickStayHome extends NonRegimentedNorm {
@@ -22,7 +21,7 @@ public class IfSickStayHome extends NonRegimentedNorm {
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
-        DiseaseRiskContext context = agentContextInterface.getContext(DiseaseRiskContext.class);
+        BeliefContext context = agentContextInterface.getContext(BeliefContext.class);
         return !activity.getActivityType().equals(ActivityType.HOME) && context.isSymptomatic();
     }
 }
