@@ -16,6 +16,7 @@ import main.java.nl.uu.iss.ga.model.norm.regimented.TakeawayOnly;
 import main.java.nl.uu.iss.ga.model.norm.modal.MaintainDistanceNorm;
 import main.java.nl.uu.iss.ga.model.norm.modal.WearMaskNorm;
 import main.java.nl.uu.iss.ga.simulation.agent.trigger.NewNormTrigger;
+import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
@@ -28,6 +29,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
     private static final int INITIATE_NORMS = 3; // TODO too hardcoded. Should be per norm
     private final AgentStateMap agentStateMap;
+    private final ObservationNotifier observationNotifier;
 
     private Platform platform;
 
@@ -44,10 +46,11 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         return today;
     }
 
-    public EnvironmentInterface(Platform platform, AgentStateMap agentStateMap, Map<Long, LocationEntry> locationEntryMap) {
+    public EnvironmentInterface(Platform platform, ObservationNotifier observationNotifier, AgentStateMap agentStateMap, Map<Long, LocationEntry> locationEntryMap) {
         this.locationEntryMap = locationEntryMap;
         this.platform = platform;
         this.agentStateMap = agentStateMap;
+        this.observationNotifier = observationNotifier;
     }
 
     @Override

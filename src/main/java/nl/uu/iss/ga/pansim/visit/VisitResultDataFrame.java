@@ -1,5 +1,6 @@
 package main.java.nl.uu.iss.ga.pansim.visit;
 
+import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.util.Constants;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.BigIntVector;
@@ -37,10 +38,22 @@ public class VisitResultDataFrame {
         n_contacts = (IntVector) schemaRoot.getVector("n_contacts");
 
         attrs = new HashMap<>();
-        for (String name: Constants.VISIBLE_ATTRIBUTES) {
+        for (String name : Constants.VISIBLE_ATTRIBUTES) {
             IntVector vector = (IntVector) schemaRoot.getVector(name);
             attrs.put(name, vector);
         }
+    }
+
+    public LocationHistoryContext.Visit getAgentVisit(int row) {
+        return new LocationHistoryContext.Visit(
+                this.pid.get(row),
+                this.lid.get(row),
+                this.inf_prob.get(row),
+                this.n_contacts.get(row),
+                this.attrs.get(Constants.VISIBLE_ATTRIBUTES[0]).get(row),
+                this.attrs.get(Constants.VISIBLE_ATTRIBUTES[1]).get(row),
+                this.attrs.get(Constants.VISIBLE_ATTRIBUTES[2]).get(row)
+        );
     }
 
     public VectorSchemaRoot getSchemaRoot() {

@@ -10,10 +10,7 @@ import main.java.nl.uu.iss.ga.model.reader.HouseholdReader;
 import main.java.nl.uu.iss.ga.model.reader.LocationFileReader;
 import main.java.nl.uu.iss.ga.model.reader.PersonReader;
 import main.java.nl.uu.iss.ga.pansim.PansimSimulationEngine;
-import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.DiseaseRiskContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.*;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.ExternalTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
@@ -21,16 +18,15 @@ import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.environment.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.environment.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.util.ArgParse;
+import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
 import main.java.nl.uu.iss.ga.util.Methods;
+import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentArguments;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultBlockingTickExecutor;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultSimulationEngine;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.SimulationEngine;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
+import nl.uu.cs.iss.ga.sim2apl.core.tick.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -55,7 +51,9 @@ public class Simulation {
     private TickExecutor<CandidateActivity> tickExecutor;
     private EnvironmentInterface environmentInterface;
     private SimulationEngine<CandidateActivity> simulationEngine;
+
     private final AgentStateMap agentStateMap;
+    private ObservationNotifier observationNotifier;
 
     public Simulation(ArgParse arguments) {
         this.arguments = arguments;
@@ -81,8 +79,10 @@ public class Simulation {
         this.tickExecutor = new DefaultBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getRandom());
         this.platform = Platform.newPlatform(tickExecutor, messenger);
 
-        this.environmentInterface = new EnvironmentInterface(platform, this.agentStateMap, this.locationFileReader.getLocationsByIDMap());
+        this.environmentInterface = new EnvironmentInterface(platform, this.observationNotifier, this.agentStateMap, this.locationFileReader.getLocationsByIDMap());
         this.simulationEngine = arguments.isConnectpansim() ? getPansimSimulationEngine() : getLocalSimulationEngine();
+
+        this.observationNotifier = new DirectObservationNotifierNotifier(this.platform);
     }
 
     private SimulationEngine<CandidateActivity> getLocalSimulationEngine() {
@@ -90,7 +90,7 @@ public class Simulation {
     }
 
     private SimulationEngine<CandidateActivity> getPansimSimulationEngine() {
-        return new PansimSimulationEngine(this.platform, this.agentStateMap, this.environmentInterface);
+        return new PansimSimulationEngine(this.platform, this.observationNotifier, this.agentStateMap, new TickHookProcessor[]{this.environmentInterface});
     }
 
     private void createAgents() {
@@ -105,11 +105,15 @@ public class Simulation {
         double initialGovernmentAttitude = Methods.nextSkewedBoundedDouble(
                 arguments.getRandom(), isLiberal ? arguments.getModeliberal() : arguments.getModeconservative());
 
+        NormContext normContext = new NormContext();
+        LocationHistoryContext locationHistoryContext = new LocationHistoryContext();
+
         LocationEntry homeLocation = findHomeLocation(schedule);
         AgentArguments<CandidateActivity> arguments = new AgentArguments<CandidateActivity>()
                 .addContext(this.personReader.getPersons().get(schedule.getPerson()))
                 .addContext(schedule)
-                .addContext(new NormContext())
+                .addContext(normContext)
+                .addContext(locationHistoryContext)
                 .addContext(new DiseaseRiskContext())
                 .addContext(new BeliefContext(this.environmentInterface, homeLocation,
                         initialGovernmentAttitude))
@@ -127,6 +131,8 @@ public class Simulation {
                 agent.adoptGoal(activity);
             }
             this.agentStateMap.addAgent(aid, schedule.getPerson());
+            ((DirectObservationNotifierNotifier) this.observationNotifier).addNormContext(aid, schedule.getPerson(), normContext);
+            ((DirectObservationNotifierNotifier) this.observationNotifier).addLocationHistoryContext(aid, schedule.getPerson(), locationHistoryContext);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
