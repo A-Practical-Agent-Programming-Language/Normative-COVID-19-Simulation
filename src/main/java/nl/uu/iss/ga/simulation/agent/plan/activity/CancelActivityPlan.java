@@ -11,6 +11,9 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
+
+import java.util.logging.Level;
 
 public class CancelActivityPlan extends RunOncePlan<CandidateActivity> {
 
@@ -83,7 +86,13 @@ public class CancelActivityPlan extends RunOncePlan<CandidateActivity> {
                 ActivityTime ends = new ActivityTime(activity.getActivity().getStart_time().getSeconds() + activity.getActivity().getDuration());
                 if(!(ends.getDayOfWeek() == null && scheduledTime.getDayOfWeek().equals(DayOfWeek.SUNDAY)) &&
                         (ends.getDayOfWeek() != null && !ends.getDayOfWeek().equals(scheduledTime.getDayOfWeek()))) {
-                    System.err.println("Cancelled: Day changed when cancelling?");
+                    Platform.getLogger().log(getClass(), Level.WARNING, String.format(
+                            "When modifying activity %d of person %d to cancel the activity, the day was changed from %s to %s",
+                            activity.getActivity().getActivityNumber(),
+                            activity.getActivity().getPid(),
+                            scheduledTime.getDayOfWeek(),
+                            ends.getDayOfWeek()
+                    ));
                 }
             }
 

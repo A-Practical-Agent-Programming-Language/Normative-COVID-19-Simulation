@@ -10,6 +10,9 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.PlanExecutionError;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
+
+import java.util.logging.Level;
 
 public class ExecuteScheduledActivityPlan extends RunOncePlan<CandidateActivity> {
 
@@ -40,7 +43,10 @@ public class ExecuteScheduledActivityPlan extends RunOncePlan<CandidateActivity>
 
             ActivityTime makeStart = new ActivityTime(newStartTime);
             if(!makeStart.getDayOfWeek().equals(activity.getActivity().getStart_time().getDayOfWeek())) {
-                System.out.printf("Activity was changed from %s to %s%n", activity.getActivity().getStart_time().getDayOfWeek(), makeStart.getDayOfWeek());
+                Platform.getLogger().log(getClass(), Level.INFO, String.format(
+                    "Activity was changed from %s to %s",
+                        activity.getActivity().getStart_time().getDayOfWeek(),
+                        makeStart.getDayOfWeek()));
             }
             activity.getActivity().setStart_time(makeStart);
             Activity nextPlannedActivity = schedule.getScheduledActivityAfter(activity.getActivity().getStart_time().getSeconds());
@@ -67,7 +73,9 @@ public class ExecuteScheduledActivityPlan extends RunOncePlan<CandidateActivity>
                 !activity.getActivity().getStart_time().getDayOfWeek().equals(beliefContext.getToday()) ||
                         !new ActivityTime(activity.getActivity().getStart_time().getSeconds() + activity.getActivity().getDuration() -1 ).getDayOfWeek().equals(beliefContext.getToday())
         ) {
-            System.err.println("Scheduled: Day changed when shifting time?");
+            Platform.getLogger().log(getClass(), Level.WARNING, String.format(
+                    "Day changed when shifting activity %d for person %d",
+                    activity.getActivity().getActivityNumber(), activity.getActivity().getPid()));
         }
 
 

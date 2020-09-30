@@ -10,6 +10,7 @@ public enum ActivityType implements CodeTypeInterface {
     SHOP(3),
     OTHER(4),
     SCHOOL(5),
+    UNKNOWN_OTHER(6),
     UNKNOWN(7); // TODO This occurs in the data?
 
     private final int code;

@@ -3,8 +3,10 @@ package main.java.nl.uu.iss.ga.util;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class GyrationRadius {
@@ -26,8 +28,9 @@ public class GyrationRadius {
             }
         }
         if(radia.size() < hashMap.size())
-            System.err.printf("only %d agents of %d (%f%%) produced actions%n",
-                    radia.size(), hashMap.size(), radia.size() / (double) hashMap.size());
+            Platform.getLogger().log(getClass(), Level.WARNING, String.format(
+                    "only %d agents of %d (%f%%) produced actions",
+                    radia.size(), hashMap.size(), radia.size() / (double) hashMap.size()));
         return radia;
     }
 

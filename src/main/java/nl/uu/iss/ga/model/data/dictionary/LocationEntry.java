@@ -8,9 +8,6 @@ import java.util.Map;
 
 public class LocationEntry {
 
-    private static final String LOCATION_HEADERS = "hid,pid,activity_number,activity_type,start_time,duration,lid,longitude,latitude,travel_mode";
-    private static final String[] LOCATION_HEADER_INDICES = LOCATION_HEADERS.split(ParserUtil.SPLIT_CHAR);
-
     // Required for matching
     private final Long pid;
     private final int activity_number;
@@ -80,8 +77,7 @@ public class LocationEntry {
         return latitude;
     }
 
-    public static LocationEntry fromLine(String line) {
-        Map<String, String> keyValue = ParserUtil.zipLine(LOCATION_HEADER_INDICES, line);
+    public static LocationEntry fromLine(Map<String, String> keyValue) {
         return new LocationEntry(
                 ParserUtil.parseAsLong(keyValue.get("hid")),
                 ParserUtil.parseAsLong(keyValue.get("pid")),

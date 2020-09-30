@@ -25,6 +25,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 
 public class EnvironmentInterface implements TickHookProcessor<CandidateActivity> {
 
@@ -91,15 +92,21 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
     @Override
     public void tickPostHook(long tick, int lastTickDuration, HashMap<AgentID, List<CandidateActivity>> hashMap) {
-        System.out.printf("Tick %d took %d milliseconds for %d agents (roughly %fms per agent)%n", tick, lastTickDuration, hashMap.size(), (double)lastTickDuration / hashMap.size());
+        Platform.getLogger().log(getClass(), Level.FINE, String.format(
+                        "Tick %d took %d milliseconds for %d agents (roughly %fms per agent)",
+                        tick,  lastTickDuration,  hashMap.size(), (double)lastTickDuration / hashMap.size()));
+
         long startCalculate = System.currentTimeMillis();
         double radius = this.gyrationRadius.calculateAverageTickRadius(tick, hashMap);
-        System.out.printf("%s\t%d\t%f%n", this.today, tick, radius);
-        System.out.printf("Calculated radius of gyration in %d milliseconds%n", System.currentTimeMillis() - startCalculate);
+        Platform.getLogger().log(getClass(), Level.INFO, String.format("%s\t%d\t%f", this.today, tick, radius));
+        Platform.getLogger().log(getClass(), Level.FINE, String.format(
+                "Calculated radius of gyration in %d milliseconds", System.currentTimeMillis() - startCalculate
+        ));
         if(this.trackVisits) {
             startCalculate = System.currentTimeMillis();
             storeLocationData(hashMap);
-            System.out.printf("Stored locations in %d milliseconds%n", System.currentTimeMillis() - startCalculate);
+            Platform.getLogger().log(getClass(), Level.FINE, String.format(
+                    "Stored locations in %d milliseconds", System.currentTimeMillis() - startCalculate));
         }
     }
 

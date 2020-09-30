@@ -39,7 +39,9 @@ public enum DetailedActivity implements CodeTypeInterface {
     /** with non-existent activity_type 7 **/
     RELIGIOUS_OR_OTHER_COMMUNITY_ACTIVITIES(19),
 
-    NOT_IN_DICTIONARY(-999);
+    NOT_IN_DICTIONARY(-999),
+
+    NOT_SPECIFIED(-1000);
 
     private final int code;
 

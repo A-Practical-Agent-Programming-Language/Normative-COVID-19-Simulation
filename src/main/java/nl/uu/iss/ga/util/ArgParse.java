@@ -6,11 +6,14 @@ import net.sourceforge.argparse4j.impl.action.StoreTrueArgumentAction;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -28,6 +31,9 @@ public class ArgParse {
     @Arg(dest = "locationsfiles")
     private List<File> locationsfiles;
 
+    @Arg(dest = "normsfile")
+    private File normsfile;
+
     @Arg(dest = "statefiles")
     private List<File> statefiles;
 
@@ -39,6 +45,9 @@ public class ArgParse {
 
     @Arg(dest = "iterations")
     private int iterations;
+
+    @Arg(dest = "startdate")
+    private LocalDate startdate;
 
     @Arg(dest = "factionliberal")
     private double fractionliberal;
@@ -85,6 +94,10 @@ public class ArgParse {
         return statefiles;
     }
 
+    public File getNormsfile() {
+        return normsfile;
+    }
+
     public double getFractionliberal() {
         return fractionliberal;
     }
@@ -122,6 +135,10 @@ public class ArgParse {
         return iterations;
     }
 
+    public LocalDate getStartdate() {
+        return startdate;
+    }
+
     private void verifyFiles() {
         try {
             this.activityFiles = findFilesInList(this.activityFiles);
@@ -132,13 +149,15 @@ public class ArgParse {
                 this.statefiles = findFilesInList(this.statefiles);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Platform.getLogger().log(getClass(), e);
             getParser().printHelp();
             System.exit(1);
         }
     }
 
     private List<File> findFilesInList(List<File> files) throws FileNotFoundException {
+        if(files == null) return Collections.emptyList();
+
         List<File> verifiedFiles = new ArrayList<>();
         for(File f : files) {
             verifiedFiles.add(findFile(f));
@@ -196,10 +215,19 @@ public class ArgParse {
 
         schedulefiles.addArgument("--locationsfile", "-lf")
                 .type(File.class)
-                .required(true)
+                .required(false)
                 .dest("locationsfiles")
                 .nargs("+")
-                .help("Specify the location of the file containing all the activity locations of all the agents in the artificial population");
+                .help("Specify the location of the file containing all the activity locations of all the agents in the " +
+                        "artificial population. This file may only be absent if the activity files provide the location " +
+                        "data");
+
+        schedulefiles.addArgument("--normsfile", "-nf")
+                .type(File.class)
+                .required(false) // TODO update once I have a norms file
+                .dest("normsfile")
+                .help("Specify the location of the file containing the schema for when norms are activated, updated " +
+                        "or deactivated");
 
         schedulefiles.addArgument("--statefile", "-sf")
                 .type(File.class)
@@ -246,7 +274,18 @@ public class ArgParse {
                 .required(false)
                 .dest("iterations")
                 .setDefault(Integer.MAX_VALUE)
-                .help("Specify the number of iterations to run this simulation");
+                .help("Specify the number of iterations to run this simulation. This parameter is ignored when" +
+                        "pansim is connected by using the \"-c\" flag.");
+
+        optimization.addArgument("--start-date")
+                .type(LocalDate.class)
+                .required(false)
+                .dest("startdate")
+                .help("Specify the date corresponding to the first time step. This option is used to potentially " +
+                                "align the model with real-world data, both in the produced output, as in for the " +
+                                "activation of norms.\n" +
+                                "If this option is omitted, the first time step will be assigned the date when the first " +
+                                "norm is activated");
 
         optimization.addArgument("--seed", "-s")
                 .type(Long.TYPE)

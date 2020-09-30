@@ -7,8 +7,10 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.util.Map;
+import java.util.logging.Level;
 
 public class Activity extends Goal implements Cloneable {
 
@@ -20,13 +22,9 @@ public class Activity extends Goal implements Cloneable {
     private ActivityTime start_time;
     private int duration;
 
-    private final int month;
-    private final int day;
-    private final int survey_id;
-
     private LocationEntry location;
 
-    public Activity(long pid, long hid, int activityNumber, ActivityType activityType, DetailedActivity detailed_activity, ActivityTime start_time, int duration, int month, int day, int survey_id) {
+    public Activity(long pid, long hid, int activityNumber, ActivityType activityType, DetailedActivity detailed_activity, ActivityTime start_time, int duration) {
         this.pid = pid;
         this.hid = hid;
         this.activityNumber = activityNumber;
@@ -34,9 +32,6 @@ public class Activity extends Goal implements Cloneable {
         this.detailed_activity = detailed_activity;
         this.start_time = start_time;
         this.duration = duration;
-        this.month = month;
-        this.day = day;
-        this.survey_id = survey_id;
     }
 
     public long getPid() {
@@ -83,18 +78,6 @@ public class Activity extends Goal implements Cloneable {
         this.duration = duration;
     }
 
-    public int getMonth() {
-        return month;
-    }
-
-    public int getDay() {
-        return day;
-    }
-
-    public int getSurvey_id() {
-        return survey_id;
-    }
-
     public LocationEntry getLocation() {
         return location;
     }
@@ -104,17 +87,18 @@ public class Activity extends Goal implements Cloneable {
     }
 
     public static Activity fromLine(Map<String, String> keyValue) {
+        DetailedActivity detailedActivity = keyValue.containsKey("detailed_activity") ?
+                CodeTypeInterface.parseAsEnum(DetailedActivity.class, keyValue.get("detailed_activity")) :
+                DetailedActivity.NOT_SPECIFIED;
+
         return new Activity(
                 ParserUtil.parseAsLong(keyValue.get("pid")),
                 ParserUtil.parseAsLong(keyValue.get("hid")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 CodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
-                CodeTypeInterface.parseAsEnum(DetailedActivity.class, keyValue.get("detailed_activity")),
+                detailedActivity,
                 new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time"))),
-                ParserUtil.parseAsInt(keyValue.get("duration")),
-                ParserUtil.parseAsInt(keyValue.get("month")),
-                ParserUtil.parseAsInt(keyValue.get("day")),
-                ParserUtil.parseAsInt(keyValue.get("survey_id"))
+                ParserUtil.parseAsInt(keyValue.get("duration"))
         );
     }
 
@@ -128,7 +112,8 @@ public class Activity extends Goal implements Cloneable {
     public String toString() {
         // start_time, duration, location, mask_state, disease_state
         if(this.location == null) {
-            System.out.println("Got null location for some reason");
+            Platform.getLogger().log(getClass(), Level.WARNING,
+                    String.format("Got null location for activity %d of person %d", this.getActivityNumber(), this.getPid()));
         }
         return String.format(
                 "%s (%s) %s - %s",
@@ -148,10 +133,7 @@ public class Activity extends Goal implements Cloneable {
                 this.activityType,
                 this.detailed_activity,
                 this.start_time.clone(),
-                this.duration,
-                this.month,
-                this.day,
-                this.survey_id
+                this.duration
         );
         activity.setLocation(this.location);
         return activity;

@@ -2,6 +2,8 @@ package main.java.nl.uu.iss.ga.model.reader;
 
 import main.java.nl.uu.iss.ga.model.data.Household;
 import main.java.nl.uu.iss.ga.model.data.Person;
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,18 +40,18 @@ public class PersonReader {
         ) {
             return iteratePersons(s);
         } catch (IOException e) {
-            e.printStackTrace();
+            Platform.getLogger().log(getClass(), e);
         }
         return new TreeMap<>();
     }
 
     private Map<Long, Person> iteratePersons(Scanner s) {
-        Map<Long, Person> householdMap = new TreeMap<>();
-        s.nextLine(); // Skip header
+        Map<Long, Person> personMap = new TreeMap<>();
+        String[] header = s.nextLine().split(ParserUtil.SPLIT_CHAR);
         while(s.hasNextLine()) {
-            Person p = Person.fromLine(this.householdMap, s.nextLine());
-            householdMap.put(p.getPid(), p);
+            Person p = Person.fromLine(this.householdMap, ParserUtil.zipLine(header, s.nextLine()));
+            personMap.put(p.getPid(), p);
         }
-        return householdMap;
+        return personMap;
     }
 }

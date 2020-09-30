@@ -4,12 +4,14 @@ import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.pansim.state.StateDataFrame;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 public class AgentStateMap {
 
@@ -54,7 +56,9 @@ public class AgentStateMap {
 
     public void addAgent(AgentID aid, long pid) {
         if(this.pidToAgentMap.containsKey(pid)) {
-            System.err.printf("WARNING: Adding agent to PID %d, but agent already exists%n", pid);
+            Platform.getLogger().log(getClass(), Level.WARNING, String.format(
+                "WARNING: Adding agent to PID %d, but agent already exists", pid
+            ));
         }
         this.pidToAgentMap.put(pid, aid);
         this.agentStateMap.put(aid, this.pidStateMap.get(pid));
@@ -75,7 +79,7 @@ public class AgentStateMap {
         ) {
             iterateStates(s, rnd);
         } catch (IOException e) {
-            e.printStackTrace();
+            Platform.getLogger().log(getClass(), e);
         }
     }
 

@@ -18,6 +18,7 @@ import py4j.GatewayServer;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 
 public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateActivity> {
 
@@ -48,10 +49,10 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
             byte[] first_state_df_raw = StateDataFrame.fromAgentStateMap(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
             byte[] null_visit_output_raw = new VisitResultDataFrame(this.allocator).toBytes();
             this.runBehaviorModel(first_state_df_raw, null_visit_output_raw);
-            System.out.println("Pansim Behavior Server Started");
+            Platform.getLogger().log(getClass(), Level.INFO, "Pansim Behavior Server Started");
         } catch (IOException e) {
-            System.err.println("Running first state already failed");
-            e.printStackTrace();
+            Platform.getLogger().log(getClass(), Level.SEVERE, "Failed to run first iteration of the behavior model");
+            Platform.getLogger().log(getClass(), e);
             System.exit(3);
         }
     }
@@ -61,8 +62,10 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         VisitResultDataFrame visit_output_df = new VisitResultDataFrame(visit_output_df_raw, allocator);
         process_visit_output(visit_output_df);
 
-        System.out.printf("Received new state dataframe with %d rows\n", this.agentStateMap.getNumberOfStates());
-        System.out.printf("Received new visit output dataframe with %d rows\n", visit_output_df.getSchemaRoot().getRowCount());
+        Platform.getLogger().log(getClass(), Level.FINE, String.format(
+                "Received new state dataframe with %d rows", this.agentStateMap.getNumberOfStates()));
+        Platform.getLogger().log(getClass(), Level.FINE, String.format(
+                "Received new visit output dataframe with %d rows", visit_output_df.getSchemaRoot().getRowCount()));
 
         processTickPreHooks(this.executor.getCurrentTick());
         HashMap<AgentID, List<CandidateActivity>> agentActions = this.executor.doTick();
@@ -74,19 +77,21 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     }
 
     public byte[] getNextStateDataFrame() {
-        System.out.printf("Returning state dataframe for tick %d%n", this.executor.getCurrentTick());
+        Platform.getLogger().log(getClass(), Level.FINE, String.format(
+                "Returning state dataframe for tick %d", this.executor.getCurrentTick()));
         return next_state_df_raw;
     }
 
     public byte[] getNextVisitDataFrame() {
-        System.out.printf("Returning next visit dataframe for tick %d%n", this.executor.getCurrentTick());
+        Platform.getLogger().log(getClass(), Level.FINE, String.format(
+                "Returning next visit dataframe for tick %d", this.executor.getCurrentTick()));
         return next_visit_df_raw;
     }
 
     public void shutdown() {
         if (this.gatewayServer != null) {
             this.gatewayServer.shutdown();
-            System.out.println("Pansim Behavior Server Shutdown");
+            Platform.getLogger().log(getClass(), Level.INFO, "Pansim Behavior Server Shutdown");
         }
         processSimulationFinishedHook(this.executor.getCurrentTick(), this.executor.getLastTickDuration());
         System.exit(0);

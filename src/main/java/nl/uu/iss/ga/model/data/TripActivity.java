@@ -21,14 +21,11 @@ public class TripActivity extends Activity {
             DetailedActivity detailed_activity,
             ActivityTime start_time,
             int duration,
-            int month,
-            int day,
-            int survey_id,
             TransportMode mode,
             boolean personWasDriver,
             boolean personWasPassenger
     ) {
-        super(pid, hid, activityNumber, activityType, detailed_activity, start_time, duration, month, day, survey_id);
+        super(pid, hid, activityNumber, activityType, detailed_activity, start_time, duration);
         this.mode = mode;
         this.personWasDriver = personWasDriver;
         this.personWasPassenger = personWasPassenger;
@@ -42,10 +39,7 @@ public class TripActivity extends Activity {
                 baseActivity.getActivityType(),
                 baseActivity.getDetailed_activity(),
                 baseActivity.getStart_time(),
-                baseActivity.getDuration(),
-                baseActivity.getMonth(),
-                baseActivity.getDay(),
-                baseActivity.getSurvey_id()
+                baseActivity.getDuration()
         );
         this.mode = mode;
         this.personWasDriver = personWasDriver;

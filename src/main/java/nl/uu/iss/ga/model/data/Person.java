@@ -24,6 +24,9 @@ public class Person implements Context {
     private GradeLevel grade_level;
     private EmploymentStatus employment_status;
     private String occupation_socp; // TODO translate and get class instead of occupation itself
+//    private Race race; // TODO ignored
+//    private boolean hispanic; // TODO ignored
+    private Designation designation;
 
     public Person(
             Household household,
@@ -35,7 +38,8 @@ public class Person implements Context {
             SchoolEnrollment school_enrollment,
             GradeLevel grade_level,
             EmploymentStatus employment_status,
-            String occupation_socp
+            String occupation_socp,
+            Designation designation
     ) {
         this.household = household;
         this.pid = pid;
@@ -47,6 +51,7 @@ public class Person implements Context {
         this.grade_level = grade_level;
         this.employment_status = employment_status;
         this.occupation_socp = occupation_socp;
+        this.designation = designation;
     }
 
     public Household getHousehold() {
@@ -93,8 +98,7 @@ public class Person implements Context {
         return occupation_socp;
     }
 
-    public static Person fromLine(Map<Long, Household> households, String line) {
-        Map<String, String> keyValue = ParserUtil.zipLine(VA_PERSON_HEADER_INDICES, line);
+    public static Person fromLine(Map<Long, Household> households, Map<String, String> keyValue) {
         return new Person(
                 households.get(ParserUtil.parseAsLong(keyValue.get("hid"))),
                 ParserUtil.parseAsLong(keyValue.get("pid")),
@@ -105,7 +109,8 @@ public class Person implements Context {
                 StringCodeTypeInterface.parseAsEnum(SchoolEnrollment.class, keyValue.get("school_enrollment")),
                 StringCodeTypeInterface.parseAsEnum(GradeLevel.class, keyValue.get("grade_level_attending")),
                 StringCodeTypeInterface.parseAsEnum(EmploymentStatus.class, keyValue.get("employment_status")),
-                keyValue.get("occupation_socp")
+                keyValue.get("occupation_socp"),
+                keyValue.containsKey("designation") ? Designation.valueOf(keyValue.get("designation")) : Designation.none
         );
     }
 

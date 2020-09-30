@@ -1,30 +1,30 @@
 package main.java.nl.uu.iss.ga.model.reader;
 
-import main.java.nl.uu.iss.ga.model.data.*;
+import main.java.nl.uu.iss.ga.model.data.Activity;
+import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
+import main.java.nl.uu.iss.ga.model.data.ActivityTime;
+import main.java.nl.uu.iss.ga.model.data.TripActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 
 public class ActivityFileReader {
 
-    public static final String VA_ACTIVITY_HEADERS =
-            "hid,pid,activity_number,activity_type,detailed_activity,start_time,duration,mode,driver_flag,passenger_flag,month,day,survey_id";
-    public static final String[] VA_ACTIVITY_HEADER_INDICES = VA_ACTIVITY_HEADERS.split(ParserUtil.SPLIT_CHAR);
-
     private final List<File> activityScheduleFiles;
-    private final Map<Long, Person> personMap;
     private final List<ActivitySchedule> activitySchedules;
     private final Map<Long, Map<Integer, LocationEntry>> locationMap;
 
-    public ActivityFileReader(List<File> activityScheduleFiles, Map<Long, Person> personMap, Map<Long, Map<Integer, LocationEntry>> locationMap) {
+    // TODO can be in the same file?
+    public ActivityFileReader(List<File> activityScheduleFiles, Map<Long, Map<Integer, LocationEntry>> locationMap) {
         this.activityScheduleFiles = activityScheduleFiles;
-        this.personMap = personMap;
         this.locationMap = locationMap;
 
         this.activitySchedules = new ArrayList<>();
@@ -44,14 +44,14 @@ public class ActivityFileReader {
         ) {
             return iterateActivities(s);
         } catch (IOException e) {
-            e.printStackTrace();
+            Platform.getLogger().log(getClass(), Level.SEVERE, e);
         }
         return Collections.emptyList();
     }
 
     private List<ActivitySchedule> iterateActivities(Scanner s) {
-        Map<Integer, Person> householdMap = new TreeMap<>();
-        s.nextLine(); // Skip headers
+        String headers = s.nextLine();
+        String[] headerIndices = headers.split(ParserUtil.SPLIT_CHAR);
 
         List<ActivitySchedule> schedules = new LinkedList<>();
         SortedMap<ActivityTime, Activity> activities = new TreeMap<>();
@@ -59,7 +59,7 @@ public class ActivityFileReader {
         long currentPersonIndex = -1;
         while(s.hasNextLine()) {
             String line = s.nextLine();
-            Map<String, String> keyValue = ParserUtil.zipLine(VA_ACTIVITY_HEADER_INDICES, line);
+            Map<String, String> keyValue = ParserUtil.zipLine(headerIndices, line);
 
             Activity activity = getActivityFromLine(keyValue);
 
@@ -96,7 +96,11 @@ public class ActivityFileReader {
         if (activity.getActivityType().equals(ActivityType.TRIP)) {
             activity = TripActivity.fromLine(activity, keyValue);
         } else {
-            activity.setLocation(this.locationMap.get(activity.getPid()).get(activity.getActivityNumber()));
+            if(this.locationMap.isEmpty()) {
+                activity.setLocation(LocationEntry.fromLine(keyValue));
+            } else {
+                activity.setLocation(this.locationMap.get(activity.getPid()).get(activity.getActivityNumber()));
+            }
         }
         if(activity.getDetailed_activity() == null && activity.getActivityType().equals(ActivityType.TRIP)) {
             activity.setDetailed_activity(DetailedActivity.TRIP);

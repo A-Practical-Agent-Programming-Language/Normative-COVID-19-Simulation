@@ -15,6 +15,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Trigger;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.Plan;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.PlanScheme;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
                     try {
                         return new HandleTripPlan((TripActivity) activity);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Platform.getLogger().log(getClass(), e);
                         return null;
                     }
                 } else if(activity.getActivityType().equals(ActivityType.HOME)) {

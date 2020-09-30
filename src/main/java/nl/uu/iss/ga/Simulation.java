@@ -29,6 +29,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.tick.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
 
 public class Simulation {
 
@@ -60,8 +61,7 @@ public class Simulation {
         this.householdReader = new HouseholdReader(arguments.getHouseholdsFiles(), 1 - arguments.getFractionliberal());
         this.personReader = new PersonReader(arguments.getPersonsFiles(), householdReader.getHouseholds());
         this.locationFileReader = new LocationFileReader(arguments.getLocationsfiles());
-        this.activityFileReader = new ActivityFileReader(arguments.getActivityFiles(),
-                this.personReader.getPersons(), this.locationFileReader.getLocations());
+        this.activityFileReader = new ActivityFileReader(arguments.getActivityFiles(), this.locationFileReader.getLocations());
 
         this.agentStateMap = arguments.getStatefiles() == null || arguments.getStatefiles().isEmpty() ?
                 new AgentStateMap(this.personReader.getPersons(), arguments.getRandom()) :
@@ -101,7 +101,8 @@ public class Simulation {
         boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
         double initialGovernmentAttitude = Methods.nextSkewedBoundedDouble(
                 arguments.getRandom(), isLiberal ? arguments.getModeliberal() : arguments.getModeconservative());
-        LocationEntry homeLocation = findHomeLocation(schedule);
+
+        LocationEntry homeLocation = this.findHomeLocation(schedule);
 
         NormContext normContext = new NormContext();
         LocationHistoryContext locationHistoryContext = new LocationHistoryContext();
@@ -130,17 +131,21 @@ public class Simulation {
             ((DirectObservationNotifierNotifier) this.observationNotifier).addNormContext(aid, schedule.getPerson(), normContext);
             ((DirectObservationNotifierNotifier) this.observationNotifier).addLocationHistoryContext(aid, schedule.getPerson(), locationHistoryContext);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Platform.getLogger().log(getClass(), Level.SEVERE, e);
         }
     }
 
     private LocationEntry findHomeLocation(ActivitySchedule schedule) {
+        long lid = this.personReader.getPersons().get(schedule.getPerson()).getHousehold().getLocationID();
+
         for(Activity activity : schedule.getSchedule().values()) {
-            if(activity.getActivityType().equals(ActivityType.HOME)) {
+            if(activity.getActivityType().equals(ActivityType.HOME) && activity.getLocation().getLocationID() == lid) {
                 return activity.getLocation();
             }
         }
-        System.err.println("No home found! Checked " + schedule.getSchedule().size() + " values");
+        Platform.getLogger().log(getClass(), Level.SEVERE,
+                String.format("No home location entry found for lid %d for person %d. Checked %d values",
+                lid, schedule.getPerson(), schedule.getSchedule().size()));
         return null;
     }
 
@@ -152,12 +157,14 @@ public class Simulation {
      */
     private void printUnknownDetailedActivityNumbers() {
         if(this.activityFileReader.failedDetailedActivities.size() > 0) {
-            System.out.println("Found the following detailed activity numbers that are not in the dictionary");
+            Platform.getLogger().log(getClass(), Level.WARNING,
+                    "Found the following detailed activity numbers that are not in the dictionary");
             for(int missedNumbers : this.activityFileReader.failedDetailedActivities.keySet()) {
-                System.out.printf(
-                        "\t%d \t%s\n",
+                Platform.getLogger().log(getClass(), Level.WARNING,
+                String.format(
+                        "\t%d \t%s",
                         missedNumbers,
-                        this.activityFileReader.failedDetailedActivities.get(missedNumbers).toString());
+                        this.activityFileReader.failedDetailedActivities.get(missedNumbers).toString()));
             }
         }
     }

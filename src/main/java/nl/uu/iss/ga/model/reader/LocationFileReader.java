@@ -1,11 +1,14 @@
 package main.java.nl.uu.iss.ga.model.reader;
 
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 
 public class LocationFileReader {
 
@@ -19,7 +22,7 @@ public class LocationFileReader {
         this.locations = new HashMap<>();
         this.locationsByIDMap = new HashMap<>();
 
-        for(File f : this.locationFiles) {
+        for (File f : this.locationFiles) {
             readLocations(f);
         }
     }
@@ -39,14 +42,15 @@ public class LocationFileReader {
         ) {
             iterateLocations(s);
         } catch (IOException e) {
-            e.printStackTrace();
+            Platform.getLogger().log(getClass(), Level.SEVERE, e);
         }
     }
 
     private void iterateLocations(Scanner s) {
-        s.nextLine(); // Skip header
+        String header = s.nextLine();
+        String[] headerIndices = header.split(ParserUtil.SPLIT_CHAR);
         while(s.hasNextLine()) {
-            LocationEntry e = LocationEntry.fromLine(s.nextLine());
+            LocationEntry e = LocationEntry.fromLine(ParserUtil.zipLine(headerIndices, s.nextLine()));
             if(!this.locations.containsKey(e.getPid())) {
                 this.locations.put(e.getPid(), new TreeMap<>());
             }

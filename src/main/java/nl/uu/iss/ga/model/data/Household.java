@@ -8,10 +8,6 @@ import java.util.Map;
 
 public class Household {
 
-    private static final String VA_HOUSEHOLD_HEADERS =
-            "admin1,admin2,admin3,admin4,hid,serialno,puma,record_type,hh_unit_wt,hh_size,vehicles,hh_income,units_in_structure,business,heating_fuel,household_language,family_type_and_employment_status,workers_in_family,rlid,residence_longitude,residence_latitude";
-    private static final String[] VA_HOUSEHOLD_HEADER_INDICES = VA_HOUSEHOLD_HEADERS.split(ParserUtil.SPLIT_CHAR);
-
     //    private final int admin1; // TODO translate
 //    private final int admin2; // TODO translate
 //    private final int admin3; // TODO translate
@@ -162,6 +158,10 @@ public class Household {
      */
     private final int workers_in_family;
 
+    private final long locationID;
+    private final double longitude;
+    private final double latitude;
+
     public Household(
             Long hid,
             int serialno,
@@ -174,7 +174,11 @@ public class Household {
             Fuel heating_fuel,
             Language household_language,
             FamilyEmployment family_type_and_employment_status,
-            int workers_in_family) {
+            int workers_in_family,
+            long location,
+            double longitude,
+            double latitude
+            ) {
         this.hid = hid;
         this.serialno = serialno;
         this.puma = puma;
@@ -187,6 +191,9 @@ public class Household {
         this.household_language = household_language;
         this.family_type_and_employment_status = family_type_and_employment_status;
         this.workers_in_family = workers_in_family;
+        this.locationID = location;
+        this.longitude = longitude;
+        this.latitude = latitude;
     }
 
     public Long getHid() {
@@ -237,8 +244,19 @@ public class Household {
         return workers_in_family;
     }
 
-    public static Household fromCSVLine(String line) {
-        Map<String ,String> keyValue = ParserUtil.zipLine(VA_HOUSEHOLD_HEADER_INDICES, line);
+    public long getLocationID() {
+        return locationID;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public static Household fromCSVLine(Map<String, String> keyValue) {
         return new Household(
                 ParserUtil.parseAsLong(keyValue.get("hid")),
                 ParserUtil.parseAsInt(keyValue.get("serialno")),
@@ -251,7 +269,10 @@ public class Household {
                 StringCodeTypeInterface.parseAsEnum(Fuel.class, keyValue.get("heating_fuel")),
                 StringCodeTypeInterface.parseAsEnum(Language.class, keyValue.get("household_language")),
                 StringCodeTypeInterface.parseAsEnum(FamilyEmployment.class, keyValue.get("family_type_and_employment_status")),
-                ParserUtil.parseAsInt(keyValue.get("workers_in_famuly"))
+                ParserUtil.parseAsInt(keyValue.get("workers_in_famuly")),
+                ParserUtil.parseAsLong(keyValue.get("rlid")),
+                ParserUtil.parseAsDouble(keyValue.get("residence_longitude")),
+                ParserUtil.parseAsDouble(keyValue.get("residence_latitude"))
         );
     }
 
