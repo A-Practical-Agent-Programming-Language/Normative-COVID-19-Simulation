@@ -3,16 +3,17 @@ package main.java.nl.uu.iss.ga.util;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class GyrationRadius {
+    private static final Logger LOGGER = Logger.getLogger(GyrationRadius.class.getName());
 
     private Map<Long, Map<AgentID, Double>> radii = new TreeMap<>();
     private HashSet<AgentID> agents = new HashSet<>();
@@ -33,7 +34,7 @@ public class GyrationRadius {
             writeResultByAgent(firstDate, bw, agentIDpidMap);
 
         bw.close();
-        Platform.getLogger().log(getClass(), Level.INFO, "Wrote radii of gyration to " + fout.getAbsolutePath());
+        LOGGER.log(Level.INFO, "Wrote radii of gyration to " + fout.getAbsolutePath());
     }
 
     private void writeResultsTickInColumn(LocalDate firstDate, BufferedWriter bw, Map<AgentID, Long> agentIDpidMap) throws IOException {
@@ -99,7 +100,7 @@ public class GyrationRadius {
             }
         }
         if(radia.size() < hashMap.size())
-            Platform.getLogger().log(getClass(), Level.WARNING, String.format(
+            LOGGER.log(Level.WARNING, String.format(
                     "only %d agents of %d (%f%%) produced actions",
                     radia.size(), hashMap.size(), radia.size() / (double) hashMap.size()));
         return radia;

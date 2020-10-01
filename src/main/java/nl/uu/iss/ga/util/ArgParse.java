@@ -6,18 +6,20 @@ import net.sourceforge.argparse4j.impl.action.StoreTrueArgumentAction;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class ArgParse {
+    private static final Logger LOGGER = Logger.getLogger(ArgParse.class.getName());
 
     @Arg(dest = "personsfiles")
     private List<File> personsFiles;
@@ -67,12 +69,16 @@ public class ArgParse {
     @Arg(dest = "connectpansim")
     private boolean connectpansim;
 
+    @Arg(dest = "logproperties")
+    private File logproperties;
+
     private Random random = null;
 
     public ArgParse(String[] args) {
         ArgumentParser p = getParser();
         try {
             p.parseArgs(args, this);
+            verifyLogProperties();
             verifyFiles();
         } catch (ArgumentParserException e) {
             p.handleError(e);
@@ -153,6 +159,10 @@ public class ArgParse {
         return startdate;
     }
 
+    public File getLogProperties() {
+        return logproperties;
+    }
+
     private void verifyFiles() {
         try {
             this.activityFiles = findFilesInList(this.activityFiles);
@@ -163,7 +173,7 @@ public class ArgParse {
                 this.statefiles = findFilesInList(this.statefiles);
             }
         } catch (Exception e) {
-            Platform.getLogger().log(getClass(), e);
+            LOGGER.log(Level.SEVERE, "Failed to verify files", e);
             getParser().printHelp();
             System.exit(1);
         }
@@ -195,6 +205,19 @@ public class ArgParse {
             return existingFile;
         } else {
             throw new FileNotFoundException("File not found: " + f.getName());
+        }
+    }
+
+    private void verifyLogProperties() {
+        if(this.logproperties != null) {
+            try {
+                this.logproperties = findFile(this.logproperties);
+                InputStream stream = new FileInputStream(this.logproperties);
+                LogManager.getLogManager().readConfiguration(stream);
+                LOGGER.log(Level.INFO, "Properites file for logger loaded");
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Properties file for logger not found. Using defaults");
+            }
         }
     }
 
@@ -327,6 +350,12 @@ public class ArgParse {
                 .required(false)
                 .dest("descriptor")
                 .help("Allows to specify a string that will be used in the naming scheme of output files");
+
+        optimization.addArgument("--log-properties")
+                .type(File.class)
+                .required(false)
+                .dest("logproperties")
+                .setDefault(new File("logging.properties"));
 
         optimization.addArgument("--connect-pansim", "-c")
                 .type(Boolean.class)

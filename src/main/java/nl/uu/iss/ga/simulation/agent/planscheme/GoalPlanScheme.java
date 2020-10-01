@@ -8,19 +8,21 @@ import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
-import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.ExecuteScheduledActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.CancelActivityPlan;
+import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.ExecuteScheduledActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.HandleTripPlan;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Trigger;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.Plan;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.PlanScheme;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
+
+    private static final Logger LOGGER = Logger.getLogger(GoalPlanScheme.class.getName());
 
     AgentContextInterface<CandidateActivity> agentContextInterface;
 
@@ -32,17 +34,12 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
             Activity activity = (Activity) trigger;
             BeliefContext context = agentContextInterface.getContext(BeliefContext.class);
 
-            if(context.getToday().equals(activity.getStart_time().getDayOfWeek())) {
+            if (context.getToday().equals(activity.getStart_time().getDayOfWeek())) {
                 // Trigger applies to today
 
                 if (activity.getActivityType().equals(ActivityType.TRIP)) {
-                    try {
-                        return new HandleTripPlan((TripActivity) activity);
-                    } catch (Exception e) {
-                        Platform.getLogger().log(getClass(), e);
-                        return null;
-                    }
-                } else if(activity.getActivityType().equals(ActivityType.HOME)) {
+                    return new HandleTripPlan((TripActivity) activity);
+                } else if (activity.getActivityType().equals(ActivityType.HOME)) {
                     // Don't wear mask or maintain distance
                     return new ExecuteScheduledActivityPlan(new CandidateActivity(activity));
                 } else {
@@ -67,8 +64,8 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
 
     private List<Norm> getApplicableNorms(Activity activity) {
         ArrayList<Norm> norms = new ArrayList<>();
-        for(Norm norm : this.agentContextInterface.getContext(NormContext.class).getNorms()) {
-            if(norm.applicable(activity, this.agentContextInterface)) {
+        for (Norm norm : this.agentContextInterface.getContext(NormContext.class).getNorms()) {
+            if (norm.applicable(activity, this.agentContextInterface)) {
                 norms.add(norm);
             }
         }
@@ -77,9 +74,10 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
 
     /**
      * Test if the agent will ignore the norm for this activity
-     * @param norm          Norm to evaluate
-     * @param activity      Activity to evaluate on
-     * @return              True if agent ignores norm
+     *
+     * @param norm     Norm to evaluate
+     * @param activity Activity to evaluate on
+     * @return True if agent ignores norm
      */
     private boolean evaluateToIgnore(Norm norm, Activity activity) {
         return norm instanceof NonRegimentedNorm &&
@@ -89,10 +87,10 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
     private CandidateActivity applyNorms(Activity activity, List<Norm> norms) {
         CandidateActivity candidateActivity = new CandidateActivity(activity);
 
-        for(Norm norm : norms) {
-            if(evaluateToIgnore(norm, activity)) {
+        for (Norm norm : norms) {
+            if (evaluateToIgnore(norm, activity)) {
                 candidateActivity = norm.transformActivity(candidateActivity, this.agentContextInterface);
-                if(candidateActivity == null) return null;
+                if (candidateActivity == null) return null;
             }
         }
 

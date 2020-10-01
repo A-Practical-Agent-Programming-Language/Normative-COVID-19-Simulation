@@ -31,11 +31,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 public class EnvironmentInterface implements TickHookProcessor<CandidateActivity> {
+
+    private static final Logger LOGGER = Logger.getLogger(EnvironmentInterface.class.getName());
 
     private static final int INITIATE_NORMS = 7; // TODO too hardcoded. Should be per norm
     private final AgentStateMap agentStateMap;
@@ -107,21 +110,21 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
     @Override
     public void tickPostHook(long tick, int lastTickDuration, HashMap<AgentID, List<CandidateActivity>> hashMap) {
-        Platform.getLogger().log(getClass(), Level.FINE, String.format(
+        LOGGER.log(Level.FINE, String.format(
                 "Tick %d took %d milliseconds for %d agents (roughly %fms per agent)",
                 tick, lastTickDuration, hashMap.size(), (double) lastTickDuration / hashMap.size()));
 
         long startCalculate = System.currentTimeMillis();
         double radius = this.gyrationRadius.calculateAverageTickRadius(tick, hashMap);
         String today = this.startDate == null ? "" : this.startDate.plusDays(currentTick).format(ISO_LOCAL_DATE) + "\t";
-        Platform.getLogger().log(getClass(), Level.INFO, String.format("%s%s\t%d\t%f", today, this.today, tick, radius));
-        Platform.getLogger().log(getClass(), Level.FINE, String.format(
+        LOGGER.log(Level.INFO, String.format("%s%s\t%d\t%f", today, this.today, tick, radius));
+        LOGGER.log(Level.FINE, String.format(
                 "Calculated radius of gyration in %d milliseconds", System.currentTimeMillis() - startCalculate
         ));
         if (this.trackVisits) {
             startCalculate = System.currentTimeMillis();
             storeLocationData(hashMap);
-            Platform.getLogger().log(getClass(), Level.FINE, String.format(
+            LOGGER.log(Level.FINE, String.format(
                     "Stored locations in %d milliseconds", System.currentTimeMillis() - startCalculate));
         }
     }
@@ -148,12 +151,10 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             }
             this.gyrationRadius.writeResults(fout, this.agentStateMap.getAgentToPidMap(), this.startDate, true);
         } catch (IOException e) {
-            Platform.getLogger().log(getClass(), Level.SEVERE, "Failed to write gyration results to file " + fout.getAbsolutePath());
-            Platform.getLogger().log(getClass(), e);
+            LOGGER.log(Level.SEVERE, "Failed to write gyration results to file " + fout.getAbsolutePath(), e);
         }
     }
 
-    // TODO simulate agent visit output
     private void storeLocationData(HashMap<AgentID, List<CandidateActivity>> hashMap) {
         HashMap<Long, TrackVisit> thisRoundVisits = getVisits(hashMap);
         notifyVisits(hashMap, thisRoundVisits);

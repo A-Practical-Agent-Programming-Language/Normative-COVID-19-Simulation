@@ -3,7 +3,6 @@ package main.java.nl.uu.iss.ga.model.reader;
 import main.java.nl.uu.iss.ga.model.data.Household;
 import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,8 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PersonReader {
+
+    private static final Logger LOGGER = Logger.getLogger(PersonReader.class.getName());
 
     private final List<File> personsFiles;
     private final Map<Long, Household> householdMap;
@@ -40,7 +43,7 @@ public class PersonReader {
         ) {
             return iteratePersons(s);
         } catch (IOException e) {
-            Platform.getLogger().log(getClass(), e);
+            LOGGER.log(Level.SEVERE, "Failed to read person file " + personsFile.toString(), e);
         }
         return new TreeMap<>();
     }

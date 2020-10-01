@@ -1,5 +1,6 @@
 package main.java.nl.uu.iss.ga.model.data;
 
+import main.java.nl.uu.iss.ga.Simulation;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
@@ -7,12 +8,13 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Activity extends Goal implements Cloneable {
+    private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());
 
     private final long pid;
     private final long hid;
@@ -112,7 +114,7 @@ public class Activity extends Goal implements Cloneable {
     public String toString() {
         // start_time, duration, location, mask_state, disease_state
         if(this.location == null) {
-            Platform.getLogger().log(getClass(), Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     String.format("Got null location for activity %d of person %d", this.getActivityNumber(), this.getPid()));
         }
         return String.format(

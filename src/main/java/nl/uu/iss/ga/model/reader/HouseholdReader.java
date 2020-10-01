@@ -2,7 +2,6 @@ package main.java.nl.uu.iss.ga.model.reader;
 
 import main.java.nl.uu.iss.ga.model.data.Household;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,8 +11,11 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HouseholdReader {
+
+    private static final Logger LOGGER = Logger.getLogger(HouseholdReader.class.getName());
 
     private final List<File> householdFiles;
     private final Map<Long, Household> households;
@@ -40,7 +42,7 @@ public class HouseholdReader {
         ) {
             return iterateHouseholds(s);
         } catch (IOException e) {
-            Platform.getLogger().log(getClass(), Level.SEVERE, e);
+            LOGGER.log(Level.SEVERE, "Failed to read houehold file " + householdFile.toString(), e);
         }
         return new TreeMap<>();
     }

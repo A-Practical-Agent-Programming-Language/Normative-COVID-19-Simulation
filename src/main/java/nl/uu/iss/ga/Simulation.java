@@ -10,7 +10,10 @@ import main.java.nl.uu.iss.ga.model.reader.HouseholdReader;
 import main.java.nl.uu.iss.ga.model.reader.LocationFileReader;
 import main.java.nl.uu.iss.ga.model.reader.PersonReader;
 import main.java.nl.uu.iss.ga.pansim.PansimSimulationEngine;
-import main.java.nl.uu.iss.ga.simulation.agent.context.*;
+import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
@@ -25,13 +28,18 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentArguments;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.*;
+import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultBlockingTickExecutor;
+import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultSimulationEngine;
+import nl.uu.cs.iss.ga.sim2apl.core.tick.SimulationEngine;
+import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Simulation {
+    private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());;
 
     public static void main(String[] args) {
         ArgParse parser = new ArgParse(args);
@@ -131,7 +139,7 @@ public class Simulation {
             ((DirectObservationNotifierNotifier) this.observationNotifier).addNormContext(aid, schedule.getPerson(), normContext);
             ((DirectObservationNotifierNotifier) this.observationNotifier).addLocationHistoryContext(aid, schedule.getPerson(), locationHistoryContext);
         } catch (URISyntaxException e) {
-            Platform.getLogger().log(getClass(), Level.SEVERE, e);
+            LOGGER.log(Level.SEVERE, "Failed to create AgentID for agent " + schedule.getPerson(), e);
         }
     }
 
@@ -143,7 +151,7 @@ public class Simulation {
                 return activity.getLocation();
             }
         }
-        Platform.getLogger().log(getClass(), Level.SEVERE,
+        LOGGER.log(Level.SEVERE,
                 String.format("No home location entry found for lid %d for person %d. Checked %d values",
                 lid, schedule.getPerson(), schedule.getSchedule().size()));
         return null;
@@ -157,10 +165,10 @@ public class Simulation {
      */
     private void printUnknownDetailedActivityNumbers() {
         if(this.activityFileReader.failedDetailedActivities.size() > 0) {
-            Platform.getLogger().log(getClass(), Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Found the following detailed activity numbers that are not in the dictionary");
             for(int missedNumbers : this.activityFileReader.failedDetailedActivities.keySet()) {
-                Platform.getLogger().log(getClass(), Level.WARNING,
+                LOGGER.log(Level.WARNING,
                 String.format(
                         "\t%d \t%s",
                         missedNumbers,

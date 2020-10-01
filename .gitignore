@@ -21,3 +21,5 @@ src/main/resources/va_examples
 src/main/resources/charlottesville_examples
 src/main/resources/nelson_county_examples
 output
+
+log/*.log

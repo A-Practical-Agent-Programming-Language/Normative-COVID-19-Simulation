@@ -4,13 +4,15 @@ import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.TripActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DayPlanContext implements Context {
+
+    private static final Logger LOGGER = Logger.getLogger(DayPlanContext.class.getName());
 
     private DayOfWeek dayOfWeek;
     private List<CandidateActivity> daySchedule;
@@ -31,7 +33,7 @@ public class DayPlanContext implements Context {
 
     public void addCandidateActivity(CandidateActivity activity) {
         if(!activity.getActivity().getStart_time().getDayOfWeek().equals(this.dayOfWeek)) {
-            Platform.getLogger().log(getClass(), Level.WARNING, String.format(
+            LOGGER.log(Level.WARNING, String.format(
                     "Trying to add activity for %s but today is %s",
                     activity.getActivity().getStart_time().getDayOfWeek(), this.dayOfWeek));
         }

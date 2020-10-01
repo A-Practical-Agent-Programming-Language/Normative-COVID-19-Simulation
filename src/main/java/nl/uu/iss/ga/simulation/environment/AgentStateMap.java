@@ -4,7 +4,6 @@ import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.pansim.state.StateDataFrame;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,8 +11,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AgentStateMap {
+
+    private static final Logger LOGGER = Logger.getLogger(AgentStateMap.class.getName());
 
     private final Map<Long, AgentID> pidToAgentMap = new ConcurrentHashMap<>();
     private final Map<AgentID, Long> agentToPidMap = new ConcurrentHashMap<>();
@@ -55,13 +57,13 @@ public class AgentStateMap {
 
     public void addAgent(AgentID aid, long pid) {
         if(this.pidToAgentMap.containsKey(pid)) {
-            Platform.getLogger().log(getClass(), Level.WARNING, String.format(
+            LOGGER.log(Level.WARNING, String.format(
                 "Adding PID %d to agentID %s, but PID is already used", pid, aid.toString()
             ));
         }
         this.pidToAgentMap.put(pid, aid);
         if(this.agentToPidMap.containsKey(aid)) {
-            Platform.getLogger().log(getClass(), Level.WARNING, String.format(
+            LOGGER.log(Level.WARNING, String.format(
                     "Adding agent %s with PID %d, but agentID is already used.", aid.toString(), pid));
         }
         this.agentToPidMap.put(aid, pid);
@@ -92,7 +94,7 @@ public class AgentStateMap {
         ) {
             iterateStates(s, rnd);
         } catch (IOException e) {
-            Platform.getLogger().log(getClass(), e);
+            LOGGER.log(Level.SEVERE, "Failed to read state file " + stateFile.toString(), e);
         }
     }
 

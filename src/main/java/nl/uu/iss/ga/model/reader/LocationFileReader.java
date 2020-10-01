@@ -2,15 +2,17 @@ package main.java.nl.uu.iss.ga.model.reader;
 
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LocationFileReader {
+
+    private static final Logger LOGGER = Logger.getLogger(LocationFileReader.class.getName());
 
     private List<File> locationFiles;
     private Map<Long, Map<Integer, LocationEntry>> locations;
@@ -42,7 +44,7 @@ public class LocationFileReader {
         ) {
             iterateLocations(s);
         } catch (IOException e) {
-            Platform.getLogger().log(getClass(), Level.SEVERE, e);
+            LOGGER.log(Level.SEVERE, "Failed to read location file " + locationFile.toString(), e);
         }
     }
 

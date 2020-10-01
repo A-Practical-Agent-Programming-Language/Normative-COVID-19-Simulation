@@ -8,21 +8,22 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ActivityFileReader {
+
+    private static final Logger LOGGER = Logger.getLogger(ActivityFileReader.class.getName());
 
     private final List<File> activityScheduleFiles;
     private final List<ActivitySchedule> activitySchedules;
     private final Map<Long, Map<Integer, LocationEntry>> locationMap;
 
-    // TODO can be in the same file?
     public ActivityFileReader(List<File> activityScheduleFiles, Map<Long, Map<Integer, LocationEntry>> locationMap) {
         this.activityScheduleFiles = activityScheduleFiles;
         this.locationMap = locationMap;
@@ -44,7 +45,7 @@ public class ActivityFileReader {
         ) {
             return iterateActivities(s);
         } catch (IOException e) {
-            Platform.getLogger().log(getClass(), Level.SEVERE, e);
+            LOGGER.log(Level.SEVERE, "Failed to read activities file " + activityScheduleFile.toString(), e);
         }
         return Collections.emptyList();
     }
@@ -53,7 +54,7 @@ public class ActivityFileReader {
         String headers = s.nextLine();
         String[] headerIndices = headers.split(ParserUtil.SPLIT_CHAR);
 
-        List<ActivitySchedule> schedules = new LinkedList<>();
+        Map<Long, ActivitySchedule> schedules = new HashMap<>();
         SortedMap<ActivityTime, Activity> activities = new TreeMap<>();
 
         long currentPersonIndex = -1;
@@ -66,27 +67,29 @@ public class ActivityFileReader {
             if(activity.getPid() != currentPersonIndex) {
                 // Reset
                 if(!activities.isEmpty()) {
-                    schedules.add(new ActivitySchedule(
+                    schedules.put(currentPersonIndex, new ActivitySchedule(
                             activities.get(activities.lastKey()).getHid(),
                             currentPersonIndex,
                             activities)
                     );
+                } else if (currentPersonIndex != -1) {
+                    LOGGER.log(Level.WARNING, "Empty schedule file for PID " + currentPersonIndex);
                 }
-                activities = new TreeMap<>();
+                activities = schedules.containsKey(activity.getPid()) ? schedules.get(activity.getPid()).getSchedule() : new TreeMap<>();
                 currentPersonIndex = activity.getPid();
             }
             activities.put(activity.getStart_time(), activity);
         }
 
         if(!activities.isEmpty()) {
-            schedules.add(new ActivitySchedule(
+            schedules.put(currentPersonIndex, new ActivitySchedule(
                     activities.get(activities.lastKey()).getHid(),
                     currentPersonIndex,
                     activities
             ));
         }
 
-        return schedules;
+        return new ArrayList<>(schedules.values());
     }
 
     public Map<Integer, ActivityType> failedDetailedActivities = new HashMap<>();
