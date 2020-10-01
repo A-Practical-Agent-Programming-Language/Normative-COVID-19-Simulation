@@ -72,11 +72,23 @@ public class AgentStateMap {
     }
 
     public Random getRandom(AgentID agentID) {
-        return this.agentStateMap.get(agentID).getRandom();
+        return getAgentState(agentID).getRandom();
     }
 
     public boolean isSymptomatic(AgentID agentID) {
-        return this.agentStateMap.get(agentID).getState().equals(DiseaseState.INFECTED_SYMPTOMATIC);
+        return getDiseaseState(agentID).equals(DiseaseState.INFECTED_SYMPTOMATIC);
+    }
+
+    public DiseaseState getDiseaseState(AgentID agentID) {
+        return getAgentState(agentID).getState();
+    }
+
+    public AgentState getAgentState(AgentID agentID) {
+        return this.agentStateMap.get(agentID);
+    }
+
+    public AgentState getAgentState(Long pid) {
+        return this.pidStateMap.get(pid);
     }
 
     public Map<Long, AgentID> getPidToAgentMap() {

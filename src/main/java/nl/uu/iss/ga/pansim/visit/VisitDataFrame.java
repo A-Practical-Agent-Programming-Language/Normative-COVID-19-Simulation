@@ -1,6 +1,8 @@
 package main.java.nl.uu.iss.ga.pansim.visit;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
+import main.java.nl.uu.iss.ga.simulation.environment.AgentStateMap;
 import main.java.nl.uu.iss.ga.util.Constants;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import org.apache.arrow.memory.BufferAllocator;
@@ -80,17 +82,17 @@ public class VisitDataFrame {
         this.schemaRoot = new VectorSchemaRoot(fields, vectors);
     }
 
-    public void addRow(int index, CandidateActivity activity) {
+    public void addRow(int index, CandidateActivity activity, DiseaseState state) {
         this.lid.set(index, activity.getActivity().getLocation().getLocationID());
         this.pid.set(index, activity.getActivity().getPid());
         this.group.set(index, 0);
-        this.state.set(index, 0); // TODO find state
+        this.state.set(index, state.getCode());
         this.behavior.set(index, activity.getRiskMitigationPolicy().getCode());
         this.start_time.set(index, activity.getActivity().getStart_time().getSeconds());
         this.end_time.set(index, activity.getActivity().getStart_time().getSeconds() + activity.getActivity().getDuration());
-        for(String name : Constants.VISIBLE_ATTRIBUTES) {
-            this.attrs.get(name).set(index, 0); // TODO extract from activity & state file
-        }
+        this.attrs.get(Constants.VISIBLE_ATTRIBUTE_SYMPTOMATIC).set(index, state.equals(DiseaseState.INFECTED_SYMPTOMATIC) ? 1 : 0);
+        this.attrs.get(Constants.VISIBLE_ATTRIBUTE_MASK).set(index, activity.getRiskMitigationPolicy().isMask() ? 1 : 0);
+        this.attrs.get(Constants.VISIBLE_ATTRIBUTE_DISTANCING).set(index, activity.getRiskMitigationPolicy().isDistance() ? 1 : 0);
     }
 
     public void setValueCount(int count) {
@@ -122,14 +124,16 @@ public class VisitDataFrame {
         return outb;
     }
 
-    public static VisitDataFrame fromAgentActions(HashMap<AgentID, List<CandidateActivity>> agentActions, BufferAllocator allocator) {
+    public static VisitDataFrame fromAgentActions(
+            HashMap<AgentID, List<CandidateActivity>> agentActions, AgentStateMap stateMap, BufferAllocator allocator
+    ) {
         int max_rows = agentActions.values().stream().map(List::size).reduce(Integer::sum).orElse(0);
         VisitDataFrame dataFrame = new VisitDataFrame(max_rows, allocator);
 
         int i = 0;
         for(AgentID agentID : agentActions.keySet()) {
             for(CandidateActivity activity : agentActions.get(agentID)) {
-                dataFrame.addRow(i, activity);
+                dataFrame.addRow(i, activity, stateMap.getAgentState(agentID).getState());
                 i++;
             }
         }

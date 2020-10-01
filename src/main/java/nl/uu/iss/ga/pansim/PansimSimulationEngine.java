@@ -74,7 +74,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         processTickPostHook(this.executor.getCurrentTick(), this.executor.getLastTickDuration(), agentActions);
 
         // Prepare results for pansim
-        this.next_visit_df_raw = VisitDataFrame.fromAgentActions(agentActions, allocator).toBytes();
+        this.next_visit_df_raw = VisitDataFrame.fromAgentActions(agentActions, this.agentStateMap, allocator).toBytes();
         this.next_state_df_raw = StateDataFrame.fromAgentStateMap(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
     }
 
