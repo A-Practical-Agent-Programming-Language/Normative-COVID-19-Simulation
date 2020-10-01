@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -48,10 +49,10 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     private final Platform platform;
     private final boolean trackVisits;
     private long currentTick = 0;
-    private LocalDateTime instantiated;
-    private LocalDate startDate;
+    private final LocalDateTime instantiated;
+    private final LocalDate startDate;
     private DayOfWeek today = DayOfWeek.MONDAY;
-    private int node;
+    private final int node;
     private String descriptor;
 
 
@@ -64,6 +65,11 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.trackVisits = !argParse.isConnectpansim();
         this.node = argParse.getNode();
         this.startDate = argParse.getStartdate();
+
+        if(this.startDate != null) {
+            this.today = DayOfWeek.fromDate(this.startDate);
+            LOGGER.log(Level.INFO, "Start date set to " + this.startDate.format(DateTimeFormatter.ofPattern("cccc dd MMMM yyyy")));
+        }
     }
 
     public long getCurrentTick() {
@@ -85,7 +91,11 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     @Override
     public void tickPreHook(long tick) {
         this.currentTick = tick;
-        this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTick % 7 + 1));
+        if(this.startDate == null) {
+            this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTick % 7 + 1));
+        } else {
+            this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
+        }
         if (this.currentTick == INITIATE_NORMS) {
             Norm maskNorm = new WearMaskNorm();
             Norm distanceNorm = new MaintainDistanceNorm();

@@ -1,5 +1,7 @@
 package main.java.nl.uu.iss.ga;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -10,11 +12,6 @@ public class ShowDistribution {
     final static public Random RANDOM = new Random(System.currentTimeMillis());
 
     public static void main(String[] args) {
-
-        for(int i = 0; i < 100; i++) {
-            System.out.println(RANDOM.nextInt());
-        }
-
         Map<Integer, CountedDouble> countMap = new TreeMap<>();
 
         for(int i = 0; i < 100000; i++) {

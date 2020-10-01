@@ -3,17 +3,14 @@ package main.java.nl.uu.iss.ga.util;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.annotation.Arg;
 import net.sourceforge.argparse4j.impl.action.StoreTrueArgumentAction;
-import net.sourceforge.argparse4j.inf.ArgumentGroup;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.*;
 
 import java.io.*;
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -315,14 +312,14 @@ public class ArgParse {
                         "pansim is connected by using the \"-c\" flag.");
 
         optimization.addArgument("--start-date")
-                .type(LocalDate.class)
                 .required(false)
+                .action(new ParseLocalDateArgumentAction())
                 .dest("startdate")
                 .help("Specify the date corresponding to the first time step. This option is used to potentially " +
                                 "align the model with real-world data, both in the produced output, as in for the " +
                                 "activation of norms.\n" +
                                 "If this option is omitted, the first time step will be assigned the date when the first " +
-                                "norm is activated");
+                                "norm is activated. Format is YYYY-MM-DD");
 
         optimization.addArgument("--seed", "-s")
                 .type(Long.TYPE)
@@ -368,6 +365,33 @@ public class ArgParse {
                         "but behavior is not interpreted");
 
         return parser;
+    }
+
+    static class ParseLocalDateArgumentAction implements ArgumentAction {
+
+        @Override
+        public void run(ArgumentParser parser, Argument arg, Map<String, Object> attrs, String flag, Object value) throws ArgumentParserException {
+            if(value instanceof  String) {
+                String dateString = (String)value;
+                try {
+                    LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE);
+                    attrs.put(arg.getDest(), date);
+                } catch (DateTimeParseException e) {
+                    throw new ArgumentParserException(e.getMessage(), parser);
+                }
+            } else {
+                throw new ArgumentParserException("--start-date must be of format YYYY-MM-DD", parser);
+            }
+        }
+
+        @Override
+        public void onAttach(Argument arg) {
+        }
+
+        @Override
+        public boolean consumeArgument() {
+            return true;
+        }
     }
 
 }

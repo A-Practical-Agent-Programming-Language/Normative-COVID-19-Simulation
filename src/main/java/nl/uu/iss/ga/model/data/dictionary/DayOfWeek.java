@@ -3,11 +3,13 @@ package main.java.nl.uu.iss.ga.model.data.dictionary;
 import main.java.nl.uu.iss.ga.model.data.ActivityTime;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 
+import java.time.LocalDate;
+
 public enum DayOfWeek implements CodeTypeInterface {
 
     MONDAY(1),
     TUESDAY(2),
-    WEDNSDAY(3),
+    WEDNESDAY(3),
     THURSDAY(4),
     FRIDAY(5),
     SATURDAY(6),
@@ -35,5 +37,7 @@ public enum DayOfWeek implements CodeTypeInterface {
         return this.dayStartsSecondsSinceSundayMidnight;
     }
 
-
+    public static DayOfWeek fromDate(LocalDate date) {
+        return DayOfWeek.valueOf(date.getDayOfWeek().toString());
+    }
 }
