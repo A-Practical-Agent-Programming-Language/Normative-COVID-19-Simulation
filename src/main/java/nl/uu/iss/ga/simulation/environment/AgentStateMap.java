@@ -15,13 +15,13 @@ import java.util.logging.Level;
 
 public class AgentStateMap {
 
-    private final Map<Long, AgentID> pidToAgentMap;
+    private final Map<Long, AgentID> pidToAgentMap = new ConcurrentHashMap<>();
+    private final Map<AgentID, Long> agentToPidMap = new ConcurrentHashMap<>();
     private Map<AgentID, AgentState> agentStateMap;
     private Map<Long, AgentState> pidStateMap;
 
     public AgentStateMap(List<File> initialStateFiles, Random rnd) {
         reset();
-        this.pidToAgentMap = new HashMap<>();
         for(File f : initialStateFiles) {
             readStateFile(f, rnd);
         }
@@ -29,7 +29,6 @@ public class AgentStateMap {
 
     public AgentStateMap(Map<Long, Person> personMap, Random rnd) {
         reset();
-        this.pidToAgentMap = new ConcurrentHashMap<>();
         for(long pid : personMap.keySet()) {
             AgentState state = new AgentState(pid, 0, DiseaseState.SUSCEPTIBLE, DiseaseState.NOT_SET, -1, rnd.nextInt());
             this.pidStateMap.put(pid, state);
@@ -57,10 +56,16 @@ public class AgentStateMap {
     public void addAgent(AgentID aid, long pid) {
         if(this.pidToAgentMap.containsKey(pid)) {
             Platform.getLogger().log(getClass(), Level.WARNING, String.format(
-                "WARNING: Adding agent to PID %d, but agent already exists", pid
+                "Adding PID %d to agentID %s, but PID is already used", pid, aid.toString()
             ));
         }
         this.pidToAgentMap.put(pid, aid);
+        if(this.agentToPidMap.containsKey(aid)) {
+            Platform.getLogger().log(getClass(), Level.WARNING, String.format(
+                    "Adding agent %s with PID %d, but agentID is already used.", aid.toString(), pid));
+        }
+        this.agentToPidMap.put(aid, pid);
+
         this.agentStateMap.put(aid, this.pidStateMap.get(pid));
     }
 
@@ -70,6 +75,14 @@ public class AgentStateMap {
 
     public boolean isSymptomatic(AgentID agentID) {
         return this.agentStateMap.get(agentID).getState().equals(DiseaseState.INFECTED_SYMPTOMATIC);
+    }
+
+    public Map<Long, AgentID> getPidToAgentMap() {
+        return new HashMap<>(pidToAgentMap);
+    }
+
+    public Map<AgentID, Long> getAgentToPidMap() {
+        return new HashMap<>(agentToPidMap);
     }
 
     private void readStateFile(File stateFile, Random rnd) {

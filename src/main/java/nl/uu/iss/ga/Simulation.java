@@ -78,7 +78,7 @@ public class Simulation {
         this.tickExecutor = new DefaultBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getRandom());
         this.platform = Platform.newPlatform(tickExecutor, messenger);
         this.observationNotifier = new DirectObservationNotifierNotifier(this.platform);
-        this.environmentInterface = new EnvironmentInterface(platform, this.observationNotifier, this.agentStateMap, !this.arguments.isConnectpansim());
+        this.environmentInterface = new EnvironmentInterface(platform, this.observationNotifier, this.agentStateMap, this.arguments);
         this.simulationEngine = arguments.isConnectpansim() ? getPansimSimulationEngine() : getLocalSimulationEngine();
     }
 

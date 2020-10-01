@@ -5,6 +5,9 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
+import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -12,6 +15,7 @@ import java.util.stream.Collectors;
 public class GyrationRadius {
 
     private Map<Long, Map<AgentID, Double>> radii = new TreeMap<>();
+    private HashSet<AgentID> agents = new HashSet<>();
 
     public double calculateAverageTickRadius(long tick, HashMap<AgentID, List<CandidateActivity>> hashMap) {
         Map<AgentID, Double> radia = calculateTickRadia(hashMap);
@@ -19,8 +23,75 @@ public class GyrationRadius {
         return radia.values().stream().mapToDouble(x -> x).average().orElse(-1d);
     }
 
+    public void writeResults(File fout, Map<AgentID, Long> agentIDpidMap, LocalDate firstDate, boolean timestepInColumn) throws IOException {
+        FileOutputStream fos = new FileOutputStream(fout);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+
+        if(timestepInColumn)
+            writeResultsTickInColumn(firstDate, bw, agentIDpidMap);
+        else
+            writeResultByAgent(firstDate, bw, agentIDpidMap);
+
+        bw.close();
+        Platform.getLogger().log(getClass(), Level.INFO, "Wrote radii of gyration to " + fout.getAbsolutePath());
+    }
+
+    private void writeResultsTickInColumn(LocalDate firstDate, BufferedWriter bw, Map<AgentID, Long> agentIDpidMap) throws IOException {
+        StringBuilder header = new StringBuilder().append("pid;");
+        String[] averages = new String[this.radii.size()];
+        for(long i = 0; i < this.radii.size(); i++) {
+            if(firstDate == null) {
+                header.append(i).append(";");
+            } else {
+                header.append(firstDate.plusDays(i).format(DateTimeFormatter.ISO_DATE)).append(";");
+            }
+            averages[(int)i] = Double.toString(this.radii.get(i).values().stream().reduce(Double::sum).orElse(0d) / this.radii.get(i).size());
+        }
+
+        bw.write("\n");
+        for(AgentID aid : this.agents) {
+            bw.write(Long.toString(agentIDpidMap.get(aid)));
+            bw.write(";");
+            for(long i = 0; i < this.radii.size(); i++) {
+                if(this.radii.get(i).containsKey(aid)) {
+                    bw.write(Double.toString(this.radii.get(i).get(aid)));
+                    bw.write(";");
+                } else {
+                    bw.write("-1;"); // No actions produced, so no gyration (not the same as staying home!)
+                }
+            }
+            bw.write("\n");
+        }
+
+        bw.write("average;");
+        bw.write(String.join(";", averages));
+        bw.write(";");
+    }
+
+    private void writeResultByAgent(LocalDate firstDate, BufferedWriter bw, Map<AgentID, Long> agentIDpidMap) throws IOException {
+        bw.write("pid;tick;");
+        if(firstDate != null) {
+            bw.write("date;");
+        }
+        bw.write("radius\n");
+
+        for(long i = 0; i < this.radii.size(); i++) {
+            for(AgentID aid : this.radii.get(i).keySet()) {
+                bw.write(Long.toString(agentIDpidMap.get(aid)));
+                bw.write(";");
+                bw.write(Long.toString(i));
+                if(firstDate != null) {
+                    bw.write(firstDate.plusDays(i).format(DateTimeFormatter.ISO_DATE));
+                    bw.write(";");
+                }
+                bw.write(Double.toString(this.radii.get(i).get(aid)));
+            }
+        }
+    }
+
     private Map<AgentID, Double> calculateTickRadia(HashMap<AgentID, List<CandidateActivity>> hashMap) {
         Map<AgentID, Double> radia = new HashMap<>();
+        this.agents.addAll(hashMap.keySet());
         for(AgentID aid : hashMap.keySet()) {
             Double radius = calculateRadiusOfGyrationForAgent(hashMap.get(aid));
             if(radius != null) {

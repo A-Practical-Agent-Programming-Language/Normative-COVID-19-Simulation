@@ -81,6 +81,7 @@ public class CancelActivityPlan extends RunOncePlan<CandidateActivity> {
 
             // Sanity check
             if(
+                    // TODO why nullpointer?
                     !activity.getActivity().getStart_time().getDayOfWeek().equals(scheduledTime.getDayOfWeek())
             ) {
                 ActivityTime ends = new ActivityTime(activity.getActivity().getStart_time().getSeconds() + activity.getActivity().getDuration());

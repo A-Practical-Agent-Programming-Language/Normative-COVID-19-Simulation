@@ -58,6 +58,12 @@ public class ArgParse {
     @Arg(dest = "modeconservative")
     private double modeconservative;
 
+    @Arg(dest = "nodename")
+    private int node;
+
+    @Arg(dest = "descriptor")
+    private String descriptor;
+
     @Arg(dest = "connectpansim")
     private boolean connectpansim;
 
@@ -108,6 +114,14 @@ public class ArgParse {
 
     public double getModeconservative() {
         return modeconservative;
+    }
+
+    public int getNode() {
+        return node;
+    }
+
+    public String getDescriptor() {
+        return descriptor;
     }
 
     public boolean isConnectpansim() {
@@ -300,6 +314,19 @@ public class ArgParse {
                 .setDefault(8)
                 .dest("threads")
                 .help("Specify the number of threads to use for execution");
+
+        optimization.addArgument("--node")
+                .type(Integer.class)
+                .required(false)
+                .setDefault(-1)
+                .dest("nodename")
+                .help("Specify the name of this node, to distinguish output files if multiple nodes are run simultaniously");
+
+        optimization.addArgument("--descriptor")
+                .type(String.class)
+                .required(false)
+                .dest("descriptor")
+                .help("Allows to specify a string that will be used in the naming scheme of output files");
 
         optimization.addArgument("--connect-pansim", "-c")
                 .type(Boolean.class)
