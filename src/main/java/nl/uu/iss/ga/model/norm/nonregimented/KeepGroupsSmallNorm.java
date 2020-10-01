@@ -10,7 +10,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public class KeepGroupsSmallNorm extends NonRegimentedNorm {
 
-    public String PARAM_MAX_GROUP_SIZE = "maxGrouPSize";
+    public String PARAM_MAX_GROUP_SIZE = "max";
 
     private static final double CURVE_SLOPE_FACTOR = .2;
 

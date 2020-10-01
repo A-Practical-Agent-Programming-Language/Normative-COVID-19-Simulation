@@ -8,10 +8,10 @@ import main.java.nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.model.norm.modal.MaintainDistanceNorm;
 import main.java.nl.uu.iss.ga.model.norm.modal.WearMaskNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.IfSickStayHome;
+import main.java.nl.uu.iss.ga.model.norm.nonregimented.IfSickStayHomeNorm;
 import main.java.nl.uu.iss.ga.model.norm.nonregimented.KeepGroupsSmallNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.OfficesClosed;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.ReduceGatherings;
+import main.java.nl.uu.iss.ga.model.norm.nonregimented.OfficesClosedNorm;
+import main.java.nl.uu.iss.ga.model.norm.nonregimented.ReduceGatheringsNorm;
 import main.java.nl.uu.iss.ga.model.norm.regimented.SchoolsClosed;
 import main.java.nl.uu.iss.ga.model.norm.regimented.TakeawayOnly;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
@@ -100,11 +100,11 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             Norm maskNorm = new WearMaskNorm();
             Norm distanceNorm = new MaintainDistanceNorm();
             Norm schoolsClosed = new SchoolsClosed();
-            Norm officesClosed = new OfficesClosed();
+            Norm officesClosed = new OfficesClosedNorm();
             Norm smallGroupsNorm = new KeepGroupsSmallNorm();
             Norm restaurantsClosed = new TakeawayOnly();
-            Norm reduceGatherings = new ReduceGatherings();
-            Norm ifSickStayHome = new IfSickStayHome();
+            Norm reduceGatherings = new ReduceGatheringsNorm();
+            Norm ifSickStayHome = new IfSickStayHomeNorm();
             this.platform.getAgents().values().forEach(x -> {
                 x.addExternalTrigger(new NewNormTrigger(maskNorm));
                 x.addExternalTrigger(new NewNormTrigger(distanceNorm));

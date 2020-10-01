@@ -258,7 +258,7 @@ public class ArgParse {
 
         schedulefiles.addArgument("--normsfile", "-nf")
                 .type(File.class)
-                .required(false) // TODO update once I have a norms file
+                .required(true)
                 .dest("normsfile")
                 .help("Specify the location of the file containing the schema for when norms are activated, updated " +
                         "or deactivated");

@@ -9,7 +9,7 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
-public class OfficesClosed extends NonRegimentedNorm {
+public class OfficesClosedNorm extends NonRegimentedNorm {
 
     public static final int N_DAYS_LOOKBACK = 10;
 
