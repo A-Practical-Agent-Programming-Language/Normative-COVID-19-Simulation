@@ -10,6 +10,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -43,7 +44,7 @@ public class ArgParse {
     private int threads;
 
     @Arg(dest = "iterations")
-    private int iterations;
+    private long iterations;
 
     @Arg(dest = "startdate")
     private LocalDate startdate;
@@ -148,7 +149,7 @@ public class ArgParse {
         return threads;
     }
 
-    public int getIterations() {
+    public long getIterations() {
         return iterations;
     }
 
@@ -304,23 +305,26 @@ public class ArgParse {
                         "agent directives");
 
         ArgumentGroup optimization = parser.addArgumentGroup("Runtime optimization");
-        optimization.addArgument("--iterations", "-i")
-                .type(Integer.class)
+        optimization.addArgument("--start-date")
+                .required(false)
+                .action(new ParseStartDateArgumentAction())
+                .dest("startdate")
+                .help("Specify the date corresponding to the first time step. This option is used to potentially " +
+                        "align the model with real-world data, both in the produced output, as in for the " +
+                        "activation of norms.\n" +
+                        "If this option is omitted, the first time step will be assigned the date when the first " +
+                        "norm is activated. Format is YYYY-MM-DD");
+
+        optimization.addArgument("--iterations", "-i") // TODO test when parsed
+                .action(new ParseEndDateArgumentAction())
                 .required(false)
                 .dest("iterations")
                 .setDefault(Integer.MAX_VALUE)
-                .help("Specify the number of iterations to run this simulation. This parameter is ignored when" +
-                        "pansim is connected by using the \"-c\" flag.");
-
-        optimization.addArgument("--start-date")
-                .required(false)
-                .action(new ParseLocalDateArgumentAction())
-                .dest("startdate")
-                .help("Specify the date corresponding to the first time step. This option is used to potentially " +
-                                "align the model with real-world data, both in the produced output, as in for the " +
-                                "activation of norms.\n" +
-                                "If this option is omitted, the first time step will be assigned the date when the first " +
-                                "norm is activated. Format is YYYY-MM-DD");
+                .help("Specify the end date (YYYY-MM-DD, only if --start-date is set*) or number of iterations to run " +
+                        "this simulation. This parameter is ignored when " +
+                        "pansim is connected by using the \"-c\" flag." +
+                        "\n" +
+                        "Make sure when using dates to specify this argument AFTER --start-date");
 
         optimization.addArgument("--seed", "-s")
                 .type(Long.TYPE)
@@ -368,7 +372,47 @@ public class ArgParse {
         return parser;
     }
 
-    static class ParseLocalDateArgumentAction implements ArgumentAction {
+    static class ParseEndDateArgumentAction implements ArgumentAction {
+
+        @Override
+        public void run(ArgumentParser parser, Argument arg, Map<String, Object> attrs, String flag, Object value) throws ArgumentParserException {
+            if(value instanceof String && ((String) value).contains("-")) {
+                try {
+                    LocalDate d = LocalDate.parse((String) value, DateTimeFormatter.ISO_DATE);
+                    LocalDate start;
+                    try {
+                        start = (LocalDate) attrs.get("startdate");
+                        long days = ChronoUnit.DAYS.between(start, d) + 1;
+                        attrs.put(arg.getDest(), days);
+                    } catch (Exception e) {
+                        throw new ArgumentParserException("It looks like you are specifying the iterations as an enddate." +
+                                " This option is contingent on the --start-date argument. Make sure to specify the " +
+                                "--start-date argument before specifying this argument", parser);
+                    }
+                } catch (DateTimeParseException e) {
+                    throw new ArgumentParserException(e.getMessage(), parser);
+                }
+            } else {
+                try {
+                    attrs.put(arg.getDest(), Integer.parseInt((String) value));
+                } catch (Exception e) {
+                    throw new ArgumentParserException("Could not parse argument " + flag + " as either number of " +
+                            "iterations or an enddate\n" + e.getMessage(), parser);
+                }
+            }
+        }
+
+        @Override
+        public void onAttach(Argument arg) {
+        }
+
+        @Override
+        public boolean consumeArgument() {
+            return true;
+        }
+    }
+
+    static class ParseStartDateArgumentAction implements ArgumentAction {
 
         @Override
         public void run(ArgumentParser parser, Argument arg, Map<String, Object> attrs, String flag, Object value) throws ArgumentParserException {

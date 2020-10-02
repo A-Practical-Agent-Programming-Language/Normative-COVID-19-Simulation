@@ -10,6 +10,14 @@ public interface ObservationNotifier {
 
     void notifyNorm(long pid, Norm norm);
 
+    void notifyNorm(Norm norm);
+
+    void notifyNormCancelled(AgentID agentID, Norm norm);
+
+    void notifyNormCancelled(long pid, Norm norm);
+
+    void notifyNormCancelled(Norm norm);
+
     void notifyVisit(AgentID agentID, long tick, LocationHistoryContext.Visit visit);
 
     void notifyVisit(long pid, long tick, LocationHistoryContext.Visit visit);

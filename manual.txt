@@ -2,11 +2,13 @@ usage: 2APL/SimpleEpiDemic Disease Simulation
        [-h] --personsfile PERSONSFILES [PERSONSFILES ...]
        --householdsfile HOUSEHOLDSFILES [HOUSEHOLDSFILES ...]
        --activityfile ACTIVITYFILES [ACTIVITYFILES ...]
-       --locationsfile LOCATIONSFILES [LOCATIONSFILES ...]
-       [--statefile STATEFILES [STATEFILES ...]]
+       [--locationsfile LOCATIONSFILES [LOCATIONSFILES ...]]
+       --normsfile NORMSFILE [--statefile STATEFILES [STATEFILES ...]]
        [--fraction-liberal FRACTIONLIBERAL] [--liberal-mode MODELIBERAL]
-       [--conservative-mode MODECONSERVATIVE] [--iterations ITERATIONS]
-       [--seed SEED] [--threads THREADS] [--connect-pansim]
+       [--conservative-mode MODECONSERVATIVE] [--start-date STARTDATE]
+       [--iterations ITERATIONS] [--seed SEED] [--threads THREADS]
+       [--node NODENAME] [--descriptor DESCRIPTOR]
+       [--log-properties LOGPROPERTIES] [--connect-pansim]
 
 A ecological simulation environment for  simulation  of human acceptance of
 measures aimed at reducing spread of novel diseases
@@ -32,7 +34,13 @@ Activity Schedule files:
   --locationsfile LOCATIONSFILES [LOCATIONSFILES ...], -lf LOCATIONSFILES [LOCATIONSFILES ...]
                          Specify the location  of  the  file containing all
                          the activity locations of  all  the  agents in the
-                         artificial population
+                         artificial  population.  This  file  may  only  be
+                         absent if the activity  files provide the location
+                         data
+  --normsfile NORMSFILE, -nf NORMSFILE
+                         Specify the location  of  the  file containing the
+                         schema for when  norms  are  activated, updated or
+                         deactivated
   --statefile STATEFILES [STATEFILES ...], -sf STATEFILES [STATEFILES ...]
                          Specify the location  of  the  file containing all
                          the activity locations of  all  the  agents in the
@@ -66,17 +74,39 @@ Tunable parameters:
                          agent directives (default: 0.6)
 
 Runtime optimization:
+  --start-date STARTDATE
+                         Specify the date corresponding  to  the first time
+                         step. This option  is  used  to  potentially align
+                         the  model  with  real-world  data,  both  in  the
+                         produced output,  as  in  for  the  activation  of
+                         norms.
+                         If this option  is  omitted,  the  first time step
+                         will be assigned the date  when  the first norm is
+                         activated. Format is YYYY-MM-DD
   --iterations ITERATIONS, -i ITERATIONS
-                         Specify the  number  of  iterations  to  run  this
-                         simulation (default: 2147483647)
+                         Specify the end date (YYYY-MM-DD, only if --start-
+                         date is set*) or number  of iterations to run this
+                         simulation. This parameter is  ignored when pansim
+                         is connected by using the "-c" flag.
+                         Make  sure  when  using   dates  to  specify  this
+                         argument AFTER --start-date (default: 2147483647)
   --seed SEED, -s SEED   Specify a  seed  to  use  for  random  operations.
                          Default  is  -1,  indicating   no   seed  is  used
                          (default: -1)
   --threads THREADS, -t THREADS
                          Specify  the  number   of   threads   to  use  for
                          execution (default: 8)
+  --node NODENAME        Specify the  name  of  this  node,  to distinguish
+                         output   files   if   multiple   nodes   are   run
+                         simultaniously (default: -1)
+  --descriptor DESCRIPTOR
+                         Allows to specify a  string  that  will be used in
+                         the naming scheme of output files
+  --log-properties LOGPROPERTIES
+                         (default: logging.properties)
   --connect-pansim, -c   If this argument is  present,  the simulation will
                          run  in  PANSIM  mode,  meaning  it  will  sendthe
                          generated behavior to  the  PANSIM environment. If
                          absent,  no  PANSIM   connection  is  required,but
                          behavior is not interpreted (default: false)
+

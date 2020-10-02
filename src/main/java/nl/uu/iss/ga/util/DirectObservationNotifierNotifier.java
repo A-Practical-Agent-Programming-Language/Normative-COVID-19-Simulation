@@ -37,6 +37,25 @@ public class DirectObservationNotifierNotifier implements ObservationNotifier {
         this.agentNormContextMap.get(this.pidAgentMap.get(pid)).addNorm(norm);
     }
 
+    public void notifyNorm(Norm norm) {
+        this.agentNormContextMap.values().forEach(x -> x.addNorm(norm));
+    }
+
+    @Override
+    public void notifyNormCancelled(AgentID agentID, Norm norm) {
+        this.agentNormContextMap.get(agentID).removeNorm(norm);
+    }
+
+    @Override
+    public void notifyNormCancelled(long pid, Norm norm) {
+        this.agentNormContextMap.get(this.pidAgentMap.get(pid)).removeNorm(norm);
+    }
+
+    @Override
+    public void notifyNormCancelled(Norm norm) {
+        this.agentNormContextMap.values().forEach(x -> x.removeNorm(norm));
+    }
+
     @Override
     public void notifyVisit(AgentID agentID, long tick, LocationHistoryContext.Visit visit) {
         this.agentHistoryContextMap.get(agentID).addVisit(tick, visit);

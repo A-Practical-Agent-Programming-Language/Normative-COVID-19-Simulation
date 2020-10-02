@@ -65,7 +65,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.trackVisits = !argParse.isConnectpansim();
         this.node = argParse.getNode();
         this.startDate = argParse.getStartdate() == null ?
-                this.normSchedule.keySet().stream().findFirst().orElse(null) :argParse.getStartdate();
+                this.normSchedule.keySet().stream().findFirst().orElse(null) : argParse.getStartdate();
 
         if(this.startDate != null) {
             this.today = DayOfWeek.fromDate(this.startDate);
@@ -98,26 +98,25 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
         }
 
-        // TODO fix norms
-        if (this.currentTick == INITIATE_NORMS) {
-//            Norm maskNorm = new WearMaskNorm();
-//            Norm distanceNorm = new MaintainDistanceNorm();
-//            Norm schoolsClosed = new SchoolsClosed();
-//            Norm officesClosed = new OfficesClosedNorm();
-//            Norm smallGroupsNorm = new KeepGroupsSmallNorm();
-//            Norm restaurantsClosed = new TakeawayOnly();
-//            Norm reduceGatherings = new ReduceGatheringsNorm();
-//            Norm ifSickStayHome = new IfSickStayHomeNorm();
-//            this.platform.getAgents().values().forEach(x -> {
-//                x.addExternalTrigger(new NewNormTrigger(maskNorm));
-//                x.addExternalTrigger(new NewNormTrigger(distanceNorm));
-//                x.addExternalTrigger(new NewNormTrigger(schoolsClosed));
-//                x.addExternalTrigger(new NewNormTrigger(officesClosed));
-//                x.addExternalTrigger(new NewNormTrigger(restaurantsClosed));
-//                x.addExternalTrigger(new NewNormTrigger(smallGroupsNorm));
-//                x.addExternalTrigger(new NewNormTrigger(ifSickStayHome));
-//                x.addExternalTrigger(new NewNormTrigger(reduceGatherings));
-//            });
+        processNormUpdates();
+    }
+
+    private void processNormUpdates() {
+        LocalDate today = this.startDate.plusDays(this.currentTick);
+        if(this.normSchedule.containsKey(today)) {
+            for(NormContainer norm : this.normSchedule.get(today)) {
+                if(norm.getStartDate().equals(today)) {
+                    if(norm.getNorm() != null) {
+                        this.observationNotifier.notifyNorm(norm.getNorm());
+                        LOGGER.log(Level.INFO, "Activated norm " + norm.getNorm().toString());
+                    }
+                    if(!norm.getComment().isBlank())
+                        LOGGER.log(Level.INFO, norm.getComment());
+                } else if (norm.getEndDate().equals(today) && norm.getNorm() != null) {
+                    this.observationNotifier.notifyNormCancelled(norm.getNorm());
+                    LOGGER.log(Level.INFO, "Inactivated norm " + norm.getNorm().toString());
+                }
+            }
         }
     }
 

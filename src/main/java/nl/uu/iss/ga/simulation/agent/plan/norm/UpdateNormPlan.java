@@ -18,7 +18,8 @@ public class UpdateNormPlan extends RunOncePlan<CandidateActivity> {
     @Override
     public CandidateActivity executeOnce(PlanToAgentInterface<CandidateActivity> planToAgentInterface) throws PlanExecutionError {
         NormContext context = planToAgentInterface.getContext(NormContext.class);
-        context.replaceNorm(this.updatedNorm.getNorm());
+        // TODO ?
+//        context.replaceNorm(this.updatedNorm.getNorm());
         return null;
     }
 }

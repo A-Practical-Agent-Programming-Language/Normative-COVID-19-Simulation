@@ -96,7 +96,7 @@ public class Simulation {
     }
 
     private SimulationEngine<CandidateActivity> getLocalSimulationEngine() {
-        return new DefaultSimulationEngine<>(this.platform, arguments.getIterations(), this.environmentInterface);
+        return new DefaultSimulationEngine<>(this.platform, (int)arguments.getIterations(), this.environmentInterface);
     }
 
     private SimulationEngine<CandidateActivity> getPansimSimulationEngine() {

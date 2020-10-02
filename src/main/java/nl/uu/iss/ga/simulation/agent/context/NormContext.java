@@ -22,37 +22,19 @@ public class NormContext implements Context {
      * @param norm      Norm
      */
     public void addNorm(Norm norm) {
-        this.regimentedNorms.add(norm);
-    }
-
-    public void addNorm(NonRegimentedNorm norm) {
-        this.nonRegimentedNorms.add(norm);
-    }
-
-    public <T extends Norm> T replaceNorm(T newNorm) {
-        T removed = null;
-        for(Norm norm : this.regimentedNorms) {
-            if(norm.getClass().equals(newNorm.getClass())) {
-                removed = (T) norm;
-                this.regimentedNorms.remove(norm);
-                break;
-            }
+        if (norm instanceof NonRegimentedNorm) {
+            this.nonRegimentedNorms.add((NonRegimentedNorm)norm);
+        } else {
+            this.regimentedNorms.add(norm);
         }
-        addNorm(newNorm);
-        return removed;
     }
 
-    public <T extends NonRegimentedNorm> T replaceNorm(T newNorm) {
-        T removed = null;
-        for(Norm norm : this.nonRegimentedNorms) {
-            if(norm.getClass().equals(newNorm.getClass())) {
-                removed = (T) norm;
-                this.nonRegimentedNorms.remove(norm);
-                break;
-            }
+    public void removeNorm(Norm norm) {
+        if(norm instanceof NonRegimentedNorm) {
+            this.nonRegimentedNorms.remove(norm);
+        } else {
+            this.regimentedNorms.remove(norm);
         }
-        addNorm(newNorm);
-        return removed;
     }
 
     public List<Norm> getNorms() {
