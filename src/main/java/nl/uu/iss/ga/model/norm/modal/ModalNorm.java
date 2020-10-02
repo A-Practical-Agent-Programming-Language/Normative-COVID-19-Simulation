@@ -10,12 +10,22 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public abstract class ModalNorm extends NonRegimentedNorm {
 
+    public static double[] generalMaskAttitudes =
+    {
+        0.079939529,
+        0.082918523,
+        0.12131795,
+        0.207724698,
+        0.508093571
+    };
+
+    public static double[] generalMaskAttitudeProbabilities =
+    {
+            0d, .25, .5, .75, 1
+    };
+
     protected static final int DAYS_LOOKBACK = 14;
 
-    @Override
-    public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
-        return !activity.getActivityType().equals(ActivityType.HOME);
-    }
 
     @Override
     public double calculateAttitude(AgentContextInterface<CandidateActivity> agentContextInterface, Activity activity) {

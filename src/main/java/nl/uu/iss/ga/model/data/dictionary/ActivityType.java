@@ -11,7 +11,7 @@ public enum ActivityType implements CodeTypeInterface {
     OTHER(4),
     SCHOOL(5),
     UNKNOWN_OTHER(6),
-    UNKNOWN(7); // TODO This occurs in the data?
+    RELIGIOUS(7); // TODO This occurs in the data?
 
     private final int code;
 

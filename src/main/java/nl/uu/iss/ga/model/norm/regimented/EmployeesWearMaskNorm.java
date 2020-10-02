@@ -11,7 +11,8 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 public class EmployeesWearMaskNorm extends Norm {
     @Override
     public CandidateActivity transformActivity(CandidateActivity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
-        return null;
+        activity.setMask(true);
+        return activity;
     }
 
     @Override

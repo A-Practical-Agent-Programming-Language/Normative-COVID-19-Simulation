@@ -2,8 +2,10 @@ package main.java.nl.uu.iss.ga.model.norm.regimented;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
+import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public class ReduceBusinessCapacityNorm extends Norm {
@@ -38,6 +40,7 @@ public class ReduceBusinessCapacityNorm extends Norm {
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         // TODO? Capacity is 50% of what is normally the minumum.
         // Let's say this norm transforms an activity to NULL (i.e. cancel) in 50% of the cases?
-        return false;
+        return activity.getActivityType().equals(ActivityType.OTHER) &&
+                agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() < this.capacityPercentage;
     }
 }

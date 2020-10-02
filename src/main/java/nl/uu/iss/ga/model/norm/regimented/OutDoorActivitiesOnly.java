@@ -13,7 +13,8 @@ public class OutDoorActivitiesOnly extends Norm {
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
-        // TODO how?
+        // Ignore because we do not have this data
+        // TODO alternative, probability that it applies?
         return false;
     }
 }

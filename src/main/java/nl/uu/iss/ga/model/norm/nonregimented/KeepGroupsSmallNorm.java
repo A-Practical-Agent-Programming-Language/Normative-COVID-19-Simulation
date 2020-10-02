@@ -85,9 +85,9 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
 
     static enum APPLIES {
         NONE(),
-        PUBLIC(ActivityType.UNKNOWN, ActivityType.UNKNOWN_OTHER, ActivityType.OTHER),
-        PRIVATE(ActivityType.OTHER, ActivityType.UNKNOWN, ActivityType.UNKNOWN_OTHER),
-        ALL(ActivityType.OTHER, ActivityType.UNKNOWN, ActivityType.UNKNOWN_OTHER); // TODO they're all the same?
+        PUBLIC(ActivityType.RELIGIOUS, ActivityType.UNKNOWN_OTHER, ActivityType.OTHER),
+        PRIVATE(ActivityType.OTHER, ActivityType.RELIGIOUS, ActivityType.UNKNOWN_OTHER),
+        ALL(ActivityType.WORK, ActivityType.SHOP, ActivityType.OTHER, ActivityType.SCHOOL, ActivityType.UNKNOWN_OTHER, ActivityType.RELIGIOUS);
 
         private List<ActivityType> applicableActivityTypes;
 

@@ -6,6 +6,7 @@ import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
+import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public class StayHomeNorm extends NonRegimentedNorm {
@@ -35,7 +36,7 @@ public class StayHomeNorm extends NonRegimentedNorm {
 
     @Override
     public double calculateAttitude(AgentContextInterface<CandidateActivity> agentContextInterface, Activity activity) {
-        return 0;
+        return 1 - agentContextInterface.getContext(BeliefContext.class).getGovernmentTrustFactor();
     }
 
     @Override

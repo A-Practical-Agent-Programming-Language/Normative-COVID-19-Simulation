@@ -28,7 +28,8 @@ public class NormFactory {
             case "SmallGroups":
                 return SmallGroupsFromCSVLine(keyValue);
             case "EncourageSocialDistance":
-                return EncourageSocialDistanceFromCSVLine(keyValue);
+//                return EncourageSocialDistanceFromCSVLine(keyValue);
+                return MaintainDistanceFromCSVLine(keyValue);
             case "StayHomeSick":
                 return StayHomeSickFromCSVLine(keyValue);
             case "StayHome":
@@ -47,6 +48,7 @@ public class NormFactory {
                 return EmployeesWearMaskFromCSVLine(keyValue);
             case "TakeawayAndOutdoorOnly":
                 return TakeawayAndOutdoorOnlyFromCSVLine(keyValue);
+                // TODO wearMaskIndoors is not here?
             default:
                 LOGGER.log(Level.WARNING, String.format("Could not map norm identifier to norm class: \"%s\"%n", keyValue.get("norm")));
                 return null;
