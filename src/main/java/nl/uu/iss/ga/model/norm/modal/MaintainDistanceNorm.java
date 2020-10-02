@@ -8,10 +8,6 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public class MaintainDistanceNorm extends ModalNorm {
 
-    public MaintainDistanceNorm() {
-        this.setParameter("distance", "1.5m");
-    }
-
     @Override
     public CandidateActivity transformActivity(CandidateActivity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         return activity.clone().setNormApplied(this).setDistancing(true);

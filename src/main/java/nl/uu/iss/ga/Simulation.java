@@ -5,10 +5,7 @@ import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
-import main.java.nl.uu.iss.ga.model.reader.ActivityFileReader;
-import main.java.nl.uu.iss.ga.model.reader.HouseholdReader;
-import main.java.nl.uu.iss.ga.model.reader.LocationFileReader;
-import main.java.nl.uu.iss.ga.model.reader.PersonReader;
+import main.java.nl.uu.iss.ga.model.reader.*;
 import main.java.nl.uu.iss.ga.pansim.PansimSimulationEngine;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
@@ -54,6 +51,7 @@ public class Simulation {
     private final PersonReader personReader;
     private final LocationFileReader locationFileReader;
     private final ActivityFileReader activityFileReader;
+    private final NormScheduleReader normScheduleReader;
 
     private Platform platform;
     private TickExecutor<CandidateActivity> tickExecutor;
@@ -66,7 +64,8 @@ public class Simulation {
     public Simulation(ArgParse arguments) {
         this.arguments = arguments;
 
-        this.householdReader = new HouseholdReader(arguments.getHouseholdsFiles(), 1 - arguments.getFractionliberal());
+        this.normScheduleReader = new NormScheduleReader(arguments.getNormsfile());
+        this.householdReader = new HouseholdReader(arguments.getHouseholdsFiles(), 1 - arguments.getFractionliberal(), arguments.getRandom());
         this.personReader = new PersonReader(arguments.getPersonsFiles(), householdReader.getHouseholds());
         this.locationFileReader = new LocationFileReader(arguments.getLocationsfiles());
         this.activityFileReader = new ActivityFileReader(arguments.getActivityFiles(), this.locationFileReader.getLocations());
@@ -86,7 +85,13 @@ public class Simulation {
         this.tickExecutor = new DefaultBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getRandom());
         this.platform = Platform.newPlatform(tickExecutor, messenger);
         this.observationNotifier = new DirectObservationNotifierNotifier(this.platform);
-        this.environmentInterface = new EnvironmentInterface(platform, this.observationNotifier, this.agentStateMap, this.arguments);
+        this.environmentInterface = new EnvironmentInterface(
+                platform,
+                this.observationNotifier,
+                this.agentStateMap,
+                this.normScheduleReader.getEventsMap(),
+                this.arguments
+        );
         this.simulationEngine = arguments.isConnectpansim() ? getPansimSimulationEngine() : getLocalSimulationEngine();
     }
 

@@ -14,4 +14,20 @@ public class NormContainer {
         this.endDate = endDate;
         this.comment = comment;
     }
+
+    public Norm getNorm() {
+        return norm;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public String getComment() {
+        return comment;
+    }
 }

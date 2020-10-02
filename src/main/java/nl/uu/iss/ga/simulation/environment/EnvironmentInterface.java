@@ -5,17 +5,8 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
-import main.java.nl.uu.iss.ga.model.norm.Norm;
-import main.java.nl.uu.iss.ga.model.norm.modal.MaintainDistanceNorm;
-import main.java.nl.uu.iss.ga.model.norm.modal.WearMaskNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.IfSickStayHomeNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.KeepGroupsSmallNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.OfficesClosedNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.ReduceGatheringsNorm;
-import main.java.nl.uu.iss.ga.model.norm.regimented.SchoolsClosed;
-import main.java.nl.uu.iss.ga.model.norm.regimented.TakeawayOnly;
+import main.java.nl.uu.iss.ga.model.norm.NormContainer;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.simulation.agent.trigger.NewNormTrigger;
 import main.java.nl.uu.iss.ga.util.ArgParse;
 import main.java.nl.uu.iss.ga.util.GyrationRadius;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
@@ -30,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +35,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
     private static final int INITIATE_NORMS = 7; // TODO too hardcoded. Should be per norm
     private final AgentStateMap agentStateMap;
+    private final Map<LocalDate, List<NormContainer>> normSchedule;
     private final ObservationNotifier observationNotifier;
     private final GyrationRadius gyrationRadius;
 
@@ -56,15 +49,23 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     private String descriptor;
 
 
-    public EnvironmentInterface(Platform platform, ObservationNotifier observationNotifier, AgentStateMap agentStateMap, ArgParse argParse) {
+    public EnvironmentInterface(
+            Platform platform,
+            ObservationNotifier observationNotifier,
+            AgentStateMap agentStateMap,
+            Map<LocalDate, List<NormContainer>> normSchedule,
+            ArgParse argParse
+    ) {
         this.instantiated = LocalDateTime.now();
         this.platform = platform;
         this.agentStateMap = agentStateMap;
+        this.normSchedule = normSchedule;
         this.observationNotifier = observationNotifier;
         this.gyrationRadius = new GyrationRadius();
         this.trackVisits = !argParse.isConnectpansim();
         this.node = argParse.getNode();
-        this.startDate = argParse.getStartdate();
+        this.startDate = argParse.getStartdate() == null ?
+                this.normSchedule.keySet().stream().findFirst().orElse(null) :argParse.getStartdate();
 
         if(this.startDate != null) {
             this.today = DayOfWeek.fromDate(this.startDate);
@@ -96,25 +97,27 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         } else {
             this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
         }
+
+        // TODO fix norms
         if (this.currentTick == INITIATE_NORMS) {
-            Norm maskNorm = new WearMaskNorm();
-            Norm distanceNorm = new MaintainDistanceNorm();
-            Norm schoolsClosed = new SchoolsClosed();
-            Norm officesClosed = new OfficesClosedNorm();
-            Norm smallGroupsNorm = new KeepGroupsSmallNorm();
-            Norm restaurantsClosed = new TakeawayOnly();
-            Norm reduceGatherings = new ReduceGatheringsNorm();
-            Norm ifSickStayHome = new IfSickStayHomeNorm();
-            this.platform.getAgents().values().forEach(x -> {
-                x.addExternalTrigger(new NewNormTrigger(maskNorm));
-                x.addExternalTrigger(new NewNormTrigger(distanceNorm));
-                x.addExternalTrigger(new NewNormTrigger(schoolsClosed));
-                x.addExternalTrigger(new NewNormTrigger(officesClosed));
-                x.addExternalTrigger(new NewNormTrigger(restaurantsClosed));
-                x.addExternalTrigger(new NewNormTrigger(smallGroupsNorm));
-                x.addExternalTrigger(new NewNormTrigger(ifSickStayHome));
-                x.addExternalTrigger(new NewNormTrigger(reduceGatherings));
-            });
+//            Norm maskNorm = new WearMaskNorm();
+//            Norm distanceNorm = new MaintainDistanceNorm();
+//            Norm schoolsClosed = new SchoolsClosed();
+//            Norm officesClosed = new OfficesClosedNorm();
+//            Norm smallGroupsNorm = new KeepGroupsSmallNorm();
+//            Norm restaurantsClosed = new TakeawayOnly();
+//            Norm reduceGatherings = new ReduceGatheringsNorm();
+//            Norm ifSickStayHome = new IfSickStayHomeNorm();
+//            this.platform.getAgents().values().forEach(x -> {
+//                x.addExternalTrigger(new NewNormTrigger(maskNorm));
+//                x.addExternalTrigger(new NewNormTrigger(distanceNorm));
+//                x.addExternalTrigger(new NewNormTrigger(schoolsClosed));
+//                x.addExternalTrigger(new NewNormTrigger(officesClosed));
+//                x.addExternalTrigger(new NewNormTrigger(restaurantsClosed));
+//                x.addExternalTrigger(new NewNormTrigger(smallGroupsNorm));
+//                x.addExternalTrigger(new NewNormTrigger(ifSickStayHome));
+//                x.addExternalTrigger(new NewNormTrigger(reduceGatherings));
+//            });
         }
     }
 

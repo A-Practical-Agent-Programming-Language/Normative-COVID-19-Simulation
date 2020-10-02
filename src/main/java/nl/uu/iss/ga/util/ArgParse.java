@@ -166,6 +166,7 @@ public class ArgParse {
             this.householdsFiles = findFilesInList(this.householdsFiles);
             this.personsFiles = findFilesInList(this.personsFiles);
             this.locationsfiles = findFilesInList(this.locationsfiles);
+            this.normsfile = findFile(this.normsfile);
             if(this.statefiles != null) {
                 this.statefiles = findFilesInList(this.statefiles);
             }

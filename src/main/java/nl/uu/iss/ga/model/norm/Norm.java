@@ -8,21 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Norm {
-
-    private Map<String, Object> parameters = new HashMap<>();
-
-    protected void setParameter(String name, Object value) {
-        this.parameters.put(name, value);
-    }
-
-    public Object getParameter(String name) {
-        return this.parameters.get(name);
-    }
-
-    public HashMap<String, Object> getParameters() {
-        return new HashMap<>(this.parameters);
-    }
-
     /**
      * Transforms the passed activity in another activity by applying the norm
      *  @param activity              Activity to transform

@@ -39,6 +39,7 @@ public class ActivityFileReader {
     }
 
     private List<ActivitySchedule> readActivities(File activityScheduleFile) {
+        LOGGER.log(Level.INFO, "Reading activity file " + activityScheduleFile.toString());
         try(
                 FileInputStream is = new FileInputStream(activityScheduleFile);
                 Scanner s = new Scanner(is);

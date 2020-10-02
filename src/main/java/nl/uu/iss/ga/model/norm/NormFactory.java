@@ -48,64 +48,64 @@ public class NormFactory {
             case "TakeawayAndOutdoorOnly":
                 return TakeawayAndOutdoorOnlyFromCSVLine(keyValue);
             default:
-                LOGGER.log(Level.WARNING, "Could not map norm identifier to norm class: " + keyValue.get("norm"));
+                LOGGER.log(Level.WARNING, String.format("Could not map norm identifier to norm class: \"%s\"%n", keyValue.get("norm")));
                 return null;
         }
     }
 
     public static EncourageTeleworkNorm EncourageTeleworkFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new EncourageTeleworkNorm();
     }
 
     public static AllowWearMaskNorm AllowWearMaskFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new AllowWearMaskNorm();
     }
 
     public static SchoolsClosed SchoolsClosedFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new SchoolsClosed(keyValue.get("param"));
     }
 
     public static KeepGroupsSmallNorm SmallGroupsFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new KeepGroupsSmallNorm(keyValue.get("param"));
     }
 
     public static EncourageDistanceNorm EncourageSocialDistanceFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new EncourageDistanceNorm();
     }
 
     public static IfSickStayHomeNorm StayHomeSickFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new IfSickStayHomeNorm();
     }
 
     public static StayHomeNorm StayHomeFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new StayHomeNorm(keyValue.get("param"));
     }
 
     public static ReduceBusinessCapacityNorm ReduceBusinessCapacityFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new ReduceBusinessCapacityNorm(keyValue.get("param"));
     }
 
     public static BusinessClosedNorm BusinessClosedFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new BusinessClosedNorm(keyValue.get("param"));
     }
 
     public static TakeawayOnly TakeawayOnlyFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new TakeawayOnly();
     }
 
     public static MaintainDistanceNorm MaintainDistanceFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new MaintainDistanceNorm();
     }
 
     public static BeachesClosedNorm BeachesClosedFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new BeachesClosedNorm();
     }
 
     public static EmployeesWearMaskNorm EmployeesWearMaskFromCSVLine(Map<String, String> keyValue) {
-        return null;
+        return new EmployeesWearMaskNorm();
     }
 
-    public static TakeawayOnly TakeawayAndOutdoorOnlyFromCSVLine(Map<String, String> keyValue) {
-        return null;
+    public static OutDoorActivitiesOnly TakeawayAndOutdoorOnlyFromCSVLine(Map<String, String> keyValue) {
+        return new OutDoorActivitiesOnly();
     }
 }

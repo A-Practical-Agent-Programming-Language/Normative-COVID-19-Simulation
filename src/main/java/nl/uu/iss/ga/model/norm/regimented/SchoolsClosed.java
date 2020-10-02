@@ -8,6 +8,16 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public class SchoolsClosed extends Norm {
 
+    private APPLIES appliesTo;
+
+    public SchoolsClosed(String parameter) {
+        appliesTo = APPLIES.valueOf(parameter);
+    }
+
+    public SchoolsClosed(APPLIES appliesTo) {
+        this.appliesTo = appliesTo;
+    }
+
     @Override
     public CandidateActivity transformActivity(CandidateActivity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         CandidateActivity transformed = activity.clone();
@@ -18,5 +28,10 @@ public class SchoolsClosed extends Norm {
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         return activity.getActivityType().equals(ActivityType.SCHOOL);
+    }
+
+    static enum APPLIES{
+        K12,
+        HIGHER_EDUCATION;
     }
 }

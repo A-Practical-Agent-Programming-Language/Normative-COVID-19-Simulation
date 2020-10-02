@@ -37,6 +37,7 @@ public class PersonReader {
     }
 
     private Map<Long, Person> readPersons(File personsFile) {
+        LOGGER.log(Level.INFO, "Reading persons file " + personsFile);
         try(
                 FileInputStream is = new FileInputStream(personsFile);
                 Scanner s = new Scanner(is);

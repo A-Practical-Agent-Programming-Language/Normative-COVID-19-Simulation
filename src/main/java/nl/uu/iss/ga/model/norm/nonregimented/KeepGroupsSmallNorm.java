@@ -3,21 +3,37 @@ package main.java.nl.uu.iss.ga.model.norm.nonregimented;
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public class KeepGroupsSmallNorm extends NonRegimentedNorm {
-
-    public String PARAM_MAX_GROUP_SIZE = "max";
-
     private static final double CURVE_SLOPE_FACTOR = .2;
-
     private static final int N_DAYS_LOOKBACK = 7;
 
-    public KeepGroupsSmallNorm() {
-        setParameter(PARAM_MAX_GROUP_SIZE, 10);
+    private APPLIES appliesToSetting;
+    private int maxAllowed;
+
+    public KeepGroupsSmallNorm(String parameter) {
+        boolean pu = parameter.toLowerCase().contains("public");
+        boolean pr = parameter.toLowerCase().contains("private");
+        if((pr && pu) || parameter.toLowerCase().contains("pp")) {
+            appliesToSetting = APPLIES.ALL;
+        } else if (pr) {
+            appliesToSetting = APPLIES.PRIVATE;
+        } else if (pu) {
+            appliesToSetting = APPLIES.PUBLIC;
+        } else {
+            appliesToSetting = APPLIES.NONE;
+        }
+        maxAllowed = ParserUtil.parseAsInt(parameter.split(",")[0]);
+    }
+
+    public KeepGroupsSmallNorm(APPLIES appliesToSetting, int maxAllowed) {
+        this.appliesToSetting = appliesToSetting;
+        this.maxAllowed = maxAllowed;
     }
 
     @Override
@@ -30,7 +46,7 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
 
         // The difference between allowed and observed (larger than 0, otherwise this norm is not applicable)
         // We calculate symptomatic people double, to increase odds of adhering
-        double diff = averageSeenPreviously - (int) getParameter(PARAM_MAX_GROUP_SIZE);
+        double diff = averageSeenPreviously - this.maxAllowed;
 
         // Normalize the difference to be between 0 and 1
         double normalizedDiff = 1 / (CURVE_SLOPE_FACTOR * diff + 1);
@@ -50,6 +66,21 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         LocationHistoryContext context = agentContextInterface.getContext(LocationHistoryContext.class);
         double averageSeenPreviously = context.getLastDaysSeenAtAverage(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
-        return !activity.getActivityType().equals(ActivityType.HOME) && averageSeenPreviously > (int) getParameter(PARAM_MAX_GROUP_SIZE);
+        return !activity.getActivityType().equals(ActivityType.HOME) && averageSeenPreviously > this.maxAllowed;
+    }
+
+    public APPLIES getAppliesToSetting() {
+        return appliesToSetting;
+    }
+
+    public int getMaxAllowed() {
+        return maxAllowed;
+    }
+
+    static enum APPLIES {
+        NONE,
+        PUBLIC,
+        PRIVATE,
+        ALL
     }
 }

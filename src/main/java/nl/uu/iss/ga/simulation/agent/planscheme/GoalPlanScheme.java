@@ -81,7 +81,7 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
      */
     private boolean evaluateToIgnore(Norm norm, Activity activity) {
         return norm instanceof NonRegimentedNorm &&
-                Math.random() < ((NonRegimentedNorm) norm).calculateAttitude(this.agentContextInterface, activity);
+                this.agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() < ((NonRegimentedNorm) norm).calculateAttitude(this.agentContextInterface, activity);
     }
 
     private CandidateActivity applyNorms(Activity activity, List<Norm> norms) {

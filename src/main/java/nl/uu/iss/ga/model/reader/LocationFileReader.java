@@ -38,6 +38,7 @@ public class LocationFileReader {
     }
 
     private void readLocations(File locationFile) {
+        LOGGER.log(Level.INFO, "Reading locations file " + locationFile.toString());
         try(
                 FileInputStream is = new FileInputStream(locationFile);
                 Scanner s = new Scanner(is);

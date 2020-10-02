@@ -27,7 +27,7 @@ public abstract class ModalNorm extends NonRegimentedNorm {
 
         if(beliefContext.isSymptomatic()) {
                 // TODO skew a bit, but how much?
-                fractionMode += Math.random() * beliefContext.getGovernmentTrustFactor();
+                fractionMode += beliefContext.getRandom().nextDouble() * beliefContext.getGovernmentTrustFactor();
         }
 
         double attitude = (beliefContext.getGovernmentTrustFactor() + fractionMode) / 2;
