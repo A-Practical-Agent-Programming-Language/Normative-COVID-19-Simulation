@@ -16,6 +16,7 @@ public class BeachesClosedNorm extends Norm {
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
+        // TODO how to distinguish beaches?
         return false;
     }
 }

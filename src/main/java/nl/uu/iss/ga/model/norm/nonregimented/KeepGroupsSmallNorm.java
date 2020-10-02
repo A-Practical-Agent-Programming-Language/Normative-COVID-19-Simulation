@@ -9,6 +9,9 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class KeepGroupsSmallNorm extends NonRegimentedNorm {
     private static final double CURVE_SLOPE_FACTOR = .2;
     private static final int N_DAYS_LOOKBACK = 7;
@@ -64,9 +67,12 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
+        if(!this.appliesToSetting.applicableActivityTypes.contains(activity.getActivityType()))
+            return false;
+
         LocationHistoryContext context = agentContextInterface.getContext(LocationHistoryContext.class);
         double averageSeenPreviously = context.getLastDaysSeenAtAverage(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
-        return !activity.getActivityType().equals(ActivityType.HOME) && averageSeenPreviously > this.maxAllowed;
+        return averageSeenPreviously > this.maxAllowed;
     }
 
     public APPLIES getAppliesToSetting() {
@@ -78,9 +84,15 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
     }
 
     static enum APPLIES {
-        NONE,
-        PUBLIC,
-        PRIVATE,
-        ALL
+        NONE(),
+        PUBLIC(ActivityType.UNKNOWN, ActivityType.UNKNOWN_OTHER, ActivityType.OTHER),
+        PRIVATE(ActivityType.OTHER, ActivityType.UNKNOWN, ActivityType.UNKNOWN_OTHER),
+        ALL(ActivityType.OTHER, ActivityType.UNKNOWN, ActivityType.UNKNOWN_OTHER); // TODO they're all the same?
+
+        private List<ActivityType> applicableActivityTypes;
+
+        APPLIES(ActivityType... activityTypes) {
+            this.applicableActivityTypes = Arrays.asList(activityTypes);
+        }
     }
 }

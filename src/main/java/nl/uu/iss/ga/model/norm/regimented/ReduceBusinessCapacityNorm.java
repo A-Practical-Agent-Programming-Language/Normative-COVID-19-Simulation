@@ -36,6 +36,8 @@ public class ReduceBusinessCapacityNorm extends Norm {
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
+        // TODO? Capacity is 50% of what is normally the minumum.
+        // Let's say this norm transforms an activity to NULL (i.e. cancel) in 50% of the cases?
         return false;
     }
 }

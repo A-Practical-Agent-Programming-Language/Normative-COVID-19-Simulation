@@ -25,6 +25,7 @@ public class BusinessClosedNorm extends Norm {
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
+        // TODO? We don't really have "business" as data
         return false;
     }
 

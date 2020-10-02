@@ -98,6 +98,10 @@ public class Person implements Context {
         return occupation_socp;
     }
 
+    public Designation getDesignation() {
+        return designation;
+    }
+
     public static Person fromLine(Map<Long, Household> households, Map<String, String> keyValue) {
         return new Person(
                 households.get(ParserUtil.parseAsLong(keyValue.get("hid"))),

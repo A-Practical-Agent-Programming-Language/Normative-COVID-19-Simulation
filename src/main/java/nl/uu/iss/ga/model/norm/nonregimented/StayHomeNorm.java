@@ -2,6 +2,8 @@ package main.java.nl.uu.iss.ga.model.norm.nonregimented;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import main.java.nl.uu.iss.ga.model.data.Person;
+import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
@@ -43,7 +45,13 @@ public class StayHomeNorm extends NonRegimentedNorm {
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
-        return false;
+        if(this.appliesTo.equals(APPLIES.NONE))
+            return false;
+        if(this.appliesTo.equals(APPLIES.AGE)) {
+            return !activity.getActivityType().equals(ActivityType.HOME) && agentContextInterface.getContext(Person.class).getAge() >= this.age;
+        } else {
+            return !activity.getActivityType().equals(ActivityType.HOME);
+        }
     }
 
     static enum APPLIES{

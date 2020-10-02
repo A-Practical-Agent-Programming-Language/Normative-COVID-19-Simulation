@@ -13,6 +13,7 @@ public class OutDoorActivitiesOnly extends Norm {
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
+        // TODO how?
         return false;
     }
 }

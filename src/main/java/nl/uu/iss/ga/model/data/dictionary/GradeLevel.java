@@ -4,30 +4,35 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface
 
 public enum GradeLevel implements StringCodeTypeInterface {
 
-    NOT_ATTENDING("bb"),
-    NURSERY_SCHOOL_OR_PRESCHOOL("1"),
-    KINDERGARTEN("2"),
-    GRADE_1("3"),
-    GRADE_2("4"),
-    GRADE_3("5"),
-    GRADE_4("6"),
-    GRADE_5("7"),
-    GRADE_6("8"),
-    GRADE_7("9"),
-    GRADE_8("10"),
-    GRADE_9("11"),
-    GRADE_10("12"),
-    GRADE_11("13"),
-    GRADE_12("14"),
-    UNDERGRADUATE("15"),
-    GRADUATE_OR_PROFESSIONAL_BEYOND_BACHELOR("16");
+    NOT_ATTENDING("bb", false, false),
+    NURSERY_SCHOOL_OR_PRESCHOOL("1", false, false),
+    KINDERGARTEN("2", true, false),
+    GRADE_1("3", true, false),
+    GRADE_2("4", true, false),
+    GRADE_3("5", true, false),
+    GRADE_4("6", true, false),
+    GRADE_5("7", true, false),
+    GRADE_6("8", true, false),
+    GRADE_7("9", true, false),
+    GRADE_8("10", true, false),
+    GRADE_9("11", true, false),
+    GRADE_10("12", true, false),
+    GRADE_11("13", false, true),
+    GRADE_12("14", false, true),
+    UNDERGRADUATE("15", false, true),
+    GRADUATE_OR_PROFESSIONAL_BEYOND_BACHELOR("16", false, true);
 
     private final int code;
     private final String stringCode;
 
-    GradeLevel(String code) {
+    private final boolean isK12;
+    private final boolean isHigher;
+
+    GradeLevel(String code, boolean isK12, boolean isHigher) {
         this.stringCode = code;
         this.code = StringCodeTypeInterface.parseStringcode(code);
+        this.isK12 = isK12;
+        this.isHigher = isHigher;
     }
 
     public int getCode() {
@@ -36,5 +41,13 @@ public enum GradeLevel implements StringCodeTypeInterface {
 
     public String getStringCode() {
         return this.stringCode;
+    }
+
+    public boolean isK12() {
+        return isK12;
+    }
+
+    public boolean isHigher() {
+        return isHigher;
     }
 }
