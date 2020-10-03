@@ -11,10 +11,14 @@ public class OutDoorActivitiesOnly extends Norm {
         return null;
     }
 
+    /**
+     * This norm is a placeholder, but currently never applicable, as we have no data to distinguish indoor from
+     * outdoor activities.
+     *
+     * An alternative could be to use a probability that any given activity is an outdoor activity
+     */
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
-        // Ignore because we do not have this data
-        // TODO alternative, probability that it applies?
         return false;
     }
 }

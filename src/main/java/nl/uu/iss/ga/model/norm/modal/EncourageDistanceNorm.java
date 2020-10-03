@@ -5,6 +5,9 @@ import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
+/**
+ * This norm is currently not used
+ */
 @Deprecated
 public class EncourageDistanceNorm extends ModalNorm {
 

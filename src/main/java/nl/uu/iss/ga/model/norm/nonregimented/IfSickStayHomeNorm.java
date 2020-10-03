@@ -7,6 +7,12 @@ import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
+/**
+ * People stay home if they are sick, with a probability indicates by how much they are inclined to follow government
+ * instructions, i.e. the governmentTrustFactor.
+ *
+ * Applies to all activities that take place outside the home environment
+ */
 public class IfSickStayHomeNorm extends NonRegimentedNorm {
     @Override
     public double calculateAttitude(AgentContextInterface<CandidateActivity> agentContextInterface, Activity activity) {

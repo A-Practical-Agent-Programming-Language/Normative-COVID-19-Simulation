@@ -8,6 +8,10 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
+/**
+ * When the government issues a closure of all businesses, we cancel all work-related activities for people
+ * who are not in the essential work force.
+ */
 public class BusinessClosedNorm extends Norm {
 
     private APPLIES appliesTo;
@@ -31,7 +35,6 @@ public class BusinessClosedNorm extends Norm {
         return agentContextInterface.getContext(Person.class).getDesignation().equals(Designation.none) &&
                 activity.getActivityType().equals(ActivityType.WORK) &&
                 this.appliesTo.equals(APPLIES.NONESSENTIALBUSINESSES);
-
         // TODO we ignore DMV, because we dont have this data
     }
 

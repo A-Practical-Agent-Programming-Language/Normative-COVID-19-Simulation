@@ -32,15 +32,13 @@ public class SchoolsClosed extends Norm {
         GradeLevel level = agentContextInterface.getContext(Person.class).getGrade_level();
         if(!activity.getActivityType().equals(ActivityType.SCHOOL))
             return false;
-        else if (this.appliesTo.equals(APPLIES.K12) && level.isK12())
-            return true;
-        else if(this.appliesTo.equals(APPLIES.HIGHER_EDUCATION) && level.isHigher())
-            return true;
         else
-            return false;
+            return
+                    (this.appliesTo.equals(APPLIES.K12) && level.isK12()) ||
+                    (this.appliesTo.equals(APPLIES.HIGHER_EDUCATION) && level.isHigher());
     }
 
-    static enum APPLIES{
+    enum APPLIES{
         K12,
         HIGHER_EDUCATION;
     }

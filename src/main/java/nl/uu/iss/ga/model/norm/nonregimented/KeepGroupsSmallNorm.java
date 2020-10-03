@@ -12,6 +12,18 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This norm was updated various times through the course of the first half of 2020, differing on activities
+ * it applied to, and the maximum number of people allowed.
+ *
+ *
+ * We chose to model this norm as non-regimented, and have peoples attitude depend on:
+ * <ul>
+ *     <li>Government trust factor (lower value means higher chance of violating)</li>
+ *     <li>Number of people seen previously (only a few more than allowed means higher chance of violating)</li>
+ *     <li>Fraction of those people who were symptomatic (higher value means lower chance of violating)</li>
+ * </ul>
+ */
 public class KeepGroupsSmallNorm extends NonRegimentedNorm {
     private static final double CURVE_SLOPE_FACTOR = .2;
     private static final int N_DAYS_LOOKBACK = 7;
@@ -51,7 +63,7 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         // We calculate symptomatic people double, to increase odds of adhering
         double diff = averageSeenPreviously - this.maxAllowed;
 
-        // Normalize the difference to be between 0 and 1
+        // Normalize the difference to be between 0 and 1, with smaller differences more likely to be ignored
         double normalizedDiff = 1 / (CURVE_SLOPE_FACTOR * diff + 1);
         double gov = 1 - beliefContext.getGovernmentTrustFactor();
         double fraction_symptomatic_factor = 1 - averageSymptomaticPreviously;
@@ -65,6 +77,13 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         return null;
     }
 
+    /**
+     * THis norm applies to all outdoor activities at locations were the agent previously observed more than the
+     * current maximum of people allowed.
+     *
+     * The consequence is that if an agent has not visited a location for the number of days they look back
+     * (@code{N_DAYS_LOOKBACK}) they will observe 0 people there, and thus this norm will not apply.
+     */
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         if(!this.appliesToSetting.applicableActivityTypes.contains(activity.getActivityType()))
@@ -83,7 +102,7 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         return maxAllowed;
     }
 
-    static enum APPLIES {
+    enum APPLIES {
         NONE(),
         PUBLIC(ActivityType.RELIGIOUS, ActivityType.UNKNOWN_OTHER, ActivityType.OTHER),
         PRIVATE(ActivityType.OTHER, ActivityType.RELIGIOUS, ActivityType.UNKNOWN_OTHER),

@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,8 +16,8 @@ public class AgentStateMap {
 
     private static final Logger LOGGER = Logger.getLogger(AgentStateMap.class.getName());
 
-    private final Map<Long, AgentID> pidToAgentMap = new ConcurrentHashMap<>();
-    private final Map<AgentID, Long> agentToPidMap = new ConcurrentHashMap<>();
+    private final Map<Long, AgentID> pidToAgentMap = new HashMap<>();
+    private final Map<AgentID, Long> agentToPidMap = new HashMap<>();
     private Map<AgentID, AgentState> agentStateMap;
     private Map<Long, AgentState> pidStateMap;
 
@@ -119,7 +118,7 @@ public class AgentStateMap {
     }
 
     private void reset() {
-        this.agentStateMap = new ConcurrentHashMap<>();
-        this.pidStateMap = new ConcurrentHashMap<>();
+        this.agentStateMap = new HashMap<>();
+        this.pidStateMap = new HashMap<>();
     }
 }

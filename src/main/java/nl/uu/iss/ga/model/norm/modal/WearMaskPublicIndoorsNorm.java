@@ -8,8 +8,10 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 import java.util.Arrays;
 
+/**
+ * See @code{ModalNorm} for all reasoning
+ */
 public class WearMaskPublicIndoorsNorm extends ModalNorm {
-
     public static final String NAME = "NORM_WEAR_MASK";
 
     @Override
@@ -17,6 +19,13 @@ public class WearMaskPublicIndoorsNorm extends ModalNorm {
         return activity.clone().setMask(true).setNormApplied(this);
     }
 
+    /**
+     * Applies to all indoor settings, i.e. Shopping, Religious, and "other" type activities
+     * @param activity              Activity to which this norm may or may not apply
+     * @param agentContextInterface Interface to agent's belief context
+     *
+     * @return
+     */
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         return Arrays.asList(ActivityType.SHOP, ActivityType.OTHER, ActivityType.RELIGIOUS)

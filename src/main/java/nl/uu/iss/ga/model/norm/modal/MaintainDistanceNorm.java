@@ -6,6 +6,9 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
+/**
+ * See @code{ModalNorm} for all reasoning
+ */
 public class MaintainDistanceNorm extends ModalNorm {
 
     @Override

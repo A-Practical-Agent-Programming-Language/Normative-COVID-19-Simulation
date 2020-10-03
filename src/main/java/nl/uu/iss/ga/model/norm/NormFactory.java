@@ -3,6 +3,7 @@ package main.java.nl.uu.iss.ga.model.norm;
 import main.java.nl.uu.iss.ga.model.norm.modal.AllowWearMaskNorm;
 import main.java.nl.uu.iss.ga.model.norm.modal.EncourageDistanceNorm;
 import main.java.nl.uu.iss.ga.model.norm.modal.MaintainDistanceNorm;
+import main.java.nl.uu.iss.ga.model.norm.modal.WearMaskPublicIndoorsNorm;
 import main.java.nl.uu.iss.ga.model.norm.nonregimented.EncourageTeleworkNorm;
 import main.java.nl.uu.iss.ga.model.norm.nonregimented.IfSickStayHomeNorm;
 import main.java.nl.uu.iss.ga.model.norm.nonregimented.KeepGroupsSmallNorm;
@@ -48,11 +49,29 @@ public class NormFactory {
                 return EmployeesWearMaskFromCSVLine(keyValue);
             case "TakeawayAndOutdoorOnly":
                 return TakeawayAndOutdoorOnlyFromCSVLine(keyValue);
-                // TODO wearMaskIndoors is not here?
+            case "WearMasInPublicIndoor":
+                return WearMasInPublicIndoor(keyValue);
+            case "ReduceBusinessHours":
+                return ReduceBusinessHours(keyValue);
+            case "ReduceHigherEducCapacity":
+                return ReduceHigherEducationCapacityNorm(keyValue);
+            case "":
             default:
                 LOGGER.log(Level.WARNING, String.format("Could not map norm identifier to norm class: \"%s\"%n", keyValue.get("norm")));
                 return null;
         }
+    }
+
+    public static ReduceHigherEducationCapacityNorm ReduceHigherEducationCapacityNorm(Map<String, String> keyValue) {
+        return new ReduceHigherEducationCapacityNorm();
+    }
+
+    public static ReduceBusinessHoursNorm ReduceBusinessHours(Map<String, String> keyValue) {
+        return new ReduceBusinessHoursNorm(keyValue.get("param"));
+    }
+
+    public static WearMaskPublicIndoorsNorm WearMasInPublicIndoor(Map<String, String> keyValue) {
+        return new WearMaskPublicIndoorsNorm();
     }
 
     public static EncourageTeleworkNorm EncourageTeleworkFromCSVLine(Map<String, String> keyValue) {
@@ -71,6 +90,7 @@ public class NormFactory {
         return new KeepGroupsSmallNorm(keyValue.get("param"));
     }
 
+    @Deprecated
     public static EncourageDistanceNorm EncourageSocialDistanceFromCSVLine(Map<String, String> keyValue) {
         return new EncourageDistanceNorm();
     }
