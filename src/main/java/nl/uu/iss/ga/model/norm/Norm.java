@@ -4,9 +4,6 @@ import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public abstract class Norm {
     /**
      * Transforms the passed activity in another activity by applying the norm
@@ -26,4 +23,20 @@ public abstract class Norm {
      * @return Boolean indicating if this norm applies
      */
     public abstract boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface);
+
+
+    /**
+     * Produces a weight for the given value, that is close to zero, if the value is close to 0.5 (which indicates
+     * an agent is ambivalent).
+     *
+     * Note that the weights should be used to divide the sum of the factors for weighing a norm
+     *
+     * See @url{https://www.desmos.com/calculator/vicfmok1xi}
+     *
+     * @param value     A value that should be weighted
+     * @return          A weight between 0 and 1 (inclusive)
+     */
+    protected static double weight(double value) {
+        return Math.abs(Math.pow((2 * value) - 1, 3));
+    }
 }

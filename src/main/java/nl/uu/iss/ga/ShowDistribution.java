@@ -12,10 +12,6 @@ public class ShowDistribution {
     public static void main(String[] args) {
         Map<Integer, CountedDouble> countMap = new TreeMap<>();
 
-        for(int i = 0; i < 10000; i++) {
-            System.out.println(RANDOM.nextDouble());
-        }
-
         for(int i = 0; i < 100000; i++) {
             double d = nextSkewedBoundedDouble(.25);
             int di = (int)Math.round(d * 100);
@@ -29,7 +25,6 @@ public class ShowDistribution {
         for(CountedDouble cd : countMap.values().stream().sorted().collect(Collectors.toList())) {
             System.out.println(cd);
         }
-
     }
 
     static public double nextSkewedBoundedDouble(double mode) {
@@ -62,11 +57,6 @@ public class ShowDistribution {
         public String toString() {
             return String.format("%.5f:\t\t%s", this.d / 100, "+".repeat(this.count / 10));
         }
-
-        @Override
-//        public int compareTo(CountedDouble countedDouble) {
-//            return countedDouble.count - this.count;
-//        }
 
         public int compareTo(CountedDouble countedDouble) {
             return countedDouble.d - this.d < 0 ? -1 : countedDouble.d - this.d == 0 ? 0 : 1;

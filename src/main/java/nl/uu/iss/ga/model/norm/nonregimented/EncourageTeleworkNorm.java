@@ -37,18 +37,26 @@ public class EncourageTeleworkNorm extends NonRegimentedNorm {
 
 
 
-        double average = 0;
-        average += agentContextInterface.getContext(BeliefContext.class).getGovernmentTrustFactor();
+        // Factors
+        double gtf = 1 - agentContextInterface.getContext(BeliefContext.class).getGovernmentTrustFactor();
 
         // How many symptomatic people were there at the office previously
-        average += 1 - historyContext.getLastDaysFractionSymptomaticAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
+        double fractionSymptomatic = 1 - historyContext.getLastDaysFractionSymptomaticAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
 
         // How likely is it any given person in the work force can work from home
-        average += pct_accomodated_work_from_home;
+        double probabilityAccomodated = pct_accomodated_work_from_home;
 
         // TODO Household income as proxy for how likely they can work from home?
 
-        return average / 3;
+
+        // Weights
+        double gtfWeight = weight(gtf);
+        double fsWeight = weight(fractionSymptomatic);
+        double paWeight = weight(probabilityAccomodated);
+
+        return ((gtfWeight * gtf) + (fsWeight * fractionSymptomatic) + (paWeight * probabilityAccomodated)) /
+                (gtfWeight + fsWeight + paWeight);
+
     }
 
     @Override

@@ -39,7 +39,6 @@ public abstract class ModalNorm extends NonRegimentedNorm {
 
         // TODO only look at current location?
         double fractionMode = getFractionWithModeLastDays(locationHistoryContext, DAYS_LOOKBACK);
-
         if(beliefContext.isSymptomatic()) {
             // This skew is arbitrary. Multiplying to values less than 1 will result in an even lower value
             // than the smallest of the two multiplied values.
@@ -51,7 +50,15 @@ public abstract class ModalNorm extends NonRegimentedNorm {
             fractionMode += beliefContext.getRandom().nextDouble() * beliefContext.getGovernmentTrustFactor();
         }
 
-        return (1 - beliefContext.getGovernmentTrustFactor() + 1 - fractionMode) / 2;
+        // Factors
+        fractionMode = 1 - fractionMode;
+        double gtf = 1 - beliefContext.getGovernmentTrustFactor();
+
+        // Weights
+        double modeWeight = weight(fractionMode);
+        double gtfWeight = weight(gtf);
+
+        return ((gtfWeight * gtf) + (modeWeight * fractionMode)) / (modeWeight + gtfWeight);
     }
 
     abstract double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, int days);

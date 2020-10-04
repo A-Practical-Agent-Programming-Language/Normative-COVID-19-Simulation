@@ -63,13 +63,21 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         // We calculate symptomatic people double, to increase odds of adhering
         double diff = averageSeenPreviously - this.maxAllowed;
 
+        // Factors
+
         // Normalize the difference to be between 0 and 1, with smaller differences more likely to be ignored
         double normalizedDiff = 1 / (CURVE_SLOPE_FACTOR * diff + 1);
         double gov = 1 - beliefContext.getGovernmentTrustFactor();
         double fraction_symptomatic_factor = 1 - averageSymptomaticPreviously;
 
+        // Weights
+        double ndWeight = weight(normalizedDiff);
+        double govWeight = weight(gov);
+        double fsfWeight = weight(fraction_symptomatic_factor);
+
         // Weigh the value by how much the agent wants to follow norm and the risk involved with the number of symptomatic people
-        return (normalizedDiff + gov + fraction_symptomatic_factor) / 3;
+        return ((ndWeight * normalizedDiff) + (govWeight * gov) + (fsfWeight * fraction_symptomatic_factor)) /
+                (ndWeight + govWeight + fsfWeight);
     }
 
     @Override
