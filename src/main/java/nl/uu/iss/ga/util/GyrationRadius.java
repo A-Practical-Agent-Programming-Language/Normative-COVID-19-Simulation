@@ -40,12 +40,14 @@ public class GyrationRadius {
     private void writeResultsTickInColumn(LocalDate firstDate, BufferedWriter bw, Map<AgentID, Long> agentIDpidMap) throws IOException {
         StringBuilder header = new StringBuilder().append("pid;");
         String[] averages = new String[this.radii.size()];
+        bw.write("pid;");
         for(long i = 0; i < this.radii.size(); i++) {
-            if(firstDate == null) {
-                header.append(i).append(";");
+            if (firstDate == null) {
+                bw.write(Long.toString(i));
             } else {
-                header.append(firstDate.plusDays(i).format(DateTimeFormatter.ISO_DATE)).append(";");
+                bw.write(firstDate.plusDays(i).format(DateTimeFormatter.ISO_DATE));
             }
+            bw.write(";");
             averages[(int)i] = Double.toString(this.radii.get(i).values().stream().reduce(Double::sum).orElse(0d) / this.radii.get(i).size());
         }
 

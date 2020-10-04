@@ -4,6 +4,7 @@ import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.data.dictionary.GradeLevel;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
@@ -37,7 +38,8 @@ public class ReduceHigherEducationCapacityNorm extends Norm {
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         boolean isSchool = activity.getActivityType().equals(ActivityType.SCHOOL);
-        boolean isHigherEducation = agentContextInterface.getContext(Person.class).getGrade_level().isHigher();
+        GradeLevel level = agentContextInterface.getContext(Person.class).getGrade_level();
+        boolean isHigherEducation = level != null && level.isHigher();
         boolean isTooManyPeople = agentContextInterface.getContext(LocationHistoryContext.class).getLastDaysSeenAt(14, activity.getLocation().getLocationID()) > 50;
         boolean isOnlineCourse = agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() < FRACTION_COURSES_ONLINE;
 

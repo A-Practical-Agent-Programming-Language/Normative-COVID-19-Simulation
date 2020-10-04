@@ -46,8 +46,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     private final LocalDate startDate;
     private DayOfWeek today = DayOfWeek.MONDAY;
     private final int node;
-    private String descriptor;
-
+    private final String descriptor;
 
     public EnvironmentInterface(
             Platform platform,
@@ -66,6 +65,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.node = argParse.getNode();
         this.startDate = argParse.getStartdate() == null ?
                 this.normSchedule.keySet().stream().findFirst().orElse(null) : argParse.getStartdate();
+        this.descriptor = argParse.getDescriptor();
 
         if(this.startDate != null) {
             this.today = DayOfWeek.fromDate(this.startDate);
