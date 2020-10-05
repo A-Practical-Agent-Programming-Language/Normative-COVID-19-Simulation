@@ -1,39 +1,26 @@
 package main.java.nl.uu.iss.ga;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
-import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
-import main.java.nl.uu.iss.ga.model.reader.*;
+import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
 import main.java.nl.uu.iss.ga.pansim.PansimSimulationEngine;
-import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
-import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
-import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
-import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.environment.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.environment.EnvironmentInterface;
-import main.java.nl.uu.iss.ga.util.ArgParse;
 import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
-import main.java.nl.uu.iss.ga.util.Methods;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
-import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
-import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentArguments;
-import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultBlockingTickExecutor;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultSimulationEngine;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.SimulationEngine;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class Simulation {
     private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());;
@@ -43,46 +30,55 @@ public class Simulation {
         new Simulation(parser);
     }
 
-    // TODO, check if all agents start and end home (sanity check when processing schedules)
-    // TODO check if gaps aren't too weird
-
     private final ArgParse arguments;
-    private final HouseholdReader householdReader;
-    private final PersonReader personReader;
-    private final LocationFileReader locationFileReader;
-    private final ActivityFileReader activityFileReader;
     private final NormScheduleReader normScheduleReader;
 
     private Platform platform;
-    private TickExecutor<CandidateActivity> tickExecutor;
+    private DefaultBlockingTickExecutor<CandidateActivity> tickExecutor;
     private EnvironmentInterface environmentInterface;
     private SimulationEngine<CandidateActivity> simulationEngine;
 
-    private final AgentStateMap agentStateMap;
+    private AgentStateMap agentStateMap;
+
     private ObservationNotifier observationNotifier;
 
     public Simulation(ArgParse arguments) {
         this.arguments = arguments;
+        this.normScheduleReader = new NormScheduleReader(arguments.getNormFile());
+        this.tickExecutor = new DefaultBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getSystemWideRandom());
 
-        this.normScheduleReader = new NormScheduleReader(arguments.getNormsfile());
-        this.householdReader = new HouseholdReader(arguments.getHouseholdsFiles(), 1 - arguments.getFractionliberal(), arguments.getRandom());
-        this.personReader = new PersonReader(arguments.getPersonsFiles(), householdReader.getHouseholds());
-        this.locationFileReader = new LocationFileReader(arguments.getLocationsfiles());
-        this.activityFileReader = new ActivityFileReader(arguments.getActivityFiles(), this.locationFileReader.getLocations());
-
-        this.agentStateMap = arguments.getStatefiles() == null || arguments.getStatefiles().isEmpty() ?
-                new AgentStateMap(this.personReader.getPersons(), arguments.getRandom()) :
-                new AgentStateMap(arguments.getStatefiles(), arguments.getRandom());
-
+        readCountyData();
         preparePlatform();
-        createAgents();
+
+        for(ConfigModel county : this.arguments.getCounties()) {
+            county.createAgents(this.platform, this.observationNotifier, this.environmentInterface);
+        }
 
         this.simulationEngine.start();
     }
 
+    private void readCountyData() {
+        if(arguments.getCounties().size() > 1) {
+            List<Callable<Void>> callables = new ArrayList<>();
+            arguments.getCounties().forEach(x -> callables.add(x.getAsyncLoadFiles()));
+            try {
+                this.tickExecutor.useExecutorForTasks(callables);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to read files", e);
+                System.exit(9);
+            }
+        } else if (!arguments.getCounties().isEmpty()){
+            arguments.getCounties().get(0).loadFiles();
+        } else {
+            LOGGER.log(Level.INFO, "No counties found");
+            System.exit(0);
+        }
+        this.agentStateMap = mergeStateMaps();
+    }
+
     private void preparePlatform() {
         DefaultMessenger messenger = new DefaultMessenger();
-        this.tickExecutor = new DefaultBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getRandom());
+
         this.platform = Platform.newPlatform(tickExecutor, messenger);
         this.observationNotifier = new DirectObservationNotifierNotifier(this.platform);
         this.environmentInterface = new EnvironmentInterface(
@@ -103,83 +99,9 @@ public class Simulation {
         return new PansimSimulationEngine(this.platform, this.observationNotifier, this.agentStateMap, this.environmentInterface);
     }
 
-    private void createAgents() {
-        for (ActivitySchedule schedule : this.activityFileReader.getActivitySchedules()) {
-            schedule.splitActivitiesByDay();
-            createAgentFromSchedule(schedule);
-        }
+    private AgentStateMap mergeStateMaps() {
+        AgentStateMap merged = AgentStateMap.merge(this.arguments.getCounties().stream().map(ConfigModel::getAgentStateMap).collect(Collectors.toList()));
+        this.arguments.getCounties().forEach(x -> x.setAgentStateMap(merged));
+        return merged;
     }
-
-    private void createAgentFromSchedule(ActivitySchedule schedule) {
-        boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
-        double initialGovernmentAttitude = Methods.nextSkewedBoundedDouble(
-                arguments.getRandom(), isLiberal ? arguments.getModeliberal() : arguments.getModeconservative());
-
-        LocationEntry homeLocation = this.findHomeLocation(schedule);
-
-        NormContext normContext = new NormContext();
-        LocationHistoryContext locationHistoryContext = new LocationHistoryContext();
-        BeliefContext beliefContext = new BeliefContext(this.environmentInterface, homeLocation,
-                initialGovernmentAttitude);
-        AgentArguments<CandidateActivity> arguments = new AgentArguments<CandidateActivity>()
-                .addContext(this.personReader.getPersons().get(schedule.getPerson()))
-                .addContext(schedule)
-                .addContext(normContext)
-                .addContext(locationHistoryContext)
-                .addContext(beliefContext)
-                .addContext(new DayPlanContext())
-                .addExternalTriggerPlanScheme(new NormPlanScheme())
-                .addExternalTriggerPlanScheme(new EnvironmentTriggerPlanScheme())
-                .addGoalPlanScheme(new GoalPlanScheme());
-        try {
-            URI uri = new URI(null, String.format("agent-%04d", schedule.getPerson()),
-                    platform.getHost(), platform.getPort(), null, null, null);
-            AgentID aid = new AgentID(uri);
-            Agent<CandidateActivity> agent = new Agent<>(this.platform, arguments, aid);
-            for(Activity activity : schedule.getSchedule().values()) {
-                agent.adoptGoal(activity);
-            }
-            this.agentStateMap.addAgent(aid, schedule.getPerson());
-            beliefContext.setAgentID(aid);
-            ((DirectObservationNotifierNotifier) this.observationNotifier).addNormContext(aid, schedule.getPerson(), normContext);
-            ((DirectObservationNotifierNotifier) this.observationNotifier).addLocationHistoryContext(aid, schedule.getPerson(), locationHistoryContext);
-        } catch (URISyntaxException e) {
-            LOGGER.log(Level.SEVERE, "Failed to create AgentID for agent " + schedule.getPerson(), e);
-        }
-    }
-
-    private LocationEntry findHomeLocation(ActivitySchedule schedule) {
-        long lid = this.personReader.getPersons().get(schedule.getPerson()).getHousehold().getLocationID();
-
-        for(Activity activity : schedule.getSchedule().values()) {
-            if(activity.getActivityType().equals(ActivityType.HOME) && activity.getLocation().getLocationID() == lid) {
-                return activity.getLocation();
-            }
-        }
-        LOGGER.log(Level.SEVERE,
-                String.format("No home location entry found for lid %d for person %d. Checked %d values",
-                lid, schedule.getPerson(), schedule.getSchedule().size()));
-        return null;
-    }
-
-    /**
-     * There are a number of detailedActivity codes for which I do not currently have the translation.
-     * This is not necessarily a problem, since we will hardly be using these detailed activities.
-     *
-     * This method prints those codes, along with the ActivityType they were paired with.
-     */
-    private void printUnknownDetailedActivityNumbers() {
-        if(this.activityFileReader.failedDetailedActivities.size() > 0) {
-            LOGGER.log(Level.WARNING,
-                    "Found the following detailed activity numbers that are not in the dictionary");
-            for(int missedNumbers : this.activityFileReader.failedDetailedActivities.keySet()) {
-                LOGGER.log(Level.WARNING,
-                String.format(
-                        "\t%d \t%s",
-                        missedNumbers,
-                        this.activityFileReader.failedDetailedActivities.get(missedNumbers).toString()));
-            }
-        }
-    }
-
 }

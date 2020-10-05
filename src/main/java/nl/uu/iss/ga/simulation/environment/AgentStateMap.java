@@ -21,6 +21,10 @@ public class AgentStateMap {
     private Map<AgentID, AgentState> agentStateMap;
     private Map<Long, AgentState> pidStateMap;
 
+    private AgentStateMap() {
+        reset();
+    }
+
     public AgentStateMap(List<File> initialStateFiles, Random rnd) {
         reset();
         for(File f : initialStateFiles) {
@@ -120,5 +124,16 @@ public class AgentStateMap {
     private void reset() {
         this.agentStateMap = new HashMap<>();
         this.pidStateMap = new HashMap<>();
+    }
+
+    public static AgentStateMap merge(List<AgentStateMap> maps) {
+        AgentStateMap merged = new AgentStateMap();
+        for(AgentStateMap map : maps) {
+            merged.pidStateMap.putAll(map.pidStateMap);
+            merged.agentStateMap.putAll(map.agentStateMap);
+            merged.pidToAgentMap.putAll(map.pidToAgentMap);
+            merged.agentToPidMap.putAll(map.agentToPidMap);
+        }
+        return merged;
     }
 }

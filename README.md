@@ -16,7 +16,7 @@ Prerequisites:
 Download Sim2APL from Bitbucket, and checkout the `feature/generic-plan-return` branch.
 
 ```bash
-$ git clone https://AJdeMooij@bitbucket.org/goldenagents/sim2apl.git 
+$ git clone https://AJdeMooij@bitbucket.org/goldenagents/sim2apl.git
 $ cd sim2apl
 $ git checkout origin/feature/generic-plan-return -b feature/generic-plan-return
 ```
@@ -40,3 +40,6 @@ $ mvn -U clean install
 
 The application requires various arguments, either when invoked from the command line or when used in an IDE.
 See [manual.txt](manual.txt) for more information, or invoke the program with the argument `--help`
+
+An example of a configuration file (using the [TOML](https://github.com/toml-lang/toml) language) is given in [config.toml](src/main/resources/config.toml) 
+

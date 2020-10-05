@@ -7,7 +7,7 @@ import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
 import main.java.nl.uu.iss.ga.model.norm.NormContainer;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.util.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.GyrationRadius;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
@@ -33,7 +33,6 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
     private static final Logger LOGGER = Logger.getLogger(EnvironmentInterface.class.getName());
 
-    private static final int INITIATE_NORMS = 7; // TODO too hardcoded. Should be per norm
     private final AgentStateMap agentStateMap;
     private final Map<LocalDate, List<NormContainer>> normSchedule;
     private final ObservationNotifier observationNotifier;

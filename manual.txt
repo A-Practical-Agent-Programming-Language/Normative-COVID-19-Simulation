@@ -1,13 +1,5 @@
 usage: 2APL/SimpleEpiDemic Disease Simulation
-       [-h] --personsfile PERSONSFILES [PERSONSFILES ...]
-       --householdsfile HOUSEHOLDSFILES [HOUSEHOLDSFILES ...]
-       --activityfile ACTIVITYFILES [ACTIVITYFILES ...]
-       [--locationsfile LOCATIONSFILES [LOCATIONSFILES ...]]
-       --normsfile NORMSFILE [--statefile STATEFILES [STATEFILES ...]]
-       [--fraction-liberal FRACTIONLIBERAL] [--liberal-mode MODELIBERAL]
-       [--conservative-mode MODECONSERVATIVE] [--start-date STARTDATE]
-       [--iterations ITERATIONS] [--seed SEED] [--threads THREADS]
-       [--node NODENAME] [--descriptor DESCRIPTOR]
+       [-h] --config CONFIGURATION [--threads THREADS]
        [--log-properties LOGPROPERTIES] [--connect-pansim]
 
 A ecological simulation environment for  simulation  of human acceptance of
@@ -15,93 +7,13 @@ measures aimed at reducing spread of novel diseases
 
 named arguments:
   -h, --help             show this help message and exit
-
-Activity Schedule files:
-  The input files specifying the default behavior
-
-  --personsfile PERSONSFILES [PERSONSFILES ...], -pf PERSONSFILES [PERSONSFILES ...]
-                         Specify the location  of  the  file containing the
-                         details of  individual  agents  in  the artificial
-                         population
-  --householdsfile HOUSEHOLDSFILES [HOUSEHOLDSFILES ...], -hf HOUSEHOLDSFILES [HOUSEHOLDSFILES ...]
-                         Specify the location  of  the  file containing the
-                         details  of  the  households   in  the  artificial
-                         population
-  --activityfile ACTIVITYFILES [ACTIVITYFILES ...], -af ACTIVITYFILES [ACTIVITYFILES ...]
-                         Specify the  location  of  the  file(s) containing
-                         all the  activities  of  all  the  agents  in  the
-                         artificial population
-  --locationsfile LOCATIONSFILES [LOCATIONSFILES ...], -lf LOCATIONSFILES [LOCATIONSFILES ...]
-                         Specify the location  of  the  file containing all
-                         the activity locations of  all  the  agents in the
-                         artificial  population.  This  file  may  only  be
-                         absent if the activity  files provide the location
-                         data
-  --normsfile NORMSFILE, -nf NORMSFILE
-                         Specify the location  of  the  file containing the
-                         schema for when  norms  are  activated, updated or
-                         deactivated
-  --statefile STATEFILES [STATEFILES ...], -sf STATEFILES [STATEFILES ...]
-                         Specify the location  of  the  file containing all
-                         the activity locations of  all  the  agents in the
-                         artificial population
-
-Tunable parameters:
-  The parameters that define the  distributions from which agent properties
-  will be randomly  sampled.  These  parameters  dictate  probabilities for
-  various reasoning factors that  determine  how  agents  will deviate from
-  default behavior
-
-  --fraction-liberal FRACTIONLIBERAL, -l FRACTIONLIBERAL
-                         Probability that  a  household  will  be  assigned
-                         liberal. The remaining houeholds  will be assigned
-                         as conversative (default: 0.5)
-  --liberal-mode MODELIBERAL, -lm MODELIBERAL
-                         The value towards  which  the  normal distribution
-                         from which government attitude  for liberal agents
-                         will be sampled. A  sampled  value  of 1 indicates
-                         agent  is  highly  likely   to  follow  government
-                         directives while a value of  0 indicates the agent
-                         is highly  unlikely  to  follow  agent  directives
-                         (default: 0.6)
-  --conservative-mode MODECONSERVATIVE, -cm MODECONSERVATIVE
-                         The value towards  which  the  normal distribution
-                         from which  government  attitude  for conservative
-                         agents will  be  sampled.  A  sampled  value  of 1
-                         indicates  agent  is   highly   likely  to  follow
-                         government  directives   while   a   value   of  0
-                         indicates the agent is  highly  unlikely to follow
-                         agent directives (default: 0.6)
+  --config CONFIGURATION
+                         Specify the TOML configuration file
 
 Runtime optimization:
-  --start-date STARTDATE
-                         Specify the date corresponding  to  the first time
-                         step. This option  is  used  to  potentially align
-                         the  model  with  real-world  data,  both  in  the
-                         produced output,  as  in  for  the  activation  of
-                         norms.
-                         If this option  is  omitted,  the  first time step
-                         will be assigned the date  when  the first norm is
-                         activated. Format is YYYY-MM-DD
-  --iterations ITERATIONS, -i ITERATIONS
-                         Specify the end date (YYYY-MM-DD, only if --start-
-                         date is set*) or number  of iterations to run this
-                         simulation. This parameter is  ignored when pansim
-                         is connected by using the "-c" flag.
-                         Make  sure  when  using   dates  to  specify  this
-                         argument AFTER --start-date (default: 2147483647)
-  --seed SEED, -s SEED   Specify a  seed  to  use  for  random  operations.
-                         Default  is  -1,  indicating   no   seed  is  used
-                         (default: -1)
   --threads THREADS, -t THREADS
                          Specify  the  number   of   threads   to  use  for
                          execution (default: 8)
-  --node NODENAME        Specify the  name  of  this  node,  to distinguish
-                         output   files   if   multiple   nodes   are   run
-                         simultaniously (default: -1)
-  --descriptor DESCRIPTOR
-                         Allows to specify a  string  that  will be used in
-                         the naming scheme of output files
   --log-properties LOGPROPERTIES
                          (default: logging.properties)
   --connect-pansim, -c   If this argument is  present,  the simulation will
@@ -110,3 +22,4 @@ Runtime optimization:
                          absent,  no  PANSIM   connection  is  required,but
                          behavior is not interpreted (default: false)
 
+Process finished with exit code 1
