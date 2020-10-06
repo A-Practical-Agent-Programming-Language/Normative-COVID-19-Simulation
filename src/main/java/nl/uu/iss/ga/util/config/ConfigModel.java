@@ -45,6 +45,7 @@ public class ConfigModel {
 
     private final double fractionLiberal;
     private Random random;
+    private final List<AgentID> agents = new ArrayList<>();
     private final List<File> activityFiles;
     private final List<File> householdFiles;
     private final List<File> personFiles;
@@ -60,11 +61,15 @@ public class ConfigModel {
     private final ArgParse arguments;
     private final TomlTable table;
     private final String name;
+    private final int fipsCode;
+
+    private String outputFileName;
 
     public ConfigModel(ArgParse arguments, String name, TomlTable table) throws Exception {
         this.arguments = arguments;
         this.name = name;
         this.table = table;
+        this.fipsCode = table.getLong("fipscode").intValue();
 
         if(this.table.contains("fractionLiberal")) {
             this.fractionLiberal = this.table.getDouble("fractionLiberal");
@@ -83,6 +88,8 @@ public class ConfigModel {
         } else {
             this.random = new Random();
         }
+
+        createOutFileName();
     }
 
     public void loadFiles() {
@@ -137,7 +144,8 @@ public class ConfigModel {
             for(Activity activity : schedule.getSchedule().values()) {
                 agent.adoptGoal(activity);
             }
-            this.agentStateMap.addAgent(aid, schedule.getPerson());
+            this.agents.add(aid);
+            this.agentStateMap.addAgent(aid, schedule.getPerson(), this.fipsCode);
             beliefContext.setAgentID(aid);
             ((DirectObservationNotifierNotifier) observationNotifier).addNormContext(aid, schedule.getPerson(), normContext);
             ((DirectObservationNotifierNotifier) observationNotifier).addLocationHistoryContext(aid, schedule.getPerson(), locationHistoryContext);
@@ -183,6 +191,24 @@ public class ConfigModel {
         return f;
     }
 
+    private void createOutFileName() {
+        String descriptor = this.arguments.getDescriptor() == null ? "" : this.arguments.getDescriptor();
+        if(this.arguments.getDescriptor() != null) {
+            if(!(descriptor.startsWith("-") || descriptor.startsWith("_")))
+                descriptor = "-" + descriptor;
+            if (!(descriptor.endsWith("-") | descriptor.endsWith("_")))
+                descriptor += "-";
+        }
+
+        this.outputFileName = String.format(
+                "radius-of-gyration-%s-%s-%s%s.csv",
+                this.name,
+                this.fipsCode,
+                this.arguments.getNode() >= 0 ? "node" + this.arguments.getNode() : "",
+                descriptor
+        );
+    }
+
     public double getFractionLiberal() {
         return fractionLiberal;
     }
@@ -205,6 +231,10 @@ public class ConfigModel {
 
     public List<File> getLocationsFiles() {
         return locationsFiles;
+    }
+
+    public List<AgentID> getAgents() {
+        return agents;
     }
 
     public File getStateFile() {
@@ -235,7 +265,15 @@ public class ConfigModel {
         return name;
     }
 
+    public int getFipsCode() {
+        return fipsCode;
+    }
+
     public void setAgentStateMap(AgentStateMap map) {
         this.agentStateMap = map;
+    }
+
+    public String getOutFileName() {
+        return this.outputFileName;
     }
 }

@@ -7,15 +7,18 @@ import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
 import main.java.nl.uu.iss.ga.model.norm.NormContainer;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.GyrationRadius;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
+import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
+import org.javatuples.Pair;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,7 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 public class EnvironmentInterface implements TickHookProcessor<CandidateActivity> {
 
@@ -39,32 +41,30 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     private final GyrationRadius gyrationRadius;
 
     private final Platform platform;
+    private final ArgParse arguments;
     private final boolean trackVisits;
     private long currentTick = 0;
     private final LocalDateTime instantiated;
     private final LocalDate startDate;
     private DayOfWeek today = DayOfWeek.MONDAY;
-    private final int node;
-    private final String descriptor;
 
     public EnvironmentInterface(
             Platform platform,
             ObservationNotifier observationNotifier,
             AgentStateMap agentStateMap,
             Map<LocalDate, List<NormContainer>> normSchedule,
-            ArgParse argParse
+            ArgParse arguments
     ) {
         this.instantiated = LocalDateTime.now();
         this.platform = platform;
+        this.arguments = arguments;
         this.agentStateMap = agentStateMap;
         this.normSchedule = normSchedule;
         this.observationNotifier = observationNotifier;
-        this.gyrationRadius = new GyrationRadius();
-        this.trackVisits = !argParse.isConnectpansim();
-        this.node = argParse.getNode();
-        this.startDate = argParse.getStartdate() == null ?
-                this.normSchedule.keySet().stream().findFirst().orElse(null) : argParse.getStartdate();
-        this.descriptor = argParse.getDescriptor();
+        this.gyrationRadius = new GyrationRadius(arguments.getCounties(), this.agentStateMap);
+        this.trackVisits = !arguments.isConnectpansim();
+        this.startDate = arguments.getStartdate() == null ?
+                this.normSchedule.keySet().stream().findFirst().orElse(null) : arguments.getStartdate();
 
         if(this.startDate != null) {
             this.today = DayOfWeek.fromDate(this.startDate);
@@ -126,9 +126,22 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                 tick, lastTickDuration, hashMap.size(), (double) lastTickDuration / hashMap.size()));
 
         long startCalculate = System.currentTimeMillis();
-        double radius = this.gyrationRadius.calculateAverageTickRadius(tick, hashMap);
-        String today = this.startDate == null ? "" : this.startDate.plusDays(currentTick).format(ISO_LOCAL_DATE) + "\t";
-        LOGGER.log(Level.INFO, String.format("%s%s\t%d\t%f", today, this.today, tick, radius));
+        HashMap<String, Pair<Integer, Double>> countyAverageRadii = this.gyrationRadius.calculateAverageTickRadius(tick, hashMap);
+        String today = this.startDate == null ? "" : this.startDate.plusDays(currentTick).format(ISO_LOCAL_DATE);
+        for(String fips : countyAverageRadii.keySet()) {
+            LOGGER.log(Level.INFO, String.format("%s %s (tick %d): [%s] %f", this.today, today, tick, fips, countyAverageRadii.get(fips).getValue1()));
+        }
+
+        File fout = Paths.get("output", this.arguments.getOutputDir(), "tick-averages.csv").toFile();
+        try {
+            if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs())) {
+                throw new IOException("Failed to create file " + fout.getAbsolutePath());
+            }
+            this.gyrationRadius.writeAveragesToFile(fout, countyAverageRadii, this.startDate.plusDays(tick));
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to write gyration results to file " + fout.getAbsolutePath(), e);
+        }
+
         LOGGER.log(Level.FINE, String.format(
                 "Calculated radius of gyration in %d milliseconds", System.currentTimeMillis() - startCalculate
         ));
@@ -142,27 +155,16 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
     @Override
     public void simulationFinishedHook(long l, int i) {
-        String descriptor = this.descriptor == null ? "" : this.descriptor;
-        if(this.descriptor != null) {
-            if(!(descriptor.startsWith("-") || descriptor.startsWith("_")))
-                    descriptor = "-" + descriptor;
-            if (!(descriptor.endsWith("-") | descriptor.endsWith("_")))
-                descriptor += "-";
-        }
-
-        File fout = new File("output", String.format(
-                "radius-of-gyration-%s%s%s.csv",
-                this.node >= 0 ? "node-" + this.node : "",
-                descriptor,
-                this.instantiated.format(ISO_LOCAL_DATE_TIME)
-        ));
-        try {
-            if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs()) || !(fout.exists() || fout.createNewFile())) {
-                throw new IOException("Failed to create file " + fout.getAbsolutePath());
+        for(ConfigModel county : this.arguments.getCounties()) {
+            File fout = Paths.get("output", this.arguments.getOutputDir(), county.getOutFileName()).toFile();
+            try {
+                if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs()) || !(fout.exists() || fout.createNewFile())) {
+                    throw new IOException("Failed to create file " + fout.getAbsolutePath());
+                }
+                this.gyrationRadius.writeResults(county, fout, this.agentStateMap.getAgentToPidMap(), this.startDate, true);
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to write gyration results to file " + fout.getAbsolutePath(), e);
             }
-            this.gyrationRadius.writeResults(fout, this.agentStateMap.getAgentToPidMap(), this.startDate, true);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to write gyration results to file " + fout.getAbsolutePath(), e);
         }
     }
 

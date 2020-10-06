@@ -14,6 +14,8 @@ import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
 import org.apache.arrow.memory.RootAllocator;
 import py4j.GatewayServer;
+import py4j.GatewayServerListener;
+import py4j.Py4JServerConnection;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -43,7 +45,6 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.gatewayServer = new GatewayServer(this);
         this.agentStateMap = agentStateMap;
         this.observationNotifier = observationNotifier;
-        gatewayServer.start();
         this.executor = platform.getTickExecutor();
     }
 
@@ -71,7 +72,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
         processTickPreHooks(this.executor.getCurrentTick());
         HashMap<AgentID, List<CandidateActivity>> agentActions = this.executor.doTick();
-        processTickPostHook(this.executor.getCurrentTick(), this.executor.getLastTickDuration(), agentActions);
+        processTickPostHook(this.executor.getCurrentTick() - 1, this.executor.getLastTickDuration(), agentActions);
 
         // Prepare results for pansim
         this.next_visit_df_raw = VisitDataFrame.fromAgentActions(agentActions, this.agentStateMap, allocator).toBytes();
@@ -91,12 +92,19 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     }
 
     public void shutdown() {
-        if (this.gatewayServer != null) {
-            this.gatewayServer.shutdown();
+        if(this.gatewayServer != null) {
+            gatewayServer.shutdown();
             LOGGER.log(Level.INFO, "Pansim Behavior Server Shutdown");
         }
-        processSimulationFinishedHook(this.executor.getCurrentTick(), this.executor.getLastTickDuration());
+        executor.shutdown();
         System.exit(0);
+    }
+
+    public boolean cleanup() throws Exception{
+        LOGGER.log(Level.INFO, "Pansim sent cleanup signal.");
+        processSimulationFinishedHook(this.executor.getCurrentTick(), this.executor.getLastTickDuration());
+        executor.shutdown();
+        return true;
     }
 
     private void process_visit_output(VisitResultDataFrame visit_output_df) {
@@ -109,6 +117,36 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     @Override
     public boolean start() {
         runFirstTick();
+        gatewayServer.addListener(new GatewayServerListener() {
+            @Override
+            public void connectionError(Exception e) { }
+
+            @Override
+            public void connectionStarted(Py4JServerConnection gatewayConnection) { }
+
+            @Override
+            public void connectionStopped(Py4JServerConnection gatewayConnection) {
+                shutdown();
+            }
+
+            @Override
+            public void serverError(Exception e) {  }
+
+            @Override
+            public void serverPostShutdown() {  }
+
+            @Override
+            public void serverPreShutdown() {  }
+
+            @Override
+            public void serverStarted() {   }
+
+            @Override
+            public void serverStopped() {
+                shutdown();
+            }
+        });
+        gatewayServer.start();
         return true;
     }
 }

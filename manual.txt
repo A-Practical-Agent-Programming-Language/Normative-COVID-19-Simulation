@@ -1,6 +1,8 @@
 usage: 2APL/SimpleEpiDemic Disease Simulation
-       [-h] --config CONFIGURATION [--threads THREADS]
+       [-h] --config CONFIGURATION --mode-liberal MODELIBERAL
+       --mode-conservative MODECONSERVATIVE [--threads THREADS]
        [--log-properties LOGPROPERTIES] [--connect-pansim]
+       [--output-dir OUTPUTDIR]
 
 A ecological simulation environment for  simulation  of human acceptance of
 measures aimed at reducing spread of novel diseases
@@ -9,6 +11,16 @@ named arguments:
   -h, --help             show this help message and exit
   --config CONFIGURATION
                          Specify the TOML configuration file
+
+Calibration:
+  Arguments used for calibrating the behavior model
+
+  --mode-liberal MODELIBERAL, -ml MODELIBERAL
+                         The mode of  the  government attitude distribution
+                         of liberal voting agents
+  --mode-conservative MODECONSERVATIVE, -mc MODECONSERVATIVE
+                         The mode of  the  government attitude distribution
+                         of liberal voting agents
 
 Runtime optimization:
   --threads THREADS, -t THREADS
@@ -21,5 +33,8 @@ Runtime optimization:
                          generated behavior to  the  PANSIM environment. If
                          absent,  no  PANSIM   connection  is  required,but
                          behavior is not interpreted (default: false)
-
-Process finished with exit code 1
+  --output-dir OUTPUTDIR, -o OUTPUTDIR
+                         Specify a sub directory  of  "output" where output
+                         files of the  behavior  model  will  be stored. By
+                         default,  the  current  time  code  will  be  used
+                         (default: current date time) 

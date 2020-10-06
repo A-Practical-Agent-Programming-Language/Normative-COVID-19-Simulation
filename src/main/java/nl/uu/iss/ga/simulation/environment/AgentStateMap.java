@@ -18,6 +18,7 @@ public class AgentStateMap {
 
     private final Map<Long, AgentID> pidToAgentMap = new HashMap<>();
     private final Map<AgentID, Long> agentToPidMap = new HashMap<>();
+    private final Map<AgentID, Integer> aidCountyCodeMap = new HashMap<>();
     private Map<AgentID, AgentState> agentStateMap;
     private Map<Long, AgentState> pidStateMap;
 
@@ -58,7 +59,7 @@ public class AgentStateMap {
         return this.pidStateMap.size();
     }
 
-    public void addAgent(AgentID aid, long pid) {
+    public void addAgent(AgentID aid, long pid, int fipsCode) {
         if(this.pidToAgentMap.containsKey(pid)) {
             LOGGER.log(Level.WARNING, String.format(
                 "Adding PID %d to agentID %s, but PID is already used", pid, aid.toString()
@@ -70,6 +71,7 @@ public class AgentStateMap {
                     "Adding agent %s with PID %d, but agentID is already used.", aid.toString(), pid));
         }
         this.agentToPidMap.put(aid, pid);
+        this.aidCountyCodeMap.put(aid, fipsCode);
 
         this.agentStateMap.put(aid, this.pidStateMap.get(pid));
     }
@@ -92,6 +94,10 @@ public class AgentStateMap {
 
     public AgentState getAgentState(Long pid) {
         return this.pidStateMap.get(pid);
+    }
+
+    public int getFipsCode(AgentID agentID) {
+        return this.aidCountyCodeMap.get(agentID);
     }
 
     public Map<Long, AgentID> getPidToAgentMap() {
@@ -133,6 +139,7 @@ public class AgentStateMap {
             merged.agentStateMap.putAll(map.agentStateMap);
             merged.pidToAgentMap.putAll(map.pidToAgentMap);
             merged.agentToPidMap.putAll(map.agentToPidMap);
+            merged.aidCountyCodeMap.putAll(map.aidCountyCodeMap);
         }
         return merged;
     }

@@ -1,6 +1,5 @@
 package main.java.nl.uu.iss.ga.util.config;
 
-import main.java.nl.uu.iss.ga.simulation.environment.AgentStateMap;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.annotation.Arg;
 import net.sourceforge.argparse4j.impl.action.StoreTrueArgumentAction;
@@ -15,6 +14,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -42,9 +42,14 @@ public class ArgParse {
 
     private LocalDate startdate;
 
+    @Arg(dest = "modeliberal")
     private double modeliberal;
 
+    @Arg(dest = "modeconservative")
     private double modeconservative;
+
+    @Arg(dest = "outputdir")
+    private String outputdir;
 
     private int node;
 
@@ -113,13 +118,6 @@ public class ArgParse {
                     this.random = new Random(result.getLong("simulation.seed"));
                 } else {
                     this.random = new Random();
-                }
-
-                if(result.contains("calibration.modeLiberal") && result.contains("calibration.modeConservative")) {
-                    this.modeconservative = result.getDouble("calibration.modeConservative");
-                    this.modeliberal = result.getDouble("calibration.modeLiberal");
-                } else {
-                    throw new Exception("Specify both calibration.modeLiberal and calibration.modeConservative as a double value");
                 }
 
                 this.descriptor = result.getString("output.descriptor");
@@ -196,6 +194,10 @@ public class ArgParse {
         return startdate;
     }
 
+    public String getOutputDir() {
+        return outputdir;
+    }
+
     public static File findFile(File f) throws FileNotFoundException {
         File existingFile = null;
         if(f.getAbsoluteFile().exists()) {
@@ -240,6 +242,21 @@ public class ArgParse {
                 .dest("configuration")
                 .help("Specify the TOML configuration file");
 
+        ArgumentGroup calibration = parser.addArgumentGroup("Calibration")
+                .description("Arguments used for calibrating the behavior model");
+
+        calibration.addArgument("--mode-liberal", "-ml")
+                .required(true)
+                .type(double.class)
+                .dest("modeliberal")
+                .help("The mode of the government attitude distribution of liberal voting agents");
+
+        calibration.addArgument("--mode-conservative", "-mc")
+                .required(true)
+                .type(double.class)
+                .dest("modeconservative")
+                .help("The mode of the government attitude distribution of liberal voting agents");
+
         ArgumentGroup optimization = parser.addArgumentGroup("Runtime optimization");
 
         optimization.addArgument("--threads", "-t")
@@ -264,6 +281,14 @@ public class ArgParse {
                 .help("If this argument is present, the simulation will run in PANSIM mode, meaning it will send" +
                         "the generated behavior to the PANSIM environment. If absent, no PANSIM connection is required," +
                         "but behavior is not interpreted");
+
+        optimization.addArgument("--output-dir", "-o")
+                .type(String.class)
+                .required(false)
+                .dest("outputdir")
+                .setDefault(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+                .help("Specify a sub directory of \"output\" where output files of the behavior model will be stored." +
+                        " By default, the current time code will be used");
 
         return parser;
     }
