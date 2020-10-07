@@ -4,6 +4,14 @@
 See manual.txt for command line arguments, or call --help when running the application
 Note the flag `-c` (or `--connect-pansim`) should be used to share data with the [PanSim](https://github.com/parantapa/pansim) simulation environment.
 
+In the [resource](src/main/resources) directory, an example configuration file is given. Any parameter (or county) can be uncommented to ignore it. For repeatable simulations, make sure to specify the global seed, and a seed for each county (uncommented in the example configuration)
+
+The JAR file is automatically generated and placed in the `target` directory. In order to use the JAR file, make sure to use the Java version used by Maven, and call
+
+```bashs
+$ java -jar sim2apl-episimpledemic-simulation-1.0-SNAPSHOT-jar-with-dependencies.jar [args]
+```
+
 # Prerequisites
 This manual assumes Maven is installed for easy package management
 

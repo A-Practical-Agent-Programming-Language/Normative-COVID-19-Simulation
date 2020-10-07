@@ -1,8 +1,8 @@
 [simulation]
 norms = "norm-schedule.csv"
-seed = 102
-startdate = 2020-01-01
-iterations = 2020-06-30 # End date; Alternatively, specify the number of iterations
+# seed = 102
+startdate = 2020-03-01
+iterations = 2020-06-28 # End date; Alternatively, specify the number of iterations
 
 # If these are set, they will be included in the file names of output files
 # [output]
@@ -13,12 +13,12 @@ iterations = 2020-06-30 # End date; Alternatively, specify the number of iterati
 	[counties.charlottesville]
 	fractionLiberal = 0.8325
 	fipscode = 540
-	seed = 42
+	# seed = 42
 	activities = ["charlottesville_examples/usa_va_charlottesville_activity_assignment_adult_week_1_6_0.csv", "charlottesville_examples/usa_va_charlottesville_activity_assignment_child_week_1_6_0.csv"]
 	households = ["charlottesville_examples/usa_va_charlottesville_household_1_6_0.csv"]
 	persons = ["charlottesville_examples/usa_va_charlottesville_person_1_6_0.csv"]
 	locations = ["charlottesville_examples/usa_va_charlottesville_location_assignment_week_1_6_0.csv"]
-	statefile = "charlottesville_examples/start_state_ifrac0.01_sfrac0.6.csv"
+	statefile = "charlottesville_examples/shuffled_start_state.csv"
 
 
 	# [counties.albemarle]
@@ -44,13 +44,13 @@ iterations = 2020-06-30 # End date; Alternatively, specify the number of iterati
 	# households = ["louisa_county_1_9_0/louisa_household_1_9_0.csv"]
 	# persons = ["louisa_county_1_9_0/louisa_person_1_9_0.csv"]
 
-	[counties.goochland]
-	fipscode = 75
-	fractionLiberal = 0.3755
-	seed = 68
-	activities = ["goochland_county_1_9_0/goochland_location_assignment_adult_1_9_0.csv", "goochland_county_1_9_0/goochland_location_assignment_child_1_9_0.csv"]
-	households = ["goochland_county_1_9_0/goochland_household_1_9_0.csv"]
-	persons = ["goochland_county_1_9_0/goochland_person_1_9_0.csv"]
+	# [counties.goochland]
+	# fipscode = 75
+	# fractionLiberal = 0.3755
+	# seed = 68
+	# activities = ["goochland_county_1_9_0/goochland_location_assignment_adult_1_9_0.csv", "goochland_county_1_9_0/goochland_location_assignment_child_1_9_0.csv"]
+	# households = ["goochland_county_1_9_0/goochland_household_1_9_0.csv"]
+	# persons = ["goochland_county_1_9_0/goochland_person_1_9_0.csv"]
 
 	# [counties.hanover]
 	# fipscode = 85
@@ -79,10 +79,10 @@ iterations = 2020-06-30 # End date; Alternatively, specify the number of iterati
 	
 
 	#### WARNING: The following is not in the list of selected counties, so comment out for real run
-	[counties.nelson]
-	fipscode = 125
-	seed = 54
-	fractionLiberal = 0.8175
-	activities = ["nelson_county_examples/nelson_county_located_activities_adult.csv", "nelson_county_examples/nelson_county_located_activities_child.csv"]
-	households = ["nelson_county_examples/nelson_county_household.csv"]
-	persons = ["nelson_county_examples/nelson_county_person.csv"]
+	# [counties.nelson]
+	# fipscode = 125
+	# seed = 54
+	# fractionLiberal = 0.8175
+	# activities = ["nelson_county_examples/nelson_county_located_activities_adult.csv", "nelson_county_examples/nelson_county_located_activities_child.csv"]
+	# households = ["nelson_county_examples/nelson_county_household.csv"]
+	# persons = ["nelson_county_examples/nelson_county_person.csv"]

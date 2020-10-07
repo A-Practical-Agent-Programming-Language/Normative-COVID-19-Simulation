@@ -73,7 +73,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>Main</mainClass>
+                            <mainClass>main.java.nl.uu.iss.ga.Simulation</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

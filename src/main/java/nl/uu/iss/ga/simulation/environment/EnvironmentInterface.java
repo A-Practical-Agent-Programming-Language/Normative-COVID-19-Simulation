@@ -132,7 +132,10 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             LOGGER.log(Level.INFO, String.format("%s %s (tick %d): [%s] %f", this.today, today, tick, fips, countyAverageRadii.get(fips).getValue1()));
         }
 
-        File fout = Paths.get("output", this.arguments.getOutputDir(), "tick-averages.csv").toFile();
+        File outDir = new File(this.arguments.getOutputDir());
+        File fout = outDir.isAbsolute() ?
+                Paths.get(this.arguments.getOutputDir(), "tick-averages.csv").toFile() :
+                Paths.get("output", this.arguments.getOutputDir(), "tick-averages.csv").toFile();
         try {
             if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs())) {
                 throw new IOException("Failed to create file " + fout.getAbsolutePath());
@@ -156,7 +159,10 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     @Override
     public void simulationFinishedHook(long l, int i) {
         for(ConfigModel county : this.arguments.getCounties()) {
-            File fout = Paths.get("output", this.arguments.getOutputDir(), county.getOutFileName()).toFile();
+            File outDir = new File(this.arguments.getOutputDir());
+            File fout = outDir.isAbsolute() ?
+                    Paths.get(this.arguments.getOutputDir(), county.getOutFileName()).toFile() :
+                    Paths.get("output", this.arguments.getOutputDir(), county.getOutFileName()).toFile();
             try {
                 if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs()) || !(fout.exists() || fout.createNewFile())) {
                     throw new IOException("Failed to create file " + fout.getAbsolutePath());

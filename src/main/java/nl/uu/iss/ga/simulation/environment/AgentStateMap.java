@@ -29,6 +29,7 @@ public class AgentStateMap {
     public AgentStateMap(List<File> initialStateFiles, Random rnd) {
         reset();
         for(File f : initialStateFiles) {
+            LOGGER.log(Level.INFO, "Creating agent state map from file " + initialStateFiles.toString());
             readStateFile(f, rnd);
         }
     }
