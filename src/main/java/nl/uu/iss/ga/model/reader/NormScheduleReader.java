@@ -16,12 +16,17 @@ import java.util.logging.Logger;
 
 public class NormScheduleReader {
 
+    private Set<Class<? extends Norm>> norms = new HashSet<>();
     private Map<LocalDate, List<NormContainer>> eventsMap;
 
     private static final Logger LOGGER = Logger.getLogger(NormScheduleReader.class.getName());
 
     public NormScheduleReader(File normFile) {
         readNorms(normFile);
+    }
+
+    public Set<Class<? extends Norm>> getAllUsedNorms() {
+        return norms;
     }
 
     public Map<LocalDate, List<NormContainer>> getEventsMap() {
@@ -48,6 +53,8 @@ public class NormScheduleReader {
         while(s.hasNextLine()) {
             Map<String, String> keyValue = ParserUtil.zipEscapedCSVLine(header, s.nextLine());
             Norm norm = NormFactory.fromCSVLine(keyValue);
+            if(norm != null)
+                this.norms.add(norm.getClass());
             LocalDate start = LocalDate.parse(keyValue.get("start"), DateTimeFormatter.ISO_DATE);
             LocalDate end = null;
             if(keyValue.get("end") != null && !keyValue.get("end").isBlank()) {

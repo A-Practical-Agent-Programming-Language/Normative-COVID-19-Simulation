@@ -11,6 +11,7 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.CancelActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.ExecuteScheduledActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.HandleTripPlan;
+import main.java.nl.uu.iss.ga.util.tracking.InfluencedActivities;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Trigger;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.Plan;
@@ -23,6 +24,8 @@ import java.util.logging.Logger;
 public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
 
     private static final Logger LOGGER = Logger.getLogger(GoalPlanScheme.class.getName());
+
+    public static InfluencedActivities influencedActivitiesTracker;
 
     AgentContextInterface<CandidateActivity> agentContextInterface;
 
@@ -90,10 +93,14 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
         for (Norm norm : norms) {
             if (evaluateToIgnore(norm, activity)) {
                 candidateActivity = norm.transformActivity(candidateActivity, this.agentContextInterface);
-                if (candidateActivity == null) return null;
+                if (candidateActivity == null) {
+                    influencedActivitiesTracker.activityCancelled(activity, norm);
+                    return null;
+                }
             }
         }
 
+        influencedActivitiesTracker.activityContinuing(activity);
         return candidateActivity;
     }
 }

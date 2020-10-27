@@ -146,7 +146,7 @@ public class GyrationRadius {
     private Map<AgentID, Double> calculateTickRadia(ConfigModel county, HashMap<AgentID, List<CandidateActivity>> hashMap) {
         Map<AgentID, Double> radia = new HashMap<>();
         for (AgentID aid : county.getAgents()) {
-            Double radius = calculateRadiusOfGyrationForAgent(hashMap.get(aid));
+            Double radius = calculateRadiusOfGyrationForAgent(hashMap.getOrDefault(aid, Collections.emptyList()));
             if (radius != null) {
                 radia.put(aid, radius);
             }
@@ -154,7 +154,7 @@ public class GyrationRadius {
         if (radia.size() < county.getAgents().size())
             LOGGER.log(Level.WARNING, String.format(
                     "only %d %s agents of %d (%f%%) produced actions",
-                    radia.size(), county.getName(), hashMap.size(), radia.size() / (double) hashMap.size()));
+                    radia.size(), county.getName(), county.getAgents().size(), radia.size() / (double) county.getAgents().size()));
         return radia;
     }
 

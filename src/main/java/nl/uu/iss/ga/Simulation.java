@@ -85,7 +85,7 @@ public class Simulation {
                 platform,
                 this.observationNotifier,
                 this.agentStateMap,
-                this.normScheduleReader.getEventsMap(),
+                this.normScheduleReader,
                 this.arguments
         );
         this.simulationEngine = arguments.isConnectpansim() ? getPansimSimulationEngine() : getLocalSimulationEngine();

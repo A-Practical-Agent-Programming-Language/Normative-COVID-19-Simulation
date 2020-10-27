@@ -55,7 +55,7 @@ public class StayHomeNorm extends NonRegimentedNorm {
         }
     }
 
-    static enum APPLIES{
+    enum APPLIES{
         NONE,
         AGE,
         ALL;

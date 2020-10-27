@@ -6,11 +6,15 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
 import main.java.nl.uu.iss.ga.model.norm.NormContainer;
+import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.GyrationRadius;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
+import main.java.nl.uu.iss.ga.util.ScheduleTracker;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.config.ConfigModel;
+import main.java.nl.uu.iss.ga.util.tracking.InfluencedActivities;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
@@ -39,6 +43,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     private final Map<LocalDate, List<NormContainer>> normSchedule;
     private final ObservationNotifier observationNotifier;
     private final GyrationRadius gyrationRadius;
+    private final ScheduleTracker scheduleTracker;
 
     private final Platform platform;
     private final ArgParse arguments;
@@ -52,16 +57,19 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             Platform platform,
             ObservationNotifier observationNotifier,
             AgentStateMap agentStateMap,
-            Map<LocalDate, List<NormContainer>> normSchedule,
+            NormScheduleReader normSchedule,
             ArgParse arguments
     ) {
         this.instantiated = LocalDateTime.now();
         this.platform = platform;
         this.arguments = arguments;
         this.agentStateMap = agentStateMap;
-        this.normSchedule = normSchedule;
+        this.normSchedule = normSchedule.getEventsMap();
         this.observationNotifier = observationNotifier;
         this.gyrationRadius = new GyrationRadius(arguments.getCounties(), this.agentStateMap);
+        this.scheduleTracker = new ScheduleTracker(
+                arguments.getOutputDir(),
+                normSchedule.getAllUsedNorms());
         this.trackVisits = !arguments.isConnectpansim();
         this.startDate = arguments.getStartdate() == null ?
                 this.normSchedule.keySet().stream().findFirst().orElse(null) : arguments.getStartdate();
@@ -96,6 +104,8 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         } else {
             this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
         }
+
+        GoalPlanScheme.influencedActivitiesTracker = new InfluencedActivities(tick);
 
         processNormUpdates();
     }
@@ -154,6 +164,8 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             LOGGER.log(Level.FINE, String.format(
                     "Stored locations in %d milliseconds", System.currentTimeMillis() - startCalculate));
         }
+
+        this.scheduleTracker.processTick(this.startDate.plusDays(tick), hashMap);
     }
 
     @Override
