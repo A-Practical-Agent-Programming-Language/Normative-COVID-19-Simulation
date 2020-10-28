@@ -21,6 +21,6 @@ src/main/resources/va_examples
 src/main/resources/charlottesville_examples
 src/main/resources/nelson_county_examples
 src/main/resources/goochland_county_1_9_0
-output
+output*
 
 log/*.log
