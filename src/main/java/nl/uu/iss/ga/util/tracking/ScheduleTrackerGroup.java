@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.util;
+package main.java.nl.uu.iss.ga.util.tracking;
 
 import java.io.*;
 import java.nio.file.Paths;

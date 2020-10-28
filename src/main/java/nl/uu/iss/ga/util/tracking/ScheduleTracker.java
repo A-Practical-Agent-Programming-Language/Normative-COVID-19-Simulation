@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.util;
+package main.java.nl.uu.iss.ga.util.tracking;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
@@ -29,14 +29,23 @@ public class ScheduleTracker {
     }
 
     private void createFileObjects(Set<Class<? extends Norm>> allUsedNorms) {
-        List<String> activityTypeNames = Arrays.stream(ActivityType.values()).map(ActivityType::name).collect(Collectors.toList());
-        ScheduleTrackerGroup g = new ScheduleTrackerGroup(this.parentDir, AVERAGE_SCHEDULE_FILENAME + ".csv", activityTypeNames, ALL_HOME_PCT);
+        List<String> activityTypeNames = Arrays.stream(ActivityType.values())
+                .filter(x -> !ActivityType.TRIP.equals(x))
+                .map(ActivityType::name).collect(Collectors.toList());
+
+        List<String> averageScheduleHeaders = new ArrayList<>(Collections.singletonList(ALL_HOME_PCT));
+        averageScheduleHeaders.addAll(activityTypeNames);
+        ScheduleTrackerGroup g = new ScheduleTrackerGroup(this.parentDir, AVERAGE_SCHEDULE_FILENAME + ".csv", averageScheduleHeaders);
         this.fileObjects.put(AVERAGE_SCHEDULE_FILENAME, g);
 
         for(Class<? extends Norm> norm : allUsedNorms) {
                 this.fileObjects.put(
                         normToAppliedActivitiesFile(norm),
-                        new ScheduleTrackerGroup(this.parentDir, normToAppliedActivitiesFile(norm) + ".csv", activityTypeNames));
+                        new ScheduleTrackerGroup(this.parentDir,
+                                normToAppliedActivitiesFile(norm) + ".csv",
+                                activityTypeNames,
+                                "total_cancelled",
+                                "fraction_cancelled"));
         }
 
         List<String> activityTypeHeaders = allUsedNorms.stream().map(Class::getSimpleName).collect(Collectors.toList());
@@ -84,6 +93,12 @@ public class ScheduleTracker {
         }
     }
 
+    /**
+     * Calculate breakout per activity, i.e. what norms influenced each of the activities
+     * @param simulationDay
+     * @param activityType
+     * @param cancelledActivities
+     */
     private void processActivitiesCancelled(LocalDate simulationDay, ActivityType activityType, Map<Class<? extends Norm>, Map<ActivityType, Integer>> cancelledActivities) {
         ScheduleTrackerGroup group = this.fileObjects.get(activityTypeCancelledByNormFile(activityType));
         Map<String, Map<ActivityType, Integer>> stringMap = new HashMap<>();
@@ -110,10 +125,21 @@ public class ScheduleTracker {
         group.writeValuesToFile(orderedValues);
     }
 
+    /**
+     * Calculate the breakout per norm, i.e. what activities did each norm influence
+     * @param simulationDay
+     * @param norm
+     * @param cancelledActivities
+     */
     private void processNormCancelled(LocalDate simulationDay, Class<? extends Norm> norm, Map<ActivityType, Integer> cancelledActivities) {
         int totalCancelled = cancelledActivities.values().stream().reduce(Integer::sum).orElse(0);
         ScheduleTrackerGroup g = this.fileObjects.get(normToAppliedActivitiesFile(norm));
         List<String> orderedValues = new ArrayList<>(List.of(simulationDay.format(DateTimeFormatter.ISO_DATE)));
+
+        orderedValues.add(Integer.toString(totalCancelled));
+        orderedValues.add(Double.toString(
+                totalCancelled / (double) (GoalPlanScheme.influencedActivitiesTracker.getSumTotalActivities())));
+
         for(String header : g.getHeaders()) {
             if (totalCancelled > 0 && cancelledActivities.containsKey(ActivityType.valueOf(header))) {
                 orderedValues.add(Double.toString((double) cancelledActivities.get(ActivityType.valueOf(header)) / totalCancelled));
@@ -159,5 +185,11 @@ public class ScheduleTracker {
         }
 
         return fractions;
+    }
+
+    private Map<String, String> calculateVisibleAttributes() {
+        Map<String, String> visibleAttributeMap = new HashMap<>();
+
+        return visibleAttributeMap;
     }
 }

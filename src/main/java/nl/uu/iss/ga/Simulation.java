@@ -15,6 +15,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultBlockingTickExecutor;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultSimulationEngine;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.SimulationEngine;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 public class Simulation {
     private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());;
+    public static final LocalDateTime instantiated = LocalDateTime.now();
 
     public static void main(String[] args) {
         ArgParse parser = new ArgParse(args);
@@ -54,6 +56,7 @@ public class Simulation {
             county.createAgents(this.platform, this.observationNotifier, this.environmentInterface);
         }
 
+        this.environmentInterface.setSimulationStarted();
         this.simulationEngine.start();
     }
 

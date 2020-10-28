@@ -1,39 +1,32 @@
 package main.java.nl.uu.iss.ga.simulation.environment;
 
+import main.java.nl.uu.iss.ga.Simulation;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
+import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.model.norm.NormContainer;
 import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
-import main.java.nl.uu.iss.ga.util.GyrationRadius;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
-import main.java.nl.uu.iss.ga.util.ScheduleTracker;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
-import main.java.nl.uu.iss.ga.util.config.ConfigModel;
+import main.java.nl.uu.iss.ga.util.tracking.GyrationRadius;
 import main.java.nl.uu.iss.ga.util.tracking.InfluencedActivities;
+import main.java.nl.uu.iss.ga.util.tracking.ScheduleTracker;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
-import org.javatuples.Pair;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 public class EnvironmentInterface implements TickHookProcessor<CandidateActivity> {
 
@@ -44,12 +37,13 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     private final ObservationNotifier observationNotifier;
     private final GyrationRadius gyrationRadius;
     private final ScheduleTracker scheduleTracker;
+    private final Set<Class<? extends Norm>> allUsedNorms;
 
     private final Platform platform;
     private final ArgParse arguments;
     private final boolean trackVisits;
     private long currentTick = 0;
-    private final LocalDateTime instantiated;
+    private LocalDateTime simulationStarted;
     private final LocalDate startDate;
     private DayOfWeek today = DayOfWeek.MONDAY;
 
@@ -60,13 +54,12 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             NormScheduleReader normSchedule,
             ArgParse arguments
     ) {
-        this.instantiated = LocalDateTime.now();
         this.platform = platform;
         this.arguments = arguments;
         this.agentStateMap = agentStateMap;
         this.normSchedule = normSchedule.getEventsMap();
+        this.allUsedNorms = normSchedule.getAllUsedNorms();
         this.observationNotifier = observationNotifier;
-        this.gyrationRadius = new GyrationRadius(arguments.getCounties(), this.agentStateMap);
         this.scheduleTracker = new ScheduleTracker(
                 arguments.getOutputDir(),
                 normSchedule.getAllUsedNorms());
@@ -78,6 +71,12 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             this.today = DayOfWeek.fromDate(this.startDate);
             LOGGER.log(Level.INFO, "Start date set to " + this.startDate.format(DateTimeFormatter.ofPattern("cccc dd MMMM yyyy")));
         }
+
+        this.gyrationRadius = new GyrationRadius(arguments.getOutputDir(), this.startDate, arguments.getCounties());
+    }
+
+    public void setSimulationStarted() {
+        this.simulationStarted = LocalDateTime.now();
     }
 
     public long getCurrentTick() {
@@ -105,7 +104,8 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
         }
 
-        GoalPlanScheme.influencedActivitiesTracker = new InfluencedActivities(tick);
+        // Reset tracker for influenced activities
+        GoalPlanScheme.influencedActivitiesTracker = new InfluencedActivities(tick, this.allUsedNorms);
 
         processNormUpdates();
     }
@@ -135,29 +135,14 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                 "Tick %d took %d milliseconds for %d agents (roughly %fms per agent)",
                 tick, lastTickDuration, hashMap.size(), (double) lastTickDuration / hashMap.size()));
 
+        // Calculate and store radius of gyration
         long startCalculate = System.currentTimeMillis();
-        HashMap<String, Pair<Integer, Double>> countyAverageRadii = this.gyrationRadius.calculateAverageTickRadius(tick, hashMap);
-        String today = this.startDate == null ? "" : this.startDate.plusDays(currentTick).format(ISO_LOCAL_DATE);
-        for(String fips : countyAverageRadii.keySet()) {
-            LOGGER.log(Level.INFO, String.format("%s %s (tick %d): [%s] %f", this.today, today, tick, fips, countyAverageRadii.get(fips).getValue1()));
-        }
-
-        File outDir = new File(this.arguments.getOutputDir());
-        File fout = outDir.isAbsolute() ?
-                Paths.get(this.arguments.getOutputDir(), "tick-averages.csv").toFile() :
-                Paths.get("output", this.arguments.getOutputDir(), "tick-averages.csv").toFile();
-        try {
-            if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs())) {
-                throw new IOException("Failed to create file " + fout.getAbsolutePath());
-            }
-            this.gyrationRadius.writeAveragesToFile(fout, countyAverageRadii, this.startDate.plusDays(tick));
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to write gyration results to file " + fout.getAbsolutePath(), e);
-        }
-
+        this.gyrationRadius.processSimulationDay(tick, hashMap);
         LOGGER.log(Level.FINE, String.format(
-                "Calculated radius of gyration in %d milliseconds", System.currentTimeMillis() - startCalculate
+                "Calculated and stored radius of gyration in %d milliseconds", System.currentTimeMillis() - startCalculate
         ));
+
+        // Calculate and store visit history of each location
         if (this.trackVisits) {
             startCalculate = System.currentTimeMillis();
             storeLocationData(hashMap);
@@ -165,25 +150,37 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                     "Stored locations in %d milliseconds", System.currentTimeMillis() - startCalculate));
         }
 
+        // Calculate and store effects of norms on activities
+        startCalculate = System.currentTimeMillis();
         this.scheduleTracker.processTick(this.startDate.plusDays(tick), hashMap);
+        LOGGER.log(Level.FINE, String.format(
+                "Stored schedule tracking logs in %d milliseconds", System.currentTimeMillis() - startCalculate));
     }
 
     @Override
     public void simulationFinishedHook(long l, int i) {
-        for(ConfigModel county : this.arguments.getCounties()) {
-            File outDir = new File(this.arguments.getOutputDir());
-            File fout = outDir.isAbsolute() ?
-                    Paths.get(this.arguments.getOutputDir(), county.getOutFileName()).toFile() :
-                    Paths.get("output", this.arguments.getOutputDir(), county.getOutFileName()).toFile();
-            try {
-                if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs()) || !(fout.exists() || fout.createNewFile())) {
-                    throw new IOException("Failed to create file " + fout.getAbsolutePath());
-                }
-                this.gyrationRadius.writeResults(county, fout, this.agentStateMap.getAgentToPidMap(), this.startDate, true);
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to write gyration results to file " + fout.getAbsolutePath(), e);
-            }
-        }
+        Duration startupDuration = Duration.between(Simulation.instantiated, this.simulationStarted);
+        Duration simulationDuration = Duration.between(this.simulationStarted, LocalDateTime.now());
+        Duration combinedDuration = Duration.between(Simulation.instantiated, LocalDateTime.now());
+        LOGGER.log(Level.INFO, String.format(
+                "Simulation finished.\n\tInitialization took\t\t%s.\n\tSimulation took\t\t\t%s for %d time steps.\n\tTotal simulation time:\t%s",
+                prettyPrint(startupDuration),
+                prettyPrint(simulationDuration),
+                l,
+                prettyPrint(combinedDuration))
+        );
+    }
+
+    /**
+     * From @url{https://stackoverflow.com/questions/3471397/how-can-i-pretty-print-a-duration-in-java#answer-16323209}
+     * @param duration  Duration object to pretty print
+     * @return          Pretty printed duration
+     */
+    private String prettyPrint(Duration duration) {
+        return duration.toString()
+                .substring(2)
+                .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+                .toLowerCase();
     }
 
     private void storeLocationData(HashMap<AgentID, List<CandidateActivity>> hashMap) {

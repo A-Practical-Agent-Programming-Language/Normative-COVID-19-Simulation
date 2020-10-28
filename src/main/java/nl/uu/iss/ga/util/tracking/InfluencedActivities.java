@@ -15,12 +15,25 @@ public class InfluencedActivities {
 
     private final long tick;
 
-    private final ConcurrentHashMap<Class<? extends Norm>, Map<ActivityType, AtomicInteger>> activitiesCancelledByNorm = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<? extends Norm>, ConcurrentHashMap<ActivityType, AtomicInteger>> activitiesCancelledByNorm = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<ActivityType, AtomicInteger> cancelledActivities = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<ActivityType, AtomicInteger> continuedActivities = new ConcurrentHashMap<>();
 
-    public InfluencedActivities(long tick) {
+    public InfluencedActivities(long tick, Set<Class<? extends Norm>> norms) {
         this.tick = tick;
+        for(Class<? extends Norm> n : norms) {
+            ConcurrentHashMap<ActivityType, AtomicInteger> map = new ConcurrentHashMap<>();
+            for(ActivityType type : ActivityType.values()) {
+                map.put(type, new AtomicInteger());
+            }
+            this.activitiesCancelledByNorm.put(n, map);
+        }
+
+        for(ActivityType type : ActivityType.values()) {
+            cancelledActivities.put(type, new AtomicInteger());
+            continuedActivities.put(type, new AtomicInteger());
+        }
+
     }
 
     public long getTick() {
@@ -28,16 +41,8 @@ public class InfluencedActivities {
     }
 
     public void activityCancelled(Activity activity, Norm norm) {
-        if(!cancelledActivities.containsKey(activity.getActivityType()))
-            cancelledActivities.put(activity.getActivityType(), new AtomicInteger());
         this.cancelledActivities.get(activity.getActivityType()).getAndIncrement();
-
-        Class<? extends Norm> normHeader = norm.getClass();
-        if(!this.activitiesCancelledByNorm.containsKey(normHeader))
-            this.activitiesCancelledByNorm.put(normHeader, new HashMap<>());
-        if(!this.activitiesCancelledByNorm.get(normHeader).containsKey(activity.getActivityType()))
-            this.activitiesCancelledByNorm.get(normHeader).put(activity.getActivityType(), new AtomicInteger());
-        this.activitiesCancelledByNorm.get(normHeader).get(activity.getActivityType()).getAndIncrement();
+        this.activitiesCancelledByNorm.get(norm.getClass()).get(activity.getActivityType()).getAndIncrement();
     }
 
     public void activityContinuing(Activity activity) {
@@ -60,6 +65,19 @@ public class InfluencedActivities {
 
     public Map<ActivityType, Integer> getContinuedActivities() {
         return atomicIntMapToIntMap(this.continuedActivities);
+    }
+
+    public Map<ActivityType, Integer> getTotalActivities() {
+        Map<ActivityType, Integer> continuing = getContinuedActivities();
+        Map<ActivityType, Integer> cancelled = getCancelledActivities();
+        for(ActivityType type : cancelled.keySet()) {
+            continuing.put(type, continuing.getOrDefault(type, 0) + cancelled.get(type));
+        }
+        return continuing;
+    }
+
+    public int getSumTotalActivities() {
+        return getTotalActivities().values().stream().reduce(Integer::sum).orElse(0);
     }
 
     public Map<ActivityType, Double> getFractionActivitiesCancelled() {

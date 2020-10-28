@@ -22,9 +22,7 @@ public class SchoolsClosed extends Norm {
 
     @Override
     public CandidateActivity transformActivity(CandidateActivity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
-        CandidateActivity transformed = activity.clone();
-        transformed.makeHome(agentContextInterface);
-        return transformed;
+        return null;
     }
 
     @Override
