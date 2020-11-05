@@ -62,7 +62,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.observationNotifier = observationNotifier;
         this.scheduleTracker = new ScheduleTracker(
                 arguments.getOutputDir(),
-                normSchedule.getAllUsedNorms());
+                normSchedule);
         this.trackVisits = !arguments.isConnectpansim();
         this.startDate = arguments.getStartdate() == null ?
                 this.normSchedule.keySet().stream().findFirst().orElse(null) : arguments.getStartdate();

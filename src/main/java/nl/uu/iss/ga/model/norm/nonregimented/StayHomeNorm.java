@@ -60,4 +60,11 @@ public class StayHomeNorm extends NonRegimentedNorm {
         AGE,
         ALL;
     }
+
+    @Override
+    public String toString() {
+        return String.format("StayHome[%s]",
+                this.appliesTo.equals(APPLIES.AGE) ? String.format("age >= %d", this.age) :
+                        this.appliesTo);
+    }
 }

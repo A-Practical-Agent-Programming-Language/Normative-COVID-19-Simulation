@@ -21,4 +21,9 @@ public class OutDoorActivitiesOnly extends Norm {
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "ActivitiesOnlyOutdoors";
+    }
 }

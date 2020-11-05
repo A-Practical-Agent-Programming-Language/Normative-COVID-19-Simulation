@@ -30,4 +30,9 @@ public class MaintainDistanceNorm extends ModalNorm {
     double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, long locationID, int days) {
         return locationHistoryContext.getLastDaysFractionDistancingAt(days, locationID);
     }
+
+    @Override
+    public String toString() {
+        return "maintainDistance";
+    }
 }

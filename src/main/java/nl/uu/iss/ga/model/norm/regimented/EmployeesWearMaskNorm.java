@@ -23,4 +23,9 @@ public class EmployeesWearMaskNorm extends Norm {
         return activity.getActivityType().equals(ActivityType.WORK) &&
                 agentContextInterface.getContext(Person.class).getDesignation().equals(Designation.retail);
     }
+
+    @Override
+    public String toString() {
+        return "EmployeesWearMasks";
+    }
 }

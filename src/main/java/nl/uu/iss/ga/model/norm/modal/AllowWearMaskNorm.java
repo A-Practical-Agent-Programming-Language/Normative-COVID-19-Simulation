@@ -89,4 +89,9 @@ public class AllowWearMaskNorm extends ModalNorm {
     double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, long locationID, int days) {
         return locationHistoryContext.getLastDaysFractionMaskAt(days, locationID);
     }
+
+    @Override
+    public String toString() {
+        return "AllowWearMask";
+    }
 }

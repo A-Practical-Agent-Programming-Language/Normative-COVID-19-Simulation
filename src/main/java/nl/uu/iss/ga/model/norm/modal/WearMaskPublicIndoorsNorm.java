@@ -41,4 +41,9 @@ public class WearMaskPublicIndoorsNorm extends ModalNorm {
     double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, long locationID, int days) {
         return locationHistoryContext.getLastDaysFractionMaskAt(days, locationID);
     }
+
+    @Override
+    public String toString() {
+        return "WarMaskIndoors";
+    }
 }

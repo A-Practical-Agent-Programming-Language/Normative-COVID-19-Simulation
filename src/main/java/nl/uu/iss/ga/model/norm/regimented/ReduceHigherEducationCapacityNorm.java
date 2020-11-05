@@ -49,4 +49,13 @@ public class ReduceHigherEducationCapacityNorm extends Norm {
             return false;
         }
     }
+
+    @Override
+    public String toString() {
+        return "ReduceHigherEducationCapacityNorm[" +
+                "fractionOnline=" + FRACTION_COURSES_ONLINE +
+                ", max=" + MAX_ALLOWED +
+                ", lookback=" + N_DAYS_LOOKBACK +
+                ']';
+    }
 }

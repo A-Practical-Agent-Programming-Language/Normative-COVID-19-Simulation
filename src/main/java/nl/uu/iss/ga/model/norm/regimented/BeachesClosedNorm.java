@@ -23,4 +23,9 @@ public class BeachesClosedNorm extends Norm {
         // TODO how to distinguish beaches?
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "BeachesClosed";
+    }
 }

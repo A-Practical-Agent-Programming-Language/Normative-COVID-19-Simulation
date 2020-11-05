@@ -31,4 +31,9 @@ public class IfSickStayHomeNorm extends NonRegimentedNorm {
         BeliefContext context = agentContextInterface.getContext(BeliefContext.class);
         return !activity.getActivityType().equals(ActivityType.HOME) && context.isSymptomatic();
     }
+
+    @Override
+    public String toString() {
+        return "StayHomeIfSick";
+    }
 }

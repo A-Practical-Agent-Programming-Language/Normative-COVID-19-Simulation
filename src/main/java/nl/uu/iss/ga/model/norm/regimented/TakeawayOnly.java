@@ -37,4 +37,9 @@ public class TakeawayOnly extends Norm {
                 agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() <
                         ASSUME_RANDOM_ACTIVITY_IS_EATING_OUT;
     }
+
+    @Override
+    public String toString() {
+        return "TakeawayOnly";
+    }
 }

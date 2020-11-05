@@ -122,4 +122,9 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
             this.applicableActivityTypes = Arrays.asList(activityTypes);
         }
     }
+
+    @Override
+    public String toString() {
+        return String.format("KeepGroupsSmall[appliesTo=%s, max=%d", appliesToSetting, maxAllowed);
+    }
 }

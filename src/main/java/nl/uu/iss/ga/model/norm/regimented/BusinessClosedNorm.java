@@ -47,4 +47,9 @@ public class BusinessClosedNorm extends Norm {
         NONESSENTIALBUSINESSES,
         DMV;
     }
+
+    @Override
+    public String toString() {
+        return String.format("BusinessesClosed[%s]", appliesTo);
+    }
 }

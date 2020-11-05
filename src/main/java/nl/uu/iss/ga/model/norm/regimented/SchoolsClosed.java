@@ -40,4 +40,9 @@ public class SchoolsClosed extends Norm {
         K12,
         HIGHER_EDUCATION;
     }
+
+    @Override
+    public String toString() {
+        return "SchoolsClosed[" + appliesTo + ']';
+    }
 }

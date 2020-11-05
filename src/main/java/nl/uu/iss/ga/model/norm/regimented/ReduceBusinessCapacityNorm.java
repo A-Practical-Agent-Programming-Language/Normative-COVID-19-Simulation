@@ -64,7 +64,7 @@ public class ReduceBusinessCapacityNorm extends Norm {
             return false;
         else if (this.capacityPercentage >= 0) {
             // Simulate only {this.capacityPercentage} of people going to the location
-            return agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() > this.capacityPercentage;
+            return agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() * 100 > this.capacityPercentage;
         } else if (this.maxAllowed >= 0) {
             int actuallySeenAverage = agentContextInterface.getContext(LocationHistoryContext.class)
                     .getLastDaysSeenAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
@@ -79,5 +79,14 @@ public class ReduceBusinessCapacityNorm extends Norm {
         }
 
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "ReduceBusinessCapacity[%s]",
+                this.capacityPercentage >= 0 ? String.format("capacity=%d%%", this.capacityPercentage) :
+                        String.format("max=%d", this.maxAllowed)
+        );
     }
 }

@@ -69,4 +69,9 @@ public class EncourageTeleworkNorm extends NonRegimentedNorm {
         return activity.getActivityType().equals(ActivityType.WORK) &&
                 agentContextInterface.getContext(Person.class).getDesignation().equals(Designation.none);
     }
+
+    @Override
+    public String toString() {
+        return String.format("EncourageTelework[lookback=%dDays,pct_able=%.2f]", N_DAYS_LOOKBACK, pct_accomodated_work_from_home);
+    }
 }
