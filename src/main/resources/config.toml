@@ -1,6 +1,6 @@
 [simulation]
 norms = "norm-schedule.csv"
-# seed = 102
+seed = 102
 startdate = 2020-03-01
 iterations = 2020-06-28 # End date; Alternatively, specify the number of iterations
 
@@ -13,7 +13,7 @@ iterations = 2020-06-28 # End date; Alternatively, specify the number of iterati
 	[counties.charlottesville]
 	fractionLiberal = 0.8325
 	fipscode = 540
-	# seed = 42
+	seed = 42
 	activities = ["charlottesville_examples/usa_va_charlottesville_activity_assignment_adult_week_1_6_0.csv", "charlottesville_examples/usa_va_charlottesville_activity_assignment_child_week_1_6_0.csv"]
 	households = ["charlottesville_examples/usa_va_charlottesville_household_1_6_0.csv"]
 	persons = ["charlottesville_examples/usa_va_charlottesville_person_1_6_0.csv"]
@@ -51,6 +51,7 @@ iterations = 2020-06-28 # End date; Alternatively, specify the number of iterati
 	# activities = ["goochland_county_1_9_0/goochland_location_assignment_adult_1_9_0.csv", "goochland_county_1_9_0/goochland_location_assignment_child_1_9_0.csv"]
 	# households = ["goochland_county_1_9_0/goochland_household_1_9_0.csv"]
 	# persons = ["goochland_county_1_9_0/goochland_person_1_9_0.csv"]
+	# statefile = "goochland_county_1_9_0/start_state_ifrac=0.010000,sfrac=0.600000.csv"
 
 	# [counties.hanover]
 	# fipscode = 85
@@ -76,7 +77,6 @@ iterations = 2020-06-28 # End date; Alternatively, specify the number of iterati
 	# households = ["richmondcity_county_1_9_0/richmondcity_household_1_9_0.csv"]
 	# persons = ["richmondcity_county_1_9_0/richmondcity_person_1_9_0.csv"]
 
-	
 
 	#### WARNING: The following is not in the list of selected counties, so comment out for real run
 	# [counties.nelson]

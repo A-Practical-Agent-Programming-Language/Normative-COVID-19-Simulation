@@ -1,0 +1,14 @@
+[simulation]
+norms = "norm-schedule.csv"
+startdate = 2020-03-01
+iterations = 2020-06-28 # End date; Alternatively, specify the number of iterations
+
+[counties]
+	 [counties.goochland]
+	 fipscode = 75
+	 fractionLiberal = 0.3755
+#	 seed = 68
+	 activities = ["goochland_county_1_9_0/goochland_location_assignment_adult_1_9_0.csv", "goochland_county_1_9_0/goochland_location_assignment_child_1_9_0.csv"]
+	 households = ["goochland_county_1_9_0/goochland_household_1_9_0.csv"]
+	 persons = ["goochland_county_1_9_0/goochland_person_1_9_0.csv"]
+	 statefile = "goochland_county_1_9_0/shuffled_start_state.csv"

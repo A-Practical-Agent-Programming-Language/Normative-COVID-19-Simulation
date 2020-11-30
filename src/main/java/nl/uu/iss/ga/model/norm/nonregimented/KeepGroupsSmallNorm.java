@@ -71,9 +71,9 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         double fraction_symptomatic_factor = 1 - averageSymptomaticPreviously;
 
         // Weights
-        double ndWeight = weight(normalizedDiff);
+        double ndWeight = weight(normalizedDiff); // TODO does it make sense to weigh this?
         double govWeight = weight(gov);
-        double fsfWeight = weight(fraction_symptomatic_factor);
+        double fsfWeight = 1; //weight(fraction_symptomatic_factor); // TODO we should not weigh this, right?
 
         // Weigh the value by how much the agent wants to follow norm and the risk involved with the number of symptomatic people
         return ((ndWeight * normalizedDiff) + (govWeight * gov) + (fsfWeight * fraction_symptomatic_factor)) /

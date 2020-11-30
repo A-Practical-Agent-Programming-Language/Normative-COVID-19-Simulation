@@ -1,0 +1,15 @@
+[simulation]
+norms = "norm-schedule.csv"
+startdate = 2020-03-01
+iterations = 2020-06-28 # End date; Alternatively, specify the number of iterations
+
+[counties]
+	[counties.charlottesville]
+	fractionLiberal = 0.8325
+	fipscode = 540
+	# seed = 42
+	activities = ["charlottesville_examples/usa_va_charlottesville_activity_assignment_adult_week_1_6_0.csv", "charlottesville_examples/usa_va_charlottesville_activity_assignment_child_week_1_6_0.csv"]
+	households = ["charlottesville_examples/usa_va_charlottesville_household_1_6_0.csv"]
+	persons = ["charlottesville_examples/usa_va_charlottesville_person_1_6_0.csv"]
+	locations = ["charlottesville_examples/usa_va_charlottesville_location_assignment_week_1_6_0.csv"]
+	statefile = "charlottesville_examples/shuffled_start_state.csv"

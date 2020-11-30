@@ -51,7 +51,7 @@ public abstract class ModalNorm extends NonRegimentedNorm {
         }
 
         // Factors
-        fractionMode = 1 - fractionMode;
+        fractionMode = Math.max(1 - fractionMode, 0);
         double gtf = 1 - beliefContext.getGovernmentTrustFactor();
 
         // Weights

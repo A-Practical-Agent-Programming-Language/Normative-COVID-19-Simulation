@@ -35,8 +35,6 @@ public class EncourageTeleworkNorm extends NonRegimentedNorm {
         Person person = agentContextInterface.getContext(Person.class);
         Household household = person.getHousehold();
 
-
-
         // Factors
         double gtf = 1 - agentContextInterface.getContext(BeliefContext.class).getGovernmentTrustFactor();
 

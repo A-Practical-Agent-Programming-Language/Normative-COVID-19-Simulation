@@ -44,12 +44,29 @@ public class AgentStateMap {
 
     public void fromDataFrame(StateDataFrame dataFrame) throws IOException {
         reset();
+        int infected = 0;
+        int symptomatic = 0;
+        int total = 0;
         for(int i = 0; i < dataFrame.getSchemaRoot().getRowCount(); i++) {
             AgentState state = dataFrame.getAgentState(i);
             AgentID aid = this.pidToAgentMap.get(state.getPid());
             this.pidStateMap.put(state.getPid(), state);
             this.agentStateMap.put(aid, state);
+            total++;
+            if(state.getState().equals(DiseaseState.INFECTED_SYMPTOMATIC)) {
+                symptomatic++;
+                infected++;
+            } else if (state.getState().equals(DiseaseState.INFECTED_ASYMPTOMATIC)) {
+                infected++;
+            }
         }
+        // TODO maybe track this in tracker.InfluencedActivities?
+        LOGGER.log(Level.INFO, String.format(
+                "Received state frame. %d people, of whom %d (%.2f%%) are infected, %d (%.2f%%) of which are symptomatic",
+                total,
+                infected, (double)infected/total,
+                symptomatic, (double) symptomatic/infected
+                ));
     }
 
     public List<AgentState> getAllAgentStates() {

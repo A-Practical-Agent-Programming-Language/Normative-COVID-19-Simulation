@@ -15,6 +15,9 @@ public class InfluencedActivities {
 
     private final long tick;
 
+    private int deltaCases = 0;
+    private int nInfected = 0;
+
     private final ConcurrentHashMap<Class<? extends Norm>, ConcurrentHashMap<ActivityType, AtomicInteger>> activitiesCancelledByNorm = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<ActivityType, AtomicInteger> cancelledActivities = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<ActivityType, AtomicInteger> continuedActivities = new ConcurrentHashMap<>();
@@ -34,6 +37,19 @@ public class InfluencedActivities {
             continuedActivities.put(type, new AtomicInteger());
         }
 
+    }
+
+    public int getDeltaCases() {
+        return deltaCases;
+    }
+
+    public int getnInfected() {
+        return nInfected;
+    }
+
+    public void setNInfected(int nInfected) {
+        this.deltaCases = nInfected - this.nInfected;
+        this.nInfected = nInfected;
     }
 
     public long getTick() {

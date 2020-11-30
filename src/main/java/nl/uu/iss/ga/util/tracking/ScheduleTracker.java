@@ -257,8 +257,8 @@ public class ScheduleTracker {
                 }
                 ActivityType type = ca.getActivity().getActivityType();
                 if (!encounteredActivities.containsKey(type))
-                    encounteredActivities.put(type, 1);
-                encounteredActivities.put(type, encounteredActivities.get(type) + 1);
+                    encounteredActivities.put(type, ca.getActivity().getDuration());
+                encounteredActivities.put(type, encounteredActivities.get(type) + ca.getActivity().getDuration());
                 isAllHome &= ActivityType.HOME.equals(type);
             }
 
