@@ -4,7 +4,13 @@ import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
+import java.util.Arrays;
+import java.util.OptionalDouble;
+
 public abstract class Norm {
+
+    private static final double POSTERIOR_LOGISTIC_GROWTH_RATE = 10f;
+
     /**
      * Transforms the passed activity in another activity by applying the norm
      *  @param activity              Activity to transform
@@ -36,7 +42,35 @@ public abstract class Norm {
      * @param value     A value that should be weighted
      * @return          A weight between 0 and 1 (inclusive)
      */
+    @Deprecated
     protected static double weight(double value) {
         return Math.abs(Math.pow((2 * value) - 1, 3));
+    }
+
+    /**
+     * https://www.desmos.com/calculator/gocrbtoaqj
+     *
+     *
+     * @param government_trust_factor
+     * @param positive_evidence_probabilities
+     * @return
+     */
+    protected static double norm_compliance_posterior(double government_trust_factor, double... positive_evidence_probabilities) {
+        double x0 = 1 - government_trust_factor;
+        OptionalDouble evidence = Arrays.stream(positive_evidence_probabilities).average();
+        if(evidence.isPresent()) {
+            return 1 / (
+                    1 + Math.pow(
+                            Math.E,
+                            (-POSTERIOR_LOGISTIC_GROWTH_RATE * (evidence.getAsDouble() - x0))
+                    )
+            );
+        } else {
+            return government_trust_factor;
+        }
+    }
+
+    protected static double norm_violation_posterior(double government_trust_factor, double... positive_evidence_probabilities) {
+        return 1 - norm_compliance_posterior(government_trust_factor, positive_evidence_probabilities);
     }
 }

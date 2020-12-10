@@ -20,7 +20,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.LongSupplier;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -60,6 +59,14 @@ public class ArgParse {
 
     @Arg(dest = "logproperties")
     private File logproperties;
+
+    @Arg(dest = "diseaseseeddays")
+    private Integer diseaseseeddays;
+
+    @Arg(dest = "diseaseseednumber")
+    private Integer diseaseseednumber;
+
+    private double fraction_symptomatic = 0.6;
 
     private Random random;
 
@@ -120,13 +127,18 @@ public class ArgParse {
                     this.random = new Random();
                 }
 
+                if(result.contains("infectionseeding.perday") && this.diseaseseednumber == null) {
+                    this.diseaseseednumber = result.getLong("infectionseeding.perday").intValue();
+                }
+                if(result.contains("infectionseeding.days") && this.diseaseseeddays == null) {
+                    this.diseaseseeddays = result.getLong("infectionseeding.days").intValue();
+                }
+                if(result.contains("infectionseeding.fraction_symptomatic")) {
+                    this.fraction_symptomatic = result.getDouble("infectionseeding.fraction_symptomatic");
+                }
+
                 this.descriptor = result.getString("output.descriptor");
-                this.node = (int) result.getLong("output.node", new LongSupplier() {
-                    @Override
-                    public long getAsLong() {
-                        return -1;
-                    }
-                });
+                this.node = (int) result.getLong("output.node", () -> -1);
 
                 TomlTable table = result.getTable("counties");
 
@@ -198,6 +210,22 @@ public class ArgParse {
         return outputdir;
     }
 
+    public boolean isDiseaseSeeding() {
+        return diseaseseeddays + diseaseseednumber > 0;
+    }
+
+    public int getDiseaseSeedDays() {
+        return diseaseseeddays == null ? 0 : diseaseseeddays;
+    }
+
+    public int getDiseaseSeedNumAgentsPerDay() {
+        return diseaseseednumber == null ? 0 : diseaseseednumber;
+    }
+
+    public double getFraction_symptomatic() {
+        return fraction_symptomatic;
+    }
+
     public static File findFile(File f) throws FileNotFoundException {
         File existingFile = null;
         if(f.getAbsoluteFile().exists()) {
@@ -256,6 +284,22 @@ public class ArgParse {
                 .type(double.class)
                 .dest("modeconservative")
                 .help("The mode of the government attitude distribution of liberal voting agents");
+
+        calibration.addArgument("--disease-seed-days")
+                .required(false)
+                .type(int.class)
+                .dest("diseaseseeddays")
+                .help("The number of days at the beginning of simulation to seed the --disease-seed-number of agents with an infected state." +
+                        " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
+                        " no agents are seeded with the disease");
+
+        calibration.addArgument("--disease-seed-number")
+                .required(false)
+                .type(int.class)
+                .dest("diseaseseednumber")
+                .help("The number of agents at the beginning of simulation to seed during the initial --disease-seed-days with an infected state." +
+                        " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
+                        " no agents are seeded with the disease");
 
         ArgumentGroup optimization = parser.addArgumentGroup("Runtime optimization");
 

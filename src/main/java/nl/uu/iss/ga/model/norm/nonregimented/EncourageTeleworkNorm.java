@@ -7,6 +7,7 @@ import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
+import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
@@ -36,24 +37,23 @@ public class EncourageTeleworkNorm extends NonRegimentedNorm {
         Household household = person.getHousehold();
 
         // Factors
-        double gtf = 1 - agentContextInterface.getContext(BeliefContext.class).getGovernmentTrustFactor();
+        double gtf = agentContextInterface.getContext(BeliefContext.class).getGovernmentTrustFactor();
 
         // How many symptomatic people were there at the office previously
-        double fractionSymptomatic = 1 - historyContext.getLastDaysFractionSymptomaticAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
+        double fractionSymptomatic = historyContext.getLastDaysFractionSymptomaticAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
 
-        // How likely is it any given person in the work force can work from home
-        double probabilityAccomodated = pct_accomodated_work_from_home;
+        return Norm.norm_violation_posterior(gtf, fractionSymptomatic, pct_accomodated_work_from_home);
 
         // TODO Household income as proxy for how likely they can work from home?
 
-
-        // Weights
-        double gtfWeight = weight(gtf);
-        double fsWeight = weight(fractionSymptomatic);
-        double paWeight = weight(probabilityAccomodated);
-
-        return ((gtfWeight * gtf) + (fsWeight * fractionSymptomatic) + (paWeight * probabilityAccomodated)) /
-                (gtfWeight + fsWeight + paWeight);
+//
+//        // Weights
+//        double gtfWeight = weight(gtf);
+//        double fsWeight = weight(fractionSymptomatic);
+//        double paWeight = weight(probabilityAccomodated);
+//
+//        return ((gtfWeight * gtf) + (fsWeight * fractionSymptomatic) + (paWeight * probabilityAccomodated)) /
+//                (gtfWeight + fsWeight + paWeight);
 
     }
 

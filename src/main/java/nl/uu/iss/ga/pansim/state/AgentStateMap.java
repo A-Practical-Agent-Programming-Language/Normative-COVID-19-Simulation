@@ -1,8 +1,7 @@
-package main.java.nl.uu.iss.ga.simulation.environment;
+package main.java.nl.uu.iss.ga.pansim.state;
 
 import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
-import main.java.nl.uu.iss.ga.pansim.state.StateDataFrame;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 
 import java.io.File;
@@ -31,6 +30,20 @@ public class AgentStateMap {
         for(File f : initialStateFiles) {
             LOGGER.log(Level.INFO, "Creating agent state map from file " + initialStateFiles.toString());
             readStateFile(f, rnd);
+        }
+    }
+
+    public void seed_infections(Random random, int n_agents, double symptomatic_probability) {
+        List<AgentID> allAgents = new ArrayList<>(this.agentStateMap.keySet());
+        Collections.shuffle(allAgents, random);
+        for(int i = 0; i < n_agents && i < this.agentStateMap.size(); i++) {
+            AgentState agentState = this.agentStateMap.get(allAgents.get(i));
+            if(DiseaseState.SUSCEPTIBLE == agentState.getState() || DiseaseState.NOT_SET == agentState.getState()) {
+                this.agentStateMap.get(allAgents.get(i)).updateState(random.nextDouble() <= symptomatic_probability ?
+                        DiseaseState.INFECTED_SYMPTOMATIC : DiseaseState.INFECTED_ASYMPTOMATIC);
+            } else {
+                n_agents++;
+            }
         }
     }
 
@@ -64,8 +77,8 @@ public class AgentStateMap {
         LOGGER.log(Level.INFO, String.format(
                 "Received state frame. %d people, of whom %d (%.2f%%) are infected, %d (%.2f%%) of which are symptomatic",
                 total,
-                infected, (double)infected/total,
-                symptomatic, (double) symptomatic/infected
+                infected, (double)infected/total * 100,
+                symptomatic, (double) symptomatic/infected * 100
                 ));
     }
 

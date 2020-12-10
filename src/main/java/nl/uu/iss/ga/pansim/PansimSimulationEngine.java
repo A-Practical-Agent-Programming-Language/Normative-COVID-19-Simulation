@@ -5,7 +5,7 @@ import main.java.nl.uu.iss.ga.pansim.state.StateDataFrame;
 import main.java.nl.uu.iss.ga.pansim.visit.VisitDataFrame;
 import main.java.nl.uu.iss.ga.pansim.visit.VisitResultDataFrame;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.simulation.environment.AgentStateMap;
+import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
@@ -36,7 +36,6 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     private byte[] next_state_df_raw;
     private byte[] next_visit_df_raw;
-
 
     public RootAllocator allocator = new RootAllocator(Long.MAX_VALUE);
 

@@ -37,12 +37,13 @@ for i in range(7):
 	locations[i] = list()
 
 # Read passed locations file, and add each location file to the locations dictionary for the corresponding day
-with open(sys.argv[1], 'r') as f:
-	for l in f.readlines()[1:]:
-		cols = l.split(",")
-		# We only store a few columns, so cols 3 and 4 align with latitude and longitude expected by gyration calculator script
-		# Note that we switch around col 7 (latitude) and 8 (longitude)
-		locations[starttimeToDay(cols[4])].append("\t".join([cols[i] for i in [0,1,6,8,7]]) + "\n")
+for a in sys.argv[1:]:
+	with open(a, 'r') as f:
+		for l in f.readlines()[1:]:
+			cols = l.split(",")
+			# We only store a few columns, so cols 3 and 4 align with latitude and longitude expected by gyration calculator script
+			# Note that we switch around col 7 (latitude) and 8 (longitude)
+			locations[starttimeToDay(cols[4])].append("\t".join([cols[i] for i in [0,1,6,8,7]]) + "\n")
 
 if not os.path.exists(sys.argv[1] + "_locations"):
 	os.mkdir(sys.argv[1] + "_locations")

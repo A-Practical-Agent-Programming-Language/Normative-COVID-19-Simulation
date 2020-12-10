@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.simulation.environment;
+package main.java.nl.uu.iss.ga.pansim.state;
 
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
@@ -61,5 +61,11 @@ public class AgentState {
                 -1,
                 seed
         );
+    }
+
+    void updateState(DiseaseState state) {
+        this.state = state;
+        this.nextState = DiseaseState.NOT_SET;
+        this.dwell_time = -1;
     }
 }

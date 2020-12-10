@@ -2,7 +2,7 @@ package main.java.nl.uu.iss.ga.simulation.agent.context;
 
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
-import main.java.nl.uu.iss.ga.simulation.environment.EnvironmentInterface;
+import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 

@@ -2,6 +2,12 @@
 norms = "norm-schedule.csv"
 startdate = 2020-03-01
 iterations = 2020-06-28 # End date; Alternatively, specify the number of iterations
+diseasemodel = "../../../../pansim/tests/disease_models/seiar.toml"
+
+[infectionseeding]
+perday = 5
+days = 10
+fraction_symptomatic = 0.6
 
 [counties]
 	 [counties.goochland]

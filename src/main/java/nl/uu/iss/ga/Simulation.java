@@ -3,9 +3,10 @@ package main.java.nl.uu.iss.ga;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
 import main.java.nl.uu.iss.ga.pansim.PansimSimulationEngine;
-import main.java.nl.uu.iss.ga.simulation.environment.AgentStateMap;
-import main.java.nl.uu.iss.ga.simulation.environment.EnvironmentInterface;
+import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
+import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
+import main.java.nl.uu.iss.ga.util.Java2APLLogger;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.config.ConfigModel;
@@ -24,7 +25,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class Simulation {
-    private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());;
+    private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());
     public static final LocalDateTime instantiated = LocalDateTime.now();
 
     public static void main(String[] args) {
@@ -83,6 +84,7 @@ public class Simulation {
         DefaultMessenger messenger = new DefaultMessenger();
 
         this.platform = Platform.newPlatform(tickExecutor, messenger);
+        this.platform.setLogger(new Java2APLLogger());
         this.observationNotifier = new DirectObservationNotifierNotifier(this.platform);
         this.environmentInterface = new EnvironmentInterface(
                 platform,

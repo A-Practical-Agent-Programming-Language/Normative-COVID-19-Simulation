@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.simulation.environment;
+package main.java.nl.uu.iss.ga.simulation;
 
 import main.java.nl.uu.iss.ga.Simulation;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
@@ -9,6 +9,7 @@ import main.java.nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.model.norm.NormContainer;
 import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
+import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
@@ -102,6 +103,11 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTick % 7 + 1));
         } else {
             this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
+        }
+
+        if(tick < arguments.getDiseaseSeedDays() && arguments.isDiseaseSeeding()) {
+            agentStateMap.seed_infections(arguments.getSystemWideRandom(),
+                    arguments.getDiseaseSeedNumAgentsPerDay(), arguments.getFraction_symptomatic());
         }
 
         // Reset tracker for influenced activities

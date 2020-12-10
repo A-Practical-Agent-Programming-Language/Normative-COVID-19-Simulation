@@ -3,6 +3,7 @@ package main.java.nl.uu.iss.ga.model.norm.modal;
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
+import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
@@ -50,15 +51,19 @@ public abstract class ModalNorm extends NonRegimentedNorm {
             fractionMode += beliefContext.getRandom().nextDouble() * beliefContext.getGovernmentTrustFactor();
         }
 
+        fractionMode = Math.min(fractionMode, 1);
+
+        return Norm.norm_violation_posterior(beliefContext.getGovernmentTrustFactor(), fractionMode);
+
         // Factors
-        fractionMode = Math.max(1 - fractionMode, 0);
-        double gtf = 1 - beliefContext.getGovernmentTrustFactor();
+//        fractionMode = Math.max(1 - fractionMode, 0);
+//        double gtf = 1 - beliefContext.getGovernmentTrustFactor();
 
-        // Weights
-        double modeWeight = weight(fractionMode);
-        double gtfWeight = weight(gtf);
+//        // Weights
+//        double modeWeight = weight(fractionMode);
+//        double gtfWeight = weight(gtf);
 
-        return ((gtfWeight * gtf) + (modeWeight * fractionMode)) / (modeWeight + gtfWeight);
+//        return ((gtfWeight * gtf) + (modeWeight * fractionMode)) / (modeWeight + gtfWeight);
     }
 
     abstract double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, int days);

@@ -5,6 +5,7 @@ import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
+import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
@@ -25,7 +26,7 @@ import java.util.List;
  * </ul>
  */
 public class KeepGroupsSmallNorm extends NonRegimentedNorm {
-    private static final double CURVE_SLOPE_FACTOR = .2;
+    private static final double CURVE_SLOPE_FACTOR = .4;
     private static final int N_DAYS_LOOKBACK = 7;
 
     private APPLIES appliesToSetting;
@@ -66,18 +67,21 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         // Factors
 
         // Normalize the difference to be between 0 and 1, with smaller differences more likely to be ignored
-        double normalizedDiff = 1 / (CURVE_SLOPE_FACTOR * diff + 1);
-        double gov = 1 - beliefContext.getGovernmentTrustFactor();
-        double fraction_symptomatic_factor = 1 - averageSymptomaticPreviously;
+//        double normalizedDiff = 1 / (CURVE_SLOPE_FACTOR * diff + 1);
+        double normalizedDiff = 1 - (1 / (CURVE_SLOPE_FACTOR * diff + 1)); //https://www.desmos.com/calculator/rcfitmh0ms
+//        double gov = 1 - beliefContext.getGovernmentTrustFactor();
+//        double fraction_symptomatic_factor = 1 - averageSymptomaticPreviously;
 
-        // Weights
-        double ndWeight = weight(normalizedDiff); // TODO does it make sense to weigh this?
-        double govWeight = weight(gov);
-        double fsfWeight = 1; //weight(fraction_symptomatic_factor); // TODO we should not weigh this, right?
+        return Norm.norm_violation_posterior(beliefContext.getGovernmentTrustFactor(), normalizedDiff, averageSymptomaticPreviously);
 
-        // Weigh the value by how much the agent wants to follow norm and the risk involved with the number of symptomatic people
-        return ((ndWeight * normalizedDiff) + (govWeight * gov) + (fsfWeight * fraction_symptomatic_factor)) /
-                (ndWeight + govWeight + fsfWeight);
+//        // Weights
+//        double ndWeight = weight(normalizedDiff); // TODO does it make sense to weigh this?
+//        double govWeight = weight(gov);
+//        double fsfWeight = 1; //weight(fraction_symptomatic_factor); // TODO we should not weigh this, right?
+//
+//        // Weigh the value by how much the agent wants to follow norm and the risk involved with the number of symptomatic people
+//        return ((ndWeight * normalizedDiff) + (govWeight * gov) + (fsfWeight * fraction_symptomatic_factor)) /
+//                (ndWeight + govWeight + fsfWeight);
     }
 
     @Override
