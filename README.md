@@ -24,7 +24,7 @@ Prerequisites:
 Download Sim2APL from Bitbucket, and checkout the `feature/generic-plan-return` branch.
 
 ```bash
-$ git clone https://AJdeMooij@bitbucket.org/goldenagents/sim2apl.git
+$ git clone https://bitbucket.org/goldenagents/sim2apl.git
 $ cd sim2apl
 $ git checkout origin/feature/generic-plan-return -b feature/generic-plan-return
 ```
@@ -41,7 +41,7 @@ This will automatically add the library to your local Maven repository, so no fu
 Clone the master branch of this library and install with Maven, or open in an IDE with Maven support (e.g. VSCode, Idea Intellij, Eclipse or NetBeans) and let the IDE set up the project.
 
 ```bash
-$ git clone https://AJdeMooij@bitbucket.org/goldenagents/sim2apl-episimpledemics.git
+$ git clone https://bitbucket.org/goldenagents/sim2apl-episimpledemics.git
 $ cd sim2apl-episimpledemics
 $ mvn -U clean install
 ```
