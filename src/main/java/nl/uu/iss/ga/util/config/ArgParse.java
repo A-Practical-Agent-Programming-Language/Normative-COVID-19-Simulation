@@ -66,6 +66,9 @@ public class ArgParse {
     @Arg(dest = "diseaseseednumber")
     private Integer diseaseseednumber;
 
+    @Arg(dest = "additionaldiseasedays")
+    private Integer additionaldiseasedays;
+
     private double fraction_symptomatic = 0.6;
 
     private Random random;
@@ -135,6 +138,9 @@ public class ArgParse {
                 }
                 if(result.contains("infectionseeding.fraction_symptomatic")) {
                     this.fraction_symptomatic = result.getDouble("infectionseeding.fraction_symptomatic");
+                }
+                if(result.contains("infectionseeding.additional_every_other_days") && this.additionaldiseasedays == null) {
+                    this.additionaldiseasedays = result.getLong("infectionseeding.additional_every_other_days").intValue();
                 }
 
                 this.descriptor = result.getString("output.descriptor");
@@ -222,6 +228,14 @@ public class ArgParse {
         return diseaseseednumber == null ? 0 : diseaseseednumber;
     }
 
+    public Integer getAdditionalEveryOtherDays() {
+        return diseaseseednumber == null ? null : this.additionaldiseasedays;
+    }
+
+    public Integer getAdditionalDiseaseSeedNumber() {
+        return this.additionaldiseasedays == null ? null : this.diseaseseednumber;
+    }
+
     public double getFraction_symptomatic() {
         return fraction_symptomatic;
     }
@@ -300,6 +314,17 @@ public class ArgParse {
                 .help("The number of agents at the beginning of simulation to seed during the initial --disease-seed-days with an infected state." +
                         " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
                         " no agents are seeded with the disease");
+
+        calibration.addArgument("--disease-seed-additional-frequency")
+                .required(false)
+                .type(Integer.class)
+                .dest("additionaldiseasedays")
+                .help("A number of days between additional seeding of infectious agents. After initial seeding has finished, " +
+                        "an additional --disease-seed-number of agents will be seeded with an infected state every " +
+                        "--disease-seed-additional-frequency days. E.g., if the initial number of days is 5, and this value is " +
+                        "10, agents will be seeded on the 1th, 2nd, 3th, 4th, 5th, 10th, 20th, 30th etc days of the simulation." +
+                        " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
+                        " no agents are seeded with the disease after the initial seeding");
 
         ArgumentGroup optimization = parser.addArgumentGroup("Runtime optimization");
 

@@ -1,8 +1,11 @@
 usage: 2APL/SimpleEpiDemic Disease Simulation
        [-h] --config CONFIGURATION --mode-liberal MODELIBERAL
-       --mode-conservative MODECONSERVATIVE [--threads THREADS]
-       [--log-properties LOGPROPERTIES] [--connect-pansim]
-       [--output-dir OUTPUTDIR]
+       --mode-conservative MODECONSERVATIVE
+       [--disease-seed-days DISEASESEEDDAYS]
+       [--disease-seed-number DISEASESEEDNUMBER]
+       [--disease-seed-additional-frequency ADDITIONALDISEASEDAYS]
+       [--threads THREADS] [--log-properties LOGPROPERTIES]
+       [--connect-pansim] [--output-dir OUTPUTDIR]
 
 A ecological simulation environment for  simulation  of human acceptance of
 measures aimed at reducing spread of novel diseases
@@ -21,6 +24,35 @@ Calibration:
   --mode-conservative MODECONSERVATIVE, -mc MODECONSERVATIVE
                          The mode of  the  government attitude distribution
                          of liberal voting agents
+  --disease-seed-days DISEASESEEDDAYS
+                         The number of days at  the beginning of simulation
+                         to seed the  --disease-seed-number  of agents with
+                         an  infected  state.  If  this  argument  is  also
+                         specified  in  the  TOML  configuration,  the  CLI
+                         value takes precedent. If  no  value is specified,
+                         no agents are seeded with the disease
+  --disease-seed-number DISEASESEEDNUMBER
+                         The  number  of   agents   at   the  beginning  of
+                         simulation to seed  during  the initial --disease-
+                         seed-days  with  an   infected   state.   If  this
+                         argument   is   also   specified   in   the   TOML
+                         configuration, the CLI  value  takes precedent. If
+                         no value is specified,  no  agents are seeded with
+                         the disease
+  --disease-seed-additional-frequency ADDITIONALDISEASEDAYS
+                         A number of  days  between  additional  seeding of
+                         infectious  agents.  After   initial  seeding  has
+                         finished, an  additional  --disease-seed-number of
+                         agents will  be  seeded  with  an  infected  state
+                         every --disease-seed-additional-frequency days. E.
+                         g., if the initial number  of  days is 5, and this
+                         value is 10, agents  will  be  seeded  on the 1th,
+                         2nd, 3th, 4th, 5th, 10th,  20th,  30th etc days of
+                         the  simulation.   If   this   argument   is  also
+                         specified  in  the  TOML  configuration,  the  CLI
+                         value takes precedent. If  no  value is specified,
+                         no agents are seeded  with  the  disease after the
+                         initial seeding
 
 Runtime optimization:
   --threads THREADS, -t THREADS
@@ -37,4 +69,4 @@ Runtime optimization:
                          Specify a sub directory  of  "output" where output
                          files of the  behavior  model  will  be stored. By
                          default,  the  current  time  code  will  be  used
-                         (default: current date time) 
+                         (default: 2021-01-18T10:36:49.998184)

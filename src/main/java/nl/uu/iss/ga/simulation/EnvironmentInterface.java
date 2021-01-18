@@ -109,6 +109,11 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         if(tick < arguments.getDiseaseSeedDays() && arguments.isDiseaseSeeding()) {
             agentStateMap.seed_infections(arguments.getSystemWideRandom(),
                     arguments.getDiseaseSeedNumAgentsPerDay(), arguments.getFraction_symptomatic());
+        } else if(arguments.getAdditionalDiseaseSeedNumber() != null) {
+            if(this.currentTick % arguments.getAdditionalEveryOtherDays() == 0) {
+                agentStateMap.seed_infections(arguments.getSystemWideRandom(),
+                        arguments.getAdditionalDiseaseSeedNumber(), arguments.getFraction_symptomatic());
+            }
         }
 
         // Reset tracker for influenced activities

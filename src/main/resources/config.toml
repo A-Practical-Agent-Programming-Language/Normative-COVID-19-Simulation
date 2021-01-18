@@ -9,6 +9,7 @@ diseasemodel = "../../../../pansim/tests/disease_models/seiar.toml"
 perday = 5
 days = 10
 fraction_symptomatic = 0.6
+additional_every_other_days = 15
 
 # If these are set, they will be included in the file names of output files
 # [output]
