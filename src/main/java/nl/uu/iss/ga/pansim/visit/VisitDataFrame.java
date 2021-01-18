@@ -133,7 +133,9 @@ public class VisitDataFrame {
         int i = 0;
         for(AgentID agentID : agentActions.keySet()) {
             for(CandidateActivity activity : agentActions.get(agentID)) {
-                dataFrame.addRow(i, activity, stateMap.getAgentState(agentID).getState());
+                DiseaseState state = stateMap.getAgentState(agentID).getState();
+                dataFrame.addRow(i, activity, state);
+                activity.setDiseaseState(state);
                 i++;
             }
         }

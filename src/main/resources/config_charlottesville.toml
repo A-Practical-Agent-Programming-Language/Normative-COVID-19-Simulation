@@ -18,4 +18,3 @@ fraction_symptomatic = 0.6
 	households = ["charlottesville_examples/usa_va_charlottesville_household_1_6_0.csv"]
 	persons = ["charlottesville_examples/usa_va_charlottesville_person_1_6_0.csv"]
 	locations = ["charlottesville_examples/usa_va_charlottesville_location_assignment_week_1_6_0.csv"]
-	statefile = "charlottesville_examples/shuffled_start_state.csv"

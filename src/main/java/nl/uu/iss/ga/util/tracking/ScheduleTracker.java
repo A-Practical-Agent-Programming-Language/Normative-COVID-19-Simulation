@@ -6,6 +6,8 @@ import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.model.norm.NormContainer;
 import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
+import main.java.nl.uu.iss.ga.pansim.state.AgentState;
+import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.Constants;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
@@ -22,8 +24,10 @@ import java.util.stream.Collectors;
  */
 public class ScheduleTracker {
     public static final String AVERAGE_SCHEDULE_FILENAME = "average-schedules";
+    public static final String EPICURVE_FILENAME = "epicurve.sim2apl";
     public static final String ALL_HOME_PCT = "ALL_HOME_PCT";
     public static final String VISITORS_TOTAL = "VISITORS_TOTAL";
+    public static final String VISIT_DURATION_TOTAL = "VISIT_DURATION_TOTAL";
     public static final String MASK_TOTAL = "MASK_TOTAL";
     public static final String DISTANCE_TOTAL = "DISTANCE_TOTAL";
     public static final String SYMPTOMATIC_TOTAL = "SYMPTOMATIC_TOTAL";
@@ -34,11 +38,13 @@ public class ScheduleTracker {
     public static final String NORMS_DEACTIVATED_HEADER = "NORMS_DEACTIVATED";
     private final Map<String, ScheduleTrackerGroup> fileObjects = new HashMap<>();
     private final String parentDir;
+    private final AgentStateMap agentStateMap;
     private final NormScheduleReader normScheduleReader;
     private final Set<Class<? extends Norm>> allUsedNorms;
 
-    public ScheduleTracker(String outdir, NormScheduleReader normScheduleReader) {
+    public ScheduleTracker(String outdir, AgentStateMap agentStateMap, NormScheduleReader normScheduleReader) {
         this.parentDir = (Path.of(outdir).isAbsolute() ? Path.of(outdir) : Path.of("output", outdir)).toFile().getAbsolutePath();
+        this.agentStateMap = agentStateMap;
         this.normScheduleReader = normScheduleReader;
         this.allUsedNorms = normScheduleReader.getAllUsedNorms();
         createFileObjects(allUsedNorms);
@@ -59,11 +65,16 @@ public class ScheduleTracker {
 
         List<String> averageScheduleHeaders = new ArrayList<>(List.of(
                 NORMS_ACTIVATED_HEADER, NORMS_DEACTIVATED_HEADER,
-                VISITORS_TOTAL, MASK_TOTAL, DISTANCE_TOTAL, SYMPTOMATIC_TOTAL, MASK_PCT, DISTANCE_PCT, SYMPTOMATIC_PCT, ALL_HOME_PCT));
-        averageScheduleHeaders.addAll(activityTypeNames);
+                VISITORS_TOTAL, VISIT_DURATION_TOTAL, MASK_TOTAL, DISTANCE_TOTAL, SYMPTOMATIC_TOTAL, MASK_PCT, DISTANCE_PCT, SYMPTOMATIC_PCT, ALL_HOME_PCT));
+        averageScheduleHeaders.addAll(activityTypeNames.stream().map(x -> x + "_COUNT").collect(Collectors.toList()));
+        averageScheduleHeaders.addAll(activityTypeNames.stream().map(x -> x + "_DURATION").collect(Collectors.toList()));
         ScheduleTrackerGroup g =
                 new ScheduleTrackerGroup(this.parentDir, AVERAGE_SCHEDULE_FILENAME + ".csv", averageScheduleHeaders);
         this.fileObjects.put(AVERAGE_SCHEDULE_FILENAME, g);
+
+        List<String> epicurveHeaders = Arrays.stream(DiseaseState.values()).map(DiseaseState::toString).collect(Collectors.toList());
+        ScheduleTrackerGroup epicurve = new ScheduleTrackerGroup(this.parentDir, EPICURVE_FILENAME + ".csv", epicurveHeaders);
+        this.fileObjects.put(EPICURVE_FILENAME, epicurve);
 
         for (Class<? extends Norm> norm : allUsedNorms) {
             this.fileObjects.put(
@@ -107,7 +118,7 @@ public class ScheduleTracker {
         averageScheduleMap.put(NORMS_ACTIVATED_HEADER, changedNorms.get(0));
         averageScheduleMap.put(NORMS_DEACTIVATED_HEADER, changedNorms.get(1));
         this.fileObjects.get(AVERAGE_SCHEDULE_FILENAME).writeKeyMapToFile(simulationDay, averageScheduleMap);
-
+        this.fileObjects.get(EPICURVE_FILENAME).writeKeyMapToFile(simulationDay, createEpicurveMap());
         Map<Class<? extends Norm>, Map<ActivityType, Integer>> normCancelled =
                 GoalPlanScheme.influencedActivitiesTracker.getActivitiesCancelledByNorm();
 
@@ -228,6 +239,7 @@ public class ScheduleTracker {
      */
     private Pair<Map<String, String>, Map<ActivityType, Map<String, Integer>>> calculateActivityFractions(HashMap<AgentID, List<CandidateActivity>> agentActions) {
         int numActivities = 0;
+        long activityDuration = 0;
         int stayedHome = 0;
 
         int mask = 0;
@@ -235,6 +247,7 @@ public class ScheduleTracker {
         int symptomatic = 0;
 
         Map<ActivityType, Integer> encounteredActivities = new HashMap<>();
+        Map<ActivityType, Long> encounteredActivityDurations = new HashMap<>();
         Map<ActivityType, Map<String, Integer>> attributePerActivityMap = createVisibleAttributePerActivityMap();
 
         for (List<CandidateActivity> agentActivities : agentActions.values()) {
@@ -242,6 +255,7 @@ public class ScheduleTracker {
             for (CandidateActivity ca : agentActivities) {
                 Map<String, Integer> activityTypeMap = attributePerActivityMap.get(ca.getActivity().getActivityType());
                 numActivities++;
+                activityDuration += ca.getActivity().getDuration();
                 activityTypeMap.put("TOTAL", activityTypeMap.get("TOTAL") + 1);
                 if (ca.isMask()) {
                     mask++;
@@ -256,9 +270,12 @@ public class ScheduleTracker {
                     activityTypeMap.put(Constants.VISIBLE_ATTRIBUTE_SYMPTOMATIC, activityTypeMap.get(Constants.VISIBLE_ATTRIBUTE_SYMPTOMATIC) + 1);
                 }
                 ActivityType type = ca.getActivity().getActivityType();
-                if (!encounteredActivities.containsKey(type))
-                    encounteredActivities.put(type, ca.getActivity().getDuration());
-                encounteredActivities.put(type, encounteredActivities.get(type) + ca.getActivity().getDuration());
+                if (!encounteredActivityDurations.containsKey(type)) {
+                    encounteredActivityDurations.put(type, 0L);
+                    encounteredActivities.put(type, 0);
+                }
+                encounteredActivityDurations.put(type, encounteredActivityDurations.get(type) + ca.getActivity().getDuration());
+                encounteredActivities.put(type, encounteredActivities.get(type) + 1);
                 isAllHome &= ActivityType.HOME.equals(type);
             }
 
@@ -268,6 +285,7 @@ public class ScheduleTracker {
 
         Map<String, String> fractions = new HashMap<>();
         fractions.put(VISITORS_TOTAL, Integer.toString(numActivities));
+        fractions.put(VISIT_DURATION_TOTAL, Double.toString(activityDuration));
         fractions.put(MASK_TOTAL, Integer.toString(mask));
         fractions.put(DISTANCE_TOTAL, Integer.toString(distance));
         fractions.put(SYMPTOMATIC_TOTAL, Integer.toString(symptomatic));
@@ -275,11 +293,28 @@ public class ScheduleTracker {
         fractions.put(DISTANCE_PCT, Double.toString((double) distance / numActivities));
         fractions.put(SYMPTOMATIC_PCT, Double.toString((double) symptomatic / numActivities));
         fractions.put(ALL_HOME_PCT, Double.toString((double) stayedHome / agentActions.size()));
-        for (ActivityType type : encounteredActivities.keySet()) {
-            fractions.put(type.name(), Double.toString((double) encounteredActivities.get(type) / numActivities));
+        for (ActivityType type : encounteredActivityDurations.keySet()) {
+            fractions.put(type.name() + "_DURATION", Double.toString(encounteredActivityDurations.get(type)));
+            fractions.put(type.name() + "_COUNT", Integer.toString(encounteredActivities.get(type)));
         }
 
         return new Pair<>(fractions, attributePerActivityMap);
+    }
+
+    private Map<String, String> createEpicurveMap() {
+        Map<String, Integer> epicurveMap = new HashMap<>();
+        for(DiseaseState state : DiseaseState.values()) {
+            epicurveMap.put(state.name(), 0);
+        }
+        for(AgentState state : this.agentStateMap.getAllAgentStates()) {
+            epicurveMap.put(state.getState().name(), epicurveMap.get(state.getState().name()) + 1);
+        }
+
+        Map<String, String> epicurveStringMap = new HashMap<>();
+        for(String k : epicurveMap.keySet()) {
+            epicurveStringMap.put(k, Integer.toString(epicurveMap.get(k)));
+        }
+        return epicurveStringMap;
     }
 
     private Map<ActivityType, Map<String, Integer>> createVisibleAttributePerActivityMap() {

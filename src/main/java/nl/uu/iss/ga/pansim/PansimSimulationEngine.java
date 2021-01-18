@@ -71,11 +71,12 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
         processTickPreHooks(this.executor.getCurrentTick());
         HashMap<AgentID, List<CandidateActivity>> agentActions = this.executor.doTick();
-        processTickPostHook(this.executor.getCurrentTick() - 1, this.executor.getLastTickDuration(), agentActions);
 
-        // Prepare results for pansim
+        // Prepare results for pansim and misuse loop to set disease state on activities
         this.next_visit_df_raw = VisitDataFrame.fromAgentActions(agentActions, this.agentStateMap, allocator).toBytes();
         this.next_state_df_raw = StateDataFrame.fromAgentStateMap(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
+
+        processTickPostHook(this.executor.getCurrentTick() - 1, this.executor.getLastTickDuration(), agentActions);
     }
 
     public byte[] getNextStateDataFrame() {
