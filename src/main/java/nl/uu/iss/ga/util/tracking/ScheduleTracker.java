@@ -13,6 +13,7 @@ import main.java.nl.uu.iss.ga.util.Constants;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import org.javatuples.Pair;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
  * Class to keep track of changes in schedule due to applied norms
  */
 public class ScheduleTracker {
-    public static final String AVERAGE_SCHEDULE_FILENAME = "average-schedules";
+    public static final String AVERAGE_SCHEDULE_FILENAME = "average-schedules_%s";
     public static final String EPICURVE_FILENAME = "epicurve.sim2apl";
     public static final String ALL_HOME_PCT = "ALL_HOME_PCT";
     public static final String VISITORS_TOTAL = "VISITORS_TOTAL";
@@ -42,20 +43,23 @@ public class ScheduleTracker {
     private final NormScheduleReader normScheduleReader;
     private final Set<Class<? extends Norm>> allUsedNorms;
 
+    private final String suffix;
+
     public ScheduleTracker(String outdir, AgentStateMap agentStateMap, NormScheduleReader normScheduleReader) {
         this.parentDir = (Path.of(outdir).isAbsolute() ? Path.of(outdir) : Path.of("output", outdir)).toFile().getAbsolutePath();
+        this.suffix = new File(outdir).getName();
         this.agentStateMap = agentStateMap;
         this.normScheduleReader = normScheduleReader;
         this.allUsedNorms = normScheduleReader.getAllUsedNorms();
         createFileObjects(allUsedNorms);
     }
 
-    static String normToAppliedActivitiesFile(Class<? extends Norm> norm) {
-        return String.format("per_activity_breakout_%s", norm.getSimpleName());
+    private String normToAppliedActivitiesFile(Class<? extends Norm> norm) {
+        return String.format("per_activity_breakout_%s_%s", norm.getSimpleName(), this.suffix);
     }
 
-    static String activityTypeCancelledByNormFile(ActivityType type) {
-        return String.format("cancelled_per_norm_breakout_%s", type.name());
+    private String activityTypeCancelledByNormFile(ActivityType type) {
+        return String.format("cancelled_per_norm_breakout_%s_%s", type.name(), this.suffix);
     }
 
     private void createFileObjects(Set<Class<? extends Norm>> allUsedNorms) {
@@ -69,7 +73,7 @@ public class ScheduleTracker {
         averageScheduleHeaders.addAll(activityTypeNames.stream().map(x -> x + "_COUNT").collect(Collectors.toList()));
         averageScheduleHeaders.addAll(activityTypeNames.stream().map(x -> x + "_DURATION").collect(Collectors.toList()));
         ScheduleTrackerGroup g =
-                new ScheduleTrackerGroup(this.parentDir, AVERAGE_SCHEDULE_FILENAME + ".csv", averageScheduleHeaders);
+                new ScheduleTrackerGroup(this.parentDir, String.format(AVERAGE_SCHEDULE_FILENAME, this.suffix) + ".csv", averageScheduleHeaders);
         this.fileObjects.put(AVERAGE_SCHEDULE_FILENAME, g);
 
         List<String> epicurveHeaders = Arrays.stream(DiseaseState.values()).map(DiseaseState::toString).collect(Collectors.toList());
@@ -184,7 +188,7 @@ public class ScheduleTracker {
         }
 
         int totalNormsApplied = appliedNorms.values().stream().reduce(Integer::sum).orElse(0);
-        List<String> orderedValues = new ArrayList<>(List.of(simulationDay.format(DateTimeFormatter.ISO_DATE)));
+        List<String> orderedValues = new ArrayList<>(List.of(simulationDay.format(DateTimeFormatter.ISO_DATE), this.suffix));
         orderedValues.addAll(normChanges);
         orderedValues.add(Integer.toString(visibleAttributes.get("TOTAL")));
         for(String visibleAttribute : Constants.VISIBLE_ATTRIBUTES) {
@@ -213,7 +217,7 @@ public class ScheduleTracker {
     private void processNormCancelled(LocalDate simulationDay, List<String> normChanges, Class<? extends Norm> norm, Map<ActivityType, Integer> cancelledActivities) {
         int totalCancelled = cancelledActivities.values().stream().reduce(Integer::sum).orElse(0);
         ScheduleTrackerGroup g = this.fileObjects.get(normToAppliedActivitiesFile(norm));
-        List<String> orderedValues = new ArrayList<>(List.of(simulationDay.format(DateTimeFormatter.ISO_DATE)));
+        List<String> orderedValues = new ArrayList<>(List.of(simulationDay.format(DateTimeFormatter.ISO_DATE), this.suffix));
         orderedValues.addAll(normChanges);
         orderedValues.add(Integer.toString(totalCancelled));
         orderedValues.add(Double.toString(

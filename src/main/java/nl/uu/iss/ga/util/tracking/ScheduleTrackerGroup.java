@@ -10,17 +10,19 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class ScheduleTrackerGroup {
+public class ScheduleTrackerGroup {
     private static final Logger LOGGER = Logger.getLogger(ScheduleTrackerGroup.class.getName());
 
+    private final String dir;
     private final File fout;
     private final List<String> headers;
 
     public ScheduleTrackerGroup(String parentDir, String filename, List<String> headers, String... nonAutomaticStartingHeaders) {
         this.fout = Paths.get(parentDir, filename).toFile();
+        this.dir = new File(parentDir).getName();
         this.headers = new ArrayList<>(headers);
         createFile();
-        writeLineToFile("Date;");
+        writeLineToFile("Date;Dir;");
         for (String start : nonAutomaticStartingHeaders) {
             writeLineToFile(start + ";");
         }
@@ -34,6 +36,7 @@ class ScheduleTrackerGroup {
     public void writeKeyMapToFile(LocalDate simulationDay, Map<String, String> map) {
         List<String> orderedValues = new ArrayList<>();
         orderedValues.add(simulationDay.format(DateTimeFormatter.ISO_DATE));
+        orderedValues.add(dir);
         for (String header : this.headers) {
             orderedValues.add(map.getOrDefault(header, ""));
         }
@@ -58,7 +61,7 @@ class ScheduleTrackerGroup {
         }
     }
 
-    private void writeLineToFile(String line) {
+    public void writeLineToFile(String line) {
         try (
                 FileOutputStream fos = new FileOutputStream(this.fout, true);
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
