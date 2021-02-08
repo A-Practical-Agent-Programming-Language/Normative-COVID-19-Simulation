@@ -50,13 +50,15 @@ public class CancelActivityPlan extends RunOncePlan<CandidateActivity> {
          */
 
         if (
-                nextActivity == null ||
-                !nextActivity.getStart_time().getDayOfWeek()
-                    .equals(this.activity.getActivity().getStart_time().getDayOfWeek()) ||
-                this.activity.getActivity().getActivityType().equals(ActivityType.WORK) ||
-                this.activity.getActivity().getActivityType().equals(ActivityType.HOME) ||
-                (lastActivity != null && lastActivity.getActivity().getActivityType().equals(ActivityType.HOME)) ||
-                beliefContext.getRandom().nextDouble() < GO_HOME_IF_CANCELLED_PROBABILITY
+                beliefContext.getHomeLocation() != null && beliefContext.getHomeLocation().getLocationID() != null && ( // Avoid null poiinter in 1 case
+                    nextActivity == null ||
+                    !nextActivity.getStart_time().getDayOfWeek()
+                        .equals(this.activity.getActivity().getStart_time().getDayOfWeek()) ||
+                    this.activity.getActivity().getActivityType().equals(ActivityType.WORK) ||
+                    this.activity.getActivity().getActivityType().equals(ActivityType.HOME) ||
+                    (lastActivity != null && lastActivity.getActivity().getActivityType().equals(ActivityType.HOME)) ||
+                    beliefContext.getRandom().nextDouble() < GO_HOME_IF_CANCELLED_PROBABILITY
+                )
         ) {
             this.activity.makeHome(new AgentContextInterface<>(planToAgentInterface.getAgent()));
 

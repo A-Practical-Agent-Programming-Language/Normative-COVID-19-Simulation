@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class KeepGroupsSmallNorm extends NonRegimentedNorm {
     private static final double CURVE_SLOPE_FACTOR = .4;
-    private static final int N_DAYS_LOOKBACK = 7;
+    private static final int N_DAYS_LOOKBACK = 14; // used to be 7;
 
     private APPLIES appliesToSetting;
     private int maxAllowed;

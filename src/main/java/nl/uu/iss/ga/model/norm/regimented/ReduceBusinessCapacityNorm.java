@@ -73,7 +73,7 @@ public class ReduceBusinessCapacityNorm extends Norm {
                 return false;
             } else {
                 // Simulate only maxAllowed people going to the location
-                double percentageStillAllowed = actuallySeenAverage / (double) this.maxAllowed;
+                double percentageStillAllowed = this.maxAllowed / (double) actuallySeenAverage;
                 return agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() > percentageStillAllowed;
             }
         }

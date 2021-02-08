@@ -24,7 +24,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
  */
 public class EncourageTeleworkNorm extends NonRegimentedNorm {
 
-    public static final int N_DAYS_LOOKBACK = 10;
+    public static final int N_DAYS_LOOKBACK = 14; // used to be 10;
 
     //https://www.pewresearch.org/fact-tank/2020/03/20/before-the-coronavirus-telework-was-an-optional-benefit-mostly-for-the-affluent-few/
     // https://www.bls.gov/opub/mlr/2020/article/ability-to-work-from-home.htm

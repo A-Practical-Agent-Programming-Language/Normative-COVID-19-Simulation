@@ -18,7 +18,7 @@ public class ReduceHigherEducationCapacityNorm extends Norm {
     // From regulation, see below
     public final int MAX_ALLOWED = 50;
 
-    public final long N_DAYS_LOOKBACK = 21; // three weeks sounds reasonable?
+    public final int N_DAYS_LOOKBACK = 14; // Used to be 21; // three weeks sounds reasonable?
 
     /*
     Institutions of higher education are encouraged to continue remote learning where practical. However, such institutions may offer
@@ -40,14 +40,10 @@ public class ReduceHigherEducationCapacityNorm extends Norm {
         boolean isSchool = activity.getActivityType().equals(ActivityType.SCHOOL);
         GradeLevel level = agentContextInterface.getContext(Person.class).getGrade_level();
         boolean isHigherEducation = level != null && level.isHigher();
-        boolean isTooManyPeople = agentContextInterface.getContext(LocationHistoryContext.class).getLastDaysSeenAt(14, activity.getLocation().getLocationID()) > 50;
+        boolean isTooManyPeople = agentContextInterface.getContext(LocationHistoryContext.class).getLastDaysSeenAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID()) > MAX_ALLOWED;
         boolean isOnlineCourse = agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() < FRACTION_COURSES_ONLINE;
 
-        if(isSchool && isHigherEducation) {
-            return isTooManyPeople || isOnlineCourse;
-        } else {
-            return false;
-        }
+        return isSchool && isHigherEducation & (isTooManyPeople || isOnlineCourse);
     }
 
     @Override
