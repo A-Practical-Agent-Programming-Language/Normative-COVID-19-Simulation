@@ -101,11 +101,11 @@ public class Simulation {
     }
 
     private SimulationEngine<CandidateActivity> getPansimSimulationEngine() {
-        return new PansimSimulationEngine(this.platform, this.observationNotifier, this.agentStateMap, this.environmentInterface);
+        return new PansimSimulationEngine(this.platform, this.arguments, this.observationNotifier, this.agentStateMap, this.environmentInterface);
     }
 
     private AgentStateMap mergeStateMaps() {
-        AgentStateMap merged = AgentStateMap.merge(this.arguments.getCounties().stream().map(ConfigModel::getAgentStateMap).collect(Collectors.toList()));
+        AgentStateMap merged = AgentStateMap.merge(arguments.getOutputDir(), this.arguments.getCounties().stream().map(ConfigModel::getAgentStateMap).collect(Collectors.toList()));
         this.arguments.getCounties().forEach(x -> x.setAgentStateMap(merged));
         return merged;
     }

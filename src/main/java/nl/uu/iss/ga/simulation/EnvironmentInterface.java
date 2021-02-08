@@ -17,6 +17,7 @@ import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.tracking.GyrationRadius;
 import main.java.nl.uu.iss.ga.util.tracking.InfluencedActivities;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTracker;
+import main.java.nl.uu.iss.ga.util.tracking.VisitGraph;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
@@ -100,20 +101,18 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     @Override
     public void tickPreHook(long tick) {
         this.currentTick = tick;
-        if(this.startDate == null) {
+        if (this.startDate == null) {
             this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTick % 7 + 1));
         } else {
             this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
         }
 
+        String date = this.startDate.plusDays(tick).format(DateTimeFormatter.ISO_DATE);
+
         if(tick < arguments.getDiseaseSeedDays() && arguments.isDiseaseSeeding()) {
-            agentStateMap.seed_infections(arguments.getSystemWideRandom(),
-                    arguments.getDiseaseSeedNumAgentsPerDay(), arguments.getFraction_symptomatic());
-        } else if(arguments.getAdditionalDiseaseSeedNumber() != null) {
-            if(this.currentTick % arguments.getAdditionalEveryOtherDays() == 0) {
-                agentStateMap.seed_infections(arguments.getSystemWideRandom(),
-                        arguments.getAdditionalDiseaseSeedNumber(), arguments.getFraction_symptomatic());
-            }
+                    agentStateMap.seed_infections(date, arguments.getSystemWideRandom(), arguments.getDiseaseSeedNumAgentsPerDay());
+        } else if(arguments.getAdditionalDiseaseSeedNumber() != null && tick % arguments.getAdditionalEveryOtherDays() == 0) {
+            agentStateMap.seed_infections(date, arguments.getSystemWideRandom(), arguments.getAdditionalDiseaseSeedNumber());
         }
 
         // Reset tracker for influenced activities
@@ -160,6 +159,18 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             storeLocationData(hashMap);
             LOGGER.log(Level.FINE, String.format(
                     "Stored locations in %d milliseconds", System.currentTimeMillis() - startCalculate));
+        }
+
+        if(this.arguments.writeGraph()){
+            startCalculate = System.currentTimeMillis();
+            String date = this.startDate.plusDays(tick).format(DateTimeFormatter.ISO_DATE);
+            VisitGraph vg = new VisitGraph(date, hashMap, this.agentStateMap);
+            vg.createVisitEdges(this.arguments.getOutputDir());
+            vg.createVisitNodes(this.arguments.getOutputDir());
+            LOGGER.log(Level.FINE, String.format(
+                    "Calculated and stored edges for the visit graph in %d milliseconds",
+                    System.currentTimeMillis() - startCalculate
+            ));
         }
 
         // Calculate and store effects of norms on activities
@@ -238,6 +249,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             }
         }
     }
+
 
     private static class TrackVisit {
         private int visited;

@@ -68,4 +68,9 @@ public class AgentState {
         this.nextState = DiseaseState.NOT_SET;
         this.dwell_time = -1;
     }
+
+    @Override
+    public String toString() {
+        return state.toString();
+    }
 }

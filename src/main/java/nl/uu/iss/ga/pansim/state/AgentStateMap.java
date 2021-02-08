@@ -2,11 +2,13 @@ package main.java.nl.uu.iss.ga.pansim.state;
 
 import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
+import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,12 +16,15 @@ import java.util.logging.Logger;
 public class AgentStateMap {
 
     private static final Logger LOGGER = Logger.getLogger(AgentStateMap.class.getName());
+    private static final String SEEDED_AGENTS_FILE_NAME = "seeded-agents.csv";
 
     private final Map<Long, AgentID> pidToAgentMap = new HashMap<>();
     private final Map<AgentID, Long> agentToPidMap = new HashMap<>();
     private final Map<AgentID, Integer> aidCountyCodeMap = new HashMap<>();
     private Map<AgentID, AgentState> agentStateMap;
     private Map<Long, AgentState> pidStateMap;
+
+    private ScheduleTrackerGroup seededAgentsGroup;
 
     private AgentStateMap() {
         reset();
@@ -33,16 +38,23 @@ public class AgentStateMap {
         }
     }
 
-    public void seed_infections(Random random, int n_agents, double symptomatic_probability) {
+    public void seed_infections(String date, Random random, int n_agents) {
         List<AgentID> allAgents = new ArrayList<>(this.agentStateMap.keySet());
+        List<AgentID> seeded = new ArrayList<>();
         Collections.shuffle(allAgents, random);
         for(int i = 0; i < n_agents && i < this.agentStateMap.size(); i++) {
             AgentState agentState = this.agentStateMap.get(allAgents.get(i));
             if(DiseaseState.SUSCEPTIBLE == agentState.getState() || DiseaseState.NOT_SET == agentState.getState()) {
-                this.agentStateMap.get(allAgents.get(i)).updateState(random.nextDouble() <= symptomatic_probability ?
-                        DiseaseState.INFECTED_SYMPTOMATIC : DiseaseState.INFECTED_ASYMPTOMATIC);
+                this.agentStateMap.get(allAgents.get(i)).updateState(DiseaseState.EXPOSED);
+                seeded.add(allAgents.get(i));
             } else {
                 n_agents++;
+            }
+        }
+        
+        if(this.seededAgentsGroup != null) {
+            for(AgentID aid : seeded) {
+                this.seededAgentsGroup.writeLineToFile(String.format("%s;%d%s", date, this.agentToPidMap.get(aid), System.lineSeparator()));
             }
         }
     }
@@ -55,7 +67,7 @@ public class AgentStateMap {
         }
     }
 
-    public void fromDataFrame(StateDataFrame dataFrame) throws IOException {
+    public void fromDataFrame(StateDataFrame dataFrame) {
         reset();
         int infected = 0;
         int symptomatic = 0;
@@ -73,7 +85,7 @@ public class AgentStateMap {
                 infected++;
             }
         }
-        // TODO maybe track this in tracker.InfluencedActivities?
+
         LOGGER.log(Level.INFO, String.format(
                 "Received state frame. %d people, of whom %d (%.2f%%) are infected, %d (%.2f%%) of which are symptomatic",
                 total,
@@ -163,8 +175,10 @@ public class AgentStateMap {
         this.pidStateMap = new HashMap<>();
     }
 
-    public static AgentStateMap merge(List<AgentStateMap> maps) {
+    public static AgentStateMap merge(String outputDir, List<AgentStateMap> maps) {
         AgentStateMap merged = new AgentStateMap();
+        String parentDir = (Path.of(outputDir).isAbsolute() ? Path.of(outputDir) : Path.of("output", outputDir)).toFile().getAbsolutePath();
+        merged.seededAgentsGroup = new ScheduleTrackerGroup(parentDir, SEEDED_AGENTS_FILE_NAME, Collections.singletonList("AgentID"));
         for(AgentStateMap map : maps) {
             merged.pidStateMap.putAll(map.pidStateMap);
             merged.agentStateMap.putAll(map.agentStateMap);

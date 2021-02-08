@@ -1,12 +1,13 @@
 package main.java.nl.uu.iss.ga.pansim;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.pansim.state.StateDataFrame;
 import main.java.nl.uu.iss.ga.pansim.visit.VisitDataFrame;
 import main.java.nl.uu.iss.ga.pansim.visit.VisitResultDataFrame;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
+import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.AbstractSimulationEngine;
@@ -17,7 +18,9 @@ import py4j.GatewayServer;
 import py4j.GatewayServerListener;
 import py4j.Py4JServerConnection;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -31,6 +34,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     private final AgentStateMap agentStateMap;
     private final ObservationNotifier observationNotifier;
+    private final ArgParse arguments;
 
     private final TickExecutor<CandidateActivity> executor;
 
@@ -39,12 +43,14 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     public RootAllocator allocator = new RootAllocator(Long.MAX_VALUE);
 
-    public PansimSimulationEngine(Platform platform, ObservationNotifier observationNotifier, AgentStateMap agentStateMap, TickHookProcessor<CandidateActivity>... processors) {
+    public PansimSimulationEngine(Platform platform, ArgParse arguments, ObservationNotifier observationNotifier, AgentStateMap agentStateMap, TickHookProcessor<CandidateActivity>... processors) {
         super(platform, processors);
         this.gatewayServer = new GatewayServer(this);
         this.agentStateMap = agentStateMap;
+        this.arguments = arguments;
         this.observationNotifier = observationNotifier;
         this.executor = platform.getTickExecutor();
+        prepare_output();
     }
 
     private void runFirstTick() {
@@ -75,6 +81,8 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         // Prepare results for pansim and misuse loop to set disease state on activities
         this.next_visit_df_raw = VisitDataFrame.fromAgentActions(agentActions, this.agentStateMap, allocator).toBytes();
         this.next_state_df_raw = StateDataFrame.fromAgentStateMap(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
+
+        write_state_dataframes(cur_state_df_raw, next_state_df_raw);
 
         processTickPostHook(this.executor.getCurrentTick() - 1, this.executor.getLastTickDuration(), agentActions);
     }
@@ -148,5 +156,48 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         });
         gatewayServer.start();
         return true;
+    }
+
+    File parentDir;
+
+    private void prepare_output() {
+        String parent =
+                (Path.of(
+                        arguments.getOutputDir()).isAbsolute() ?
+                        Path.of(arguments.getOutputDir()) :
+                        Path.of("output", arguments.getOutputDir())
+                ).toFile().getAbsolutePath();
+
+        this.parentDir = Paths.get(parent, "state_df_raw").toFile();
+        if (!(this.parentDir.exists() || this.parentDir.mkdirs())) {
+            LOGGER.log(Level.SEVERE, "Failed to create state dataframe output directory " + this.parentDir.getAbsolutePath());
+        }
+    }
+
+    private void write_state_dataframe_to_file(byte[] state_dataframe, File out) {
+        try {
+            if (!(out.exists() || out.createNewFile())) {
+                throw new IOException("Failed to create file " + out.getAbsolutePath());
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to create state data frame file " + out.getAbsolutePath());
+            LOGGER.log(Level.SEVERE, e.getMessage());
+            return;
+        }
+
+        try(FileOutputStream fos = new FileOutputStream(out)) {
+            fos.write(state_dataframe);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to write state data frame to file " + out.getAbsolutePath());
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    private void write_state_dataframes(byte[] current_state_df_raw, byte[] next_state_df_raw) {
+        File fout_pansim = Paths.get(this.parentDir.getAbsolutePath(), String.format("state_df_raw_tick_%03d_pansim.raw", this.executor.getCurrentTick())).toFile();
+        File fout_behavior = Paths.get(this.parentDir.getAbsolutePath(), String.format("state_df_raw_tick_%03d_behavior.raw", this.executor.getCurrentTick())).toFile();
+
+        write_state_dataframe_to_file(current_state_df_raw, fout_pansim);
+        write_state_dataframe_to_file(next_state_df_raw, fout_behavior);
     }
 }

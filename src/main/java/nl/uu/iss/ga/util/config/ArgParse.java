@@ -57,6 +57,9 @@ public class ArgParse {
     @Arg(dest = "connectpansim")
     private boolean connectpansim;
 
+    @Arg(dest = "writegraph")
+    private boolean writegraph;
+
     @Arg(dest = "logproperties")
     private File logproperties;
 
@@ -69,7 +72,8 @@ public class ArgParse {
     @Arg(dest = "additionaldiseasedays")
     private Integer additionaldiseasedays;
 
-    private double fraction_symptomatic = 0.6;
+    @Arg(dest = "additionaldiseasedaysnum")
+    private Integer additionaldiseasedaysnum;
 
     private Random random;
 
@@ -136,11 +140,11 @@ public class ArgParse {
                 if(result.contains("infectionseeding.days") && this.diseaseseeddays == null) {
                     this.diseaseseeddays = result.getLong("infectionseeding.days").intValue();
                 }
-                if(result.contains("infectionseeding.fraction_symptomatic")) {
-                    this.fraction_symptomatic = result.getDouble("infectionseeding.fraction_symptomatic");
-                }
                 if(result.contains("infectionseeding.additional_every_other_days") && this.additionaldiseasedays == null) {
                     this.additionaldiseasedays = result.getLong("infectionseeding.additional_every_other_days").intValue();
+                }
+                if(result.contains("infectionseeding.additional_every_other_days_num") && this.additionaldiseasedaysnum == null) {
+                    this.additionaldiseasedaysnum = result.getLong("infectionseeding.additional_every_other_days_num").intValue();
                 }
 
                 this.descriptor = result.getString("output.descriptor");
@@ -200,6 +204,10 @@ public class ArgParse {
         return connectpansim;
     }
 
+    public boolean writeGraph() {
+        return writegraph;
+    }
+
     public int getThreads() {
         return threads;
     }
@@ -229,15 +237,15 @@ public class ArgParse {
     }
 
     public Integer getAdditionalEveryOtherDays() {
-        return diseaseseednumber == null ? null : this.additionaldiseasedays;
+        return diseaseseednumber == null && additionaldiseasedaysnum == null ? null : this.additionaldiseasedays;
     }
 
     public Integer getAdditionalDiseaseSeedNumber() {
-        return this.additionaldiseasedays == null ? null : this.diseaseseednumber;
-    }
-
-    public double getFraction_symptomatic() {
-        return fraction_symptomatic;
+        if (this.additionaldiseasedays == null) {
+            return null;
+        } else {
+            return this.additionaldiseasedaysnum == null ? this.diseaseseednumber : this.additionaldiseasedaysnum;
+        }
     }
 
     public static File findFile(File f) throws FileNotFoundException {
@@ -326,6 +334,18 @@ public class ArgParse {
                         " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
                         " no agents are seeded with the disease after the initial seeding");
 
+        calibration.addArgument("--disease-seed-additional-number")
+                .required(false)
+                .type(Integer.class)
+                .dest("additionaldiseasedaysnum")
+                .help("The number of agents to seed during additional seeding, " +
+                        "an additional --disease-seed-additional-number (or --disease-seed-number if this argument is not set) " +
+                        "of agents will be seeded with an infected state every " +
+                        "--disease-seed-additional-frequency days. E.g., if the initial number of days is 5, and this value is " +
+                        "10, agents will be seeded on the 1th, 2nd, 3th, 4th, 5th, 10th, 20th, 30th etc days of the simulation." +
+                        " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
+                        " no agents are seeded with the disease after the initial seeding");
+
         ArgumentGroup optimization = parser.addArgumentGroup("Runtime optimization");
 
         optimization.addArgument("--threads", "-t")
@@ -350,6 +370,17 @@ public class ArgParse {
                 .help("If this argument is present, the simulation will run in PANSIM mode, meaning it will send" +
                         "the generated behavior to the PANSIM environment. If absent, no PANSIM connection is required," +
                         "but behavior is not interpreted");
+
+        optimization.addArgument("--write-graph", "-g")
+                .type(Boolean.class)
+                .required(false)
+                .setDefault(false)
+                .action(new StoreTrueArgumentAction())
+                .dest("writegraph")
+                .help("If this argument is passed, the program will, every time step, write the state of each agent," +
+                        "as well as each visit-pair of agents who have been in the same location at the same time, to " +
+                        "a file. This can be used to construct a network graph of interactions over time, but slows " +
+                        "the simulation down significantly, and is more demanding on memory resources.");
 
         optimization.addArgument("--output-dir", "-o")
                 .type(String.class)
