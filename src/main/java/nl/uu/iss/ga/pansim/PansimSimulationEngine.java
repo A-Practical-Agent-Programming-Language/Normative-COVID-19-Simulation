@@ -82,7 +82,9 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.next_visit_df_raw = VisitDataFrame.fromAgentActions(agentActions, this.agentStateMap, allocator).toBytes();
         this.next_state_df_raw = StateDataFrame.fromAgentStateMap(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
 
-        write_state_dataframes(cur_state_df_raw, next_state_df_raw);
+        if(arguments.saveStateDataFrames()) {
+            write_state_dataframes(cur_state_df_raw, next_state_df_raw);
+        }
 
         processTickPostHook(this.executor.getCurrentTick() - 1, this.executor.getLastTickDuration(), agentActions);
     }

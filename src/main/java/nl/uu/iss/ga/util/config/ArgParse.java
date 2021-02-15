@@ -75,6 +75,8 @@ public class ArgParse {
     @Arg(dest = "additionaldiseasedaysnum")
     private Integer additionaldiseasedaysnum;
 
+    private boolean saveStateDataFrames = false;
+
     private Random random;
 
     public ArgParse(String[] args) {
@@ -146,6 +148,9 @@ public class ArgParse {
                 if(result.contains("infectionseeding.additional_every_other_days_num") && this.additionaldiseasedaysnum == null) {
                     this.additionaldiseasedaysnum = result.getLong("infectionseeding.additional_every_other_days_num").intValue();
                 }
+                if(result.contains("savestate")) {
+                    this.saveStateDataFrames = result.getBoolean("savestate");
+                }
 
                 this.descriptor = result.getString("output.descriptor");
                 this.node = (int) result.getLong("output.node", () -> -1);
@@ -206,6 +211,10 @@ public class ArgParse {
 
     public boolean writeGraph() {
         return writegraph;
+    }
+
+    public boolean saveStateDataFrames() {
+        return saveStateDataFrames;
     }
 
     public int getThreads() {
