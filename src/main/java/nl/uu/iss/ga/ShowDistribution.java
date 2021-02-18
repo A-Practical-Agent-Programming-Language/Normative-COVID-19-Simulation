@@ -1,5 +1,8 @@
 package main.java.nl.uu.iss.ga;
 
+import main.java.nl.uu.iss.ga.util.Methods;
+import org.apache.commons.math3.distribution.BetaDistribution;
+
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -11,9 +14,9 @@ public class ShowDistribution {
 
     public static void main(String[] args) {
         Map<Integer, CountedDouble> countMap = new TreeMap<>();
-
+        BetaDistribution dist = Methods.getBetaDistribution(RANDOM, 0.5);
         for(int i = 0; i < 100000; i++) {
-            double d = nextSkewedBoundedDouble(.25);
+            double d = dist.sample();
             int di = (int)Math.round(d * 100);
             if(countMap.containsKey(di)) {
                 countMap.get(di).increment();
@@ -25,19 +28,6 @@ public class ShowDistribution {
         for(CountedDouble cd : countMap.values().stream().sorted().collect(Collectors.toList())) {
             System.out.println(cd);
         }
-    }
-
-    static public double nextSkewedBoundedDouble(double mode) {
-        double r = getGaussInRange() + skewModeVariable(mode);
-        return r >= 0 && r <= 1 ? r : nextSkewedBoundedDouble(mode);
-    }
-
-    static public double getGaussInRange() {
-        return (RANDOM.nextGaussian() + 4) / 8;
-    }
-
-    static public double skewModeVariable(double mode) {
-        return RANDOM.nextDouble() * ((mode - .5) * 2);
     }
 
     static class CountedDouble implements Comparable<CountedDouble> {

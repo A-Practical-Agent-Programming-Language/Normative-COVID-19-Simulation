@@ -1,11 +1,13 @@
 package main.java.nl.uu.iss.ga.util.config;
 
+import main.java.nl.uu.iss.ga.util.Methods;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.annotation.Arg;
 import net.sourceforge.argparse4j.impl.action.StoreTrueArgumentAction;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import org.apache.commons.math3.distribution.BetaDistribution;
 import org.tomlj.Toml;
 import org.tomlj.TomlParseResult;
 import org.tomlj.TomlTable;
@@ -74,6 +76,9 @@ public class ArgParse {
 
     @Arg(dest = "additionaldiseasedaysnum")
     private Integer additionaldiseasedaysnum;
+
+    private BetaDistribution liberalTrustDistribution;
+    private BetaDistribution conservativeTrustDistribution;
 
     private boolean saveStateDataFrames = false;
 
@@ -189,12 +194,16 @@ public class ArgParse {
         return random;
     }
 
-    public double getModeliberal() {
-        return modeliberal;
+    public BetaDistribution getLiberalTrustDistribution() {
+        if (this.liberalTrustDistribution == null)
+                this.liberalTrustDistribution = Methods.getBetaDistribution(this.random, this.modeliberal);
+        return this.liberalTrustDistribution;
     }
 
-    public double getModeconservative() {
-        return modeconservative;
+    public BetaDistribution getConservativeTrustDistribution() {
+        if (this.conservativeTrustDistribution == null)
+            this.conservativeTrustDistribution = Methods.getBetaDistribution(this.random, this.modeconservative);
+        return this.conservativeTrustDistribution;
     }
 
     public int getNode() {

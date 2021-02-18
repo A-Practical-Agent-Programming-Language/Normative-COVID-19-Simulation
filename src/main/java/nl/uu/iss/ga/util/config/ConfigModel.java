@@ -118,8 +118,7 @@ public class ConfigModel {
 
     private void createAgentFromSchedule(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface, ActivitySchedule schedule) {
         boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
-        double initialGovernmentAttitude = Methods.nextSkewedBoundedDouble(
-                this.random, isLiberal ? this.arguments.getModeliberal() : this.arguments.getModeconservative());
+        double initialGovernmentAttitude = isLiberal ? this.arguments.getLiberalTrustDistribution().sample() : this.arguments.getConservativeTrustDistribution().sample();
 
         LocationEntry homeLocation = this.findHomeLocation(schedule);
 

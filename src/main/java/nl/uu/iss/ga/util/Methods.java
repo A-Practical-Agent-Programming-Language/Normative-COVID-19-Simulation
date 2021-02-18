@@ -1,21 +1,16 @@
 package main.java.nl.uu.iss.ga.util;
 
+import org.apache.commons.math3.distribution.BetaDistribution;
+
 import java.util.Random;
 
 public class Methods {
-    public static double nextSkewedBoundedDouble(Random rnd, double mode) {
-        return sigmoid(rnd.nextGaussian() + skewModeVariable(rnd,mode));
-    }
 
-    private static double skewModeVariable(Random rnd, double mode) {
-        return rnd.nextDouble() * ((mode - .5) * 2);
-    }
+    private static final int SAMPLE_SIZE = 100;
 
-    public static double sigmoid(double x) {
-        return 1 / (1 + Math.pow(Math.E, -1 * x));
-    }
-
-    public static double sigmoidRangeZeroOne(double x) {
-        return sigmoid(x * 2 - 1);
+    public static BetaDistribution getBetaDistribution(Random random, double mode) {
+        mode = mode == 0.0 ? 0.01 : mode == 1.0 ? 0.99 : mode;
+        JavaUtilRandomGenerator generator = new JavaUtilRandomGenerator(random);
+        return new BetaDistribution(generator, mode * SAMPLE_SIZE, (1-mode) * SAMPLE_SIZE);
     }
 }
