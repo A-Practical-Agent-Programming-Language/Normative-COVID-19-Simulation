@@ -36,7 +36,7 @@ public class StayHomeNorm extends NonRegimentedNorm {
 
     @Override
     public double calculateAttitude(AgentContextInterface<CandidateActivity> agentContextInterface, Activity activity) {
-        return 1 - agentContextInterface.getContext(BeliefContext.class).getGovernmentTrustFactor();
+        return 1 - agentContextInterface.getContext(BeliefContext.class).getPriorTrustAttitude();
     }
 
     @Override

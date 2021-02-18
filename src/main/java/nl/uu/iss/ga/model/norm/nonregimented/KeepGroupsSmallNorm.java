@@ -72,7 +72,7 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
 //        double gov = 1 - beliefContext.getGovernmentTrustFactor();
 //        double fraction_symptomatic_factor = 1 - averageSymptomaticPreviously;
 
-        return Norm.norm_violation_posterior(beliefContext.getGovernmentTrustFactor(), normalizedDiff, averageSymptomaticPreviously);
+        return Norm.norm_violation_posterior(beliefContext.getPriorTrustAttitude(), normalizedDiff, averageSymptomaticPreviously);
 
 //        // Weights
 //        double ndWeight = weight(normalizedDiff); // TODO does it make sense to weigh this?

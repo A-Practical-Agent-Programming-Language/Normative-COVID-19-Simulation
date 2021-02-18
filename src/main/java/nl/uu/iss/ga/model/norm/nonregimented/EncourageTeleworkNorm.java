@@ -37,7 +37,7 @@ public class EncourageTeleworkNorm extends NonRegimentedNorm {
         Household household = person.getHousehold();
 
         // Factors
-        double gtf = agentContextInterface.getContext(BeliefContext.class).getGovernmentTrustFactor();
+        double gtf = agentContextInterface.getContext(BeliefContext.class).getPriorTrustAttitude();
 
         // How many symptomatic people were there at the office previously
         double fractionSymptomatic = historyContext.getLastDaysFractionSymptomaticAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());

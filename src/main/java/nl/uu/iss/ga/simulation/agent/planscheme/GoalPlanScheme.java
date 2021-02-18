@@ -8,9 +8,11 @@ import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
+import main.java.nl.uu.iss.ga.simulation.agent.plan.AdjustTrustAttitudePlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.CancelActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.ExecuteScheduledActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.HandleTripPlan;
+import main.java.nl.uu.iss.ga.simulation.agent.trigger.AdjustTrustAttitudeGoal;
 import main.java.nl.uu.iss.ga.util.tracking.InfluencedActivities;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Trigger;
@@ -32,10 +34,10 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
     @Override
     public Plan<CandidateActivity> instantiate(Trigger trigger, AgentContextInterface<CandidateActivity> agentContextInterface) {
         this.agentContextInterface = agentContextInterface;
+        BeliefContext context = agentContextInterface.getContext(BeliefContext.class);
 
         if (trigger instanceof Activity) {
             Activity activity = (Activity) trigger;
-            BeliefContext context = agentContextInterface.getContext(BeliefContext.class);
 
             if (context.getToday().equals(activity.getStart_time().getDayOfWeek())) {
                 // Trigger applies to today
@@ -59,6 +61,11 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
                     }
                 }
 
+            }
+        } else if (trigger instanceof AdjustTrustAttitudeGoal) {
+            AdjustTrustAttitudeGoal adjustTrustAttitudeGoal = (AdjustTrustAttitudeGoal) trigger;
+            if (context.getCurrentTick() >= adjustTrustAttitudeGoal.getFatigueStart()) {
+                return new AdjustTrustAttitudePlan(adjustTrustAttitudeGoal);
             }
         }
 

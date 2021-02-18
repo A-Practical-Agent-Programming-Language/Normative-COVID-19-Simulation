@@ -14,17 +14,17 @@ import java.util.Random;
 public class BeliefContext implements Context {
     private AgentID me;
     private final EnvironmentInterface environmentInterface;
-    private final double governmentTrustFactor;
+    private double priorTrustAttitude;
     private final LocationEntry homeLocation;
 
     public BeliefContext(
             EnvironmentInterface environmentInterface,
             LocationEntry homeLocation,
-            double governmentTrustFactor
+            double priorTrustAttitude
     ) {
         this.environmentInterface = environmentInterface;
         this.homeLocation = homeLocation;
-        this.governmentTrustFactor = governmentTrustFactor;
+        this.priorTrustAttitude = priorTrustAttitude;
     }
 
     public void setAgentID(AgentID me) {
@@ -43,8 +43,12 @@ public class BeliefContext implements Context {
         return this.environmentInterface.getRnd(this.me);
     }
 
-    public double getGovernmentTrustFactor() {
-        return governmentTrustFactor;
+    public double getPriorTrustAttitude() {
+        return priorTrustAttitude;
+    }
+
+    public void setPriorTrustAttitude(double priorTrustAttitude) {
+        this.priorTrustAttitude = priorTrustAttitude;
     }
 
     public LocationEntry getHomeLocation() {

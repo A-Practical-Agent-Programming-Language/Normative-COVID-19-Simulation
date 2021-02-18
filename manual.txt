@@ -1,11 +1,12 @@
 usage: 2APL/SimpleEpiDemic Disease Simulation
        [-h] --config CONFIGURATION --mode-liberal MODELIBERAL
-       --mode-conservative MODECONSERVATIVE
-       [--disease-seed-days DISEASESEEDDAYS]
+       --mode-conservative MODECONSERVATIVE [--fatigue FATIGUE]
+       [--fatigue-start FATIGUESTART] [--disease-seed-days DISEASESEEDDAYS]
        [--disease-seed-number DISEASESEEDNUMBER]
        [--disease-seed-additional-frequency ADDITIONALDISEASEDAYS]
+       [--disease-seed-additional-number ADDITIONALDISEASEDAYSNUM]
        [--threads THREADS] [--log-properties LOGPROPERTIES]
-       [--connect-pansim] [--output-dir OUTPUTDIR]
+       [--connect-pansim] [--write-graph] [--output-dir OUTPUTDIR]
 
 A ecological simulation environment for  simulation  of human acceptance of
 measures aimed at reducing spread of novel diseases
@@ -15,7 +16,7 @@ named arguments:
   --config CONFIGURATION
                          Specify the TOML configuration file
 
-Calibration:
+Behavior Calibration:
   Arguments used for calibrating the behavior model
 
   --mode-liberal MODELIBERAL, -ml MODELIBERAL
@@ -24,6 +25,17 @@ Calibration:
   --mode-conservative MODECONSERVATIVE, -mc MODECONSERVATIVE
                          The mode of  the  government attitude distribution
                          of liberal voting agents
+  --fatigue FATIGUE      The fatigue factor related to  trust of the agent.
+                         After  `fatigue-start`,   this   factor   will  be
+                         subtracted from the agent's  prior trust every day
+                         (default: 0)
+  --fatigue-start FATIGUESTART
+                         When to start decreasing  the  agent's trust using
+                         the fatigue factor (default: 0)
+
+Disease Calibration:
+  Arguments used for calibrating the disease model
+
   --disease-seed-days DISEASESEEDDAYS
                          The number of days at  the beginning of simulation
                          to seed the  --disease-seed-number  of agents with
@@ -53,6 +65,20 @@ Calibration:
                          value takes precedent. If  no  value is specified,
                          no agents are seeded  with  the  disease after the
                          initial seeding
+  --disease-seed-additional-number ADDITIONALDISEASEDAYSNUM
+                         The number of  agents  to  seed  during additional
+                         seeding, an  additional --disease-seed-additional-
+                         number (or --disease-seed-number  if this argument
+                         is not set)  of  agents  will  be  seeded  with an
+                         infected  state  every  --disease-seed-additional-
+                         frequency days. E.g.,  if  the  initial  number of
+                         days is 5, and this  value  is  10, agents will be
+                         seeded on  the  1th,  2nd,  3th,  4th,  5th, 10th,
+                         20th, 30th etc  days  of  the  simulation. If this
+                         argument   is   also   specified   in   the   TOML
+                         configuration, the CLI  value  takes precedent. If
+                         no value is specified,  no  agents are seeded with
+                         the disease after the initial seeding
 
 Runtime optimization:
   --threads THREADS, -t THREADS
@@ -65,8 +91,16 @@ Runtime optimization:
                          generated behavior to  the  PANSIM environment. If
                          absent,  no  PANSIM   connection  is  required,but
                          behavior is not interpreted (default: false)
+  --write-graph, -g      If this  argument  is  passed,  the  program will,
+                         every time step, write the  state of each agent,as
+                         well as each visit-pair  of  agents  who have been
+                         in the same location at the  same time, to a file.
+                         This can be used to  construct  a network graph of
+                         interactions over time,  but  slows the simulation
+                         down  significantly,  and  is  more  demanding  on
+                         memory resources. (default: false)
   --output-dir OUTPUTDIR, -o OUTPUTDIR
                          Specify a sub directory  of  "output" where output
                          files of the  behavior  model  will  be stored. By
                          default,  the  current  time  code  will  be  used
-                         (default: 2021-01-18T10:36:49.998184)
+                         (default: 2021-02-18T14:19:57.606499)

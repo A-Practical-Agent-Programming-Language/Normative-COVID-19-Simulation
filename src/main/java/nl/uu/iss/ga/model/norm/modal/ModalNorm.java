@@ -48,12 +48,12 @@ public abstract class ModalNorm extends NonRegimentedNorm {
             // trust factor is high.
             // Note that the fractionMode value can grow to more than 1, which in this case indicates the agent is so
             // much in favour of wearing a mask that they will always wear it.
-            fractionMode += beliefContext.getRandom().nextDouble() * beliefContext.getGovernmentTrustFactor();
+            fractionMode += beliefContext.getRandom().nextDouble() * beliefContext.getPriorTrustAttitude();
         }
 
         fractionMode = Math.min(fractionMode, 1);
 
-        return Norm.norm_violation_posterior(beliefContext.getGovernmentTrustFactor(), fractionMode);
+        return Norm.norm_violation_posterior(beliefContext.getPriorTrustAttitude(), fractionMode);
 
         // Factors
 //        fractionMode = Math.max(1 - fractionMode, 0);

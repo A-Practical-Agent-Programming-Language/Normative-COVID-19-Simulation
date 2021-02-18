@@ -18,7 +18,7 @@ public class IfSickStayHomeNorm extends NonRegimentedNorm {
     public double calculateAttitude(AgentContextInterface<CandidateActivity> agentContextInterface, Activity activity) {
         BeliefContext beliefContext = agentContextInterface.getContext(BeliefContext.class);
         // TODO ideally we use the severity of the symptoms, but we do not have that data
-        return 1 - beliefContext.getGovernmentTrustFactor();
+        return 1 - beliefContext.getPriorTrustAttitude();
     }
 
     @Override

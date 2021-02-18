@@ -18,6 +18,7 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
+import main.java.nl.uu.iss.ga.simulation.agent.trigger.AdjustTrustAttitudeGoal;
 import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
 import main.java.nl.uu.iss.ga.util.Methods;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
@@ -143,6 +144,7 @@ public class ConfigModel {
             for(Activity activity : schedule.getSchedule().values()) {
                 agent.adoptGoal(activity);
             }
+            agent.adoptGoal(new AdjustTrustAttitudeGoal(this.arguments.getFatigue(), this.arguments.getFatigueStart()));
             this.agents.add(aid);
             this.agentStateMap.addAgent(aid, schedule.getPerson(), this.fipsCode);
             beliefContext.setAgentID(aid);

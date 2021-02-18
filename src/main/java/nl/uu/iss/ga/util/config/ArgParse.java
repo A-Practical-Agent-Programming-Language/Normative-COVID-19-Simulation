@@ -77,6 +77,12 @@ public class ArgParse {
     @Arg(dest = "additionaldiseasedaysnum")
     private Integer additionaldiseasedaysnum;
 
+    @Arg(dest = "fatigue")
+    private Double fatigue;
+
+    @Arg(dest = "fatiguestart")
+    private long fatigueStart;
+
     private BetaDistribution liberalTrustDistribution;
     private BetaDistribution conservativeTrustDistribution;
 
@@ -206,6 +212,14 @@ public class ArgParse {
         return this.conservativeTrustDistribution;
     }
 
+    public Double getFatigue() {
+        return fatigue;
+    }
+
+    public long getFatigueStart() {
+        return fatigueStart;
+    }
+
     public int getNode() {
         return node;
     }
@@ -310,22 +324,39 @@ public class ArgParse {
                 .dest("configuration")
                 .help("Specify the TOML configuration file");
 
-        ArgumentGroup calibration = parser.addArgumentGroup("Calibration")
+        ArgumentGroup behaviorCalibration = parser.addArgumentGroup("Behavior Calibration")
                 .description("Arguments used for calibrating the behavior model");
 
-        calibration.addArgument("--mode-liberal", "-ml")
+        behaviorCalibration.addArgument("--mode-liberal", "-ml")
                 .required(true)
                 .type(double.class)
                 .dest("modeliberal")
                 .help("The mode of the government attitude distribution of liberal voting agents");
 
-        calibration.addArgument("--mode-conservative", "-mc")
+        behaviorCalibration.addArgument("--mode-conservative", "-mc")
                 .required(true)
                 .type(double.class)
                 .dest("modeconservative")
                 .help("The mode of the government attitude distribution of liberal voting agents");
 
-        calibration.addArgument("--disease-seed-days")
+        behaviorCalibration.addArgument("--fatigue")
+                .required(false)
+                .type(double.class)
+                .dest("fatigue")
+                .setDefault(0)
+                .help("The fatigue factor related to trust of the agent. After `fatigue-start`, this factor will be subtracted from the agent's prior trust every day");
+
+        behaviorCalibration.addArgument("--fatigue-start")
+                .required(false)
+                .type(long.class)
+                .setDefault(0)
+                .dest("fatiguestart")
+                .help("When (time step) to start decreasing the agent's trust using the fatigue factor");
+
+        ArgumentGroup diseaseCalibration = parser.addArgumentGroup("Disease Calibration")
+                .description("Arguments used for calibrating the disease model");
+
+        diseaseCalibration.addArgument("--disease-seed-days")
                 .required(false)
                 .type(int.class)
                 .dest("diseaseseeddays")
@@ -333,7 +364,7 @@ public class ArgParse {
                         " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
                         " no agents are seeded with the disease");
 
-        calibration.addArgument("--disease-seed-number")
+        diseaseCalibration.addArgument("--disease-seed-number")
                 .required(false)
                 .type(int.class)
                 .dest("diseaseseednumber")
@@ -341,7 +372,7 @@ public class ArgParse {
                         " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
                         " no agents are seeded with the disease");
 
-        calibration.addArgument("--disease-seed-additional-frequency")
+        diseaseCalibration.addArgument("--disease-seed-additional-frequency")
                 .required(false)
                 .type(Integer.class)
                 .dest("additionaldiseasedays")
@@ -352,7 +383,7 @@ public class ArgParse {
                         " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
                         " no agents are seeded with the disease after the initial seeding");
 
-        calibration.addArgument("--disease-seed-additional-number")
+        diseaseCalibration.addArgument("--disease-seed-additional-number")
                 .required(false)
                 .type(Integer.class)
                 .dest("additionaldiseasedaysnum")
