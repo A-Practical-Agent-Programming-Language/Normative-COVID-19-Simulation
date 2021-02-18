@@ -4,7 +4,7 @@ import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
-
+@Deprecated
 public class OutDoorActivitiesOnly extends Norm {
     @Override
     public CandidateActivity transformActivity(CandidateActivity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {

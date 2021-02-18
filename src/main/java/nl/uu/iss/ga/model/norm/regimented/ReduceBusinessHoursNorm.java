@@ -9,6 +9,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
  * We don't have information of restaurants, and this norm starts after our simulation ends, so
  * // TODO future work
  */
+@Deprecated
 public class ReduceBusinessHoursNorm extends Norm {
 
     public ReduceBusinessHoursNorm(String parameter) {

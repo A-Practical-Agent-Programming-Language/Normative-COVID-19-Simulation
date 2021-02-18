@@ -10,6 +10,8 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
+@Deprecated
+// This norm only becomes active after our simulation ends, so not useful to look at it
 public class ReduceHigherEducationCapacityNorm extends Norm {
 
     // Just a guess?
