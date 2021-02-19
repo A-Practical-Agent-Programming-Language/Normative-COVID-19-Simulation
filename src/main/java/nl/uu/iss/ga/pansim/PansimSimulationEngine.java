@@ -50,7 +50,9 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.arguments = arguments;
         this.observationNotifier = observationNotifier;
         this.executor = platform.getTickExecutor();
-        prepare_output();
+        if(arguments.saveStateDataFrames()) {
+            prepare_output();
+        }
     }
 
     private void runFirstTick() {
