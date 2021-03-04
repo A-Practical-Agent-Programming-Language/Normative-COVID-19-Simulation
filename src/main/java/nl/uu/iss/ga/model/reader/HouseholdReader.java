@@ -14,18 +14,22 @@ public class HouseholdReader {
 
     private static final Logger LOGGER = Logger.getLogger(HouseholdReader.class.getName());
 
-    private final List<File> householdFiles;
     private final Map<Long, Household> households;
-    private double fractionConservative;
-    private Random rnd;
+    private final Map<Long, Boolean> householdVotingAssignments;
+    private final double fractionLiberal;
+    private final Random rnd;
 
-    public HouseholdReader(List<File> householdFiles, double fractionConservative, Random rnd) {
+    public HouseholdReader(
+            List<File> householdFiles,
+            Map<Long, Boolean> householdVotingAssignments,
+            double fractionLiberal, Random rnd
+    ) {
         this.rnd = rnd;
-        this.householdFiles = householdFiles;
-        this.fractionConservative = fractionConservative;
+        this.householdVotingAssignments = householdVotingAssignments;
+        this.fractionLiberal = fractionLiberal;
 
         this.households = new TreeMap<>();
-        for(File f : this.householdFiles) {
+        for(File f : householdFiles) {
             this.households.putAll(readHouseholds(f));
         }
     }
@@ -42,7 +46,7 @@ public class HouseholdReader {
         ) {
             return iterateHouseholds(s);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to read houehold file " + householdFile.toString(), e);
+            LOGGER.log(Level.SEVERE, "Failed to read household file " + householdFile.toString(), e);
         }
         return new TreeMap<>();
     }
@@ -54,8 +58,10 @@ public class HouseholdReader {
         while(s.hasNextLine()) {
             Household h = Household.fromCSVLine(ParserUtil.zipLine(headerIndices, s.nextLine()));
             householdMap.put(h.getHid(), h);
-            // TODO don't use Math.random, but the passed argument
-            h.setLiberal(Math.random() < this.fractionConservative);
+            h.setLiberal(this.householdVotingAssignments == null ?
+                    this.rnd.nextFloat() < this.fractionLiberal :
+                    this.householdVotingAssignments.get(h.getHid())
+            );
         }
         return householdMap;
     }

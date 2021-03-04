@@ -9,9 +9,11 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.tomlj.Toml;
+import org.tomlj.TomlArray;
 import org.tomlj.TomlParseResult;
 import org.tomlj.TomlTable;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -31,6 +33,8 @@ public class ArgParse {
 
     @Arg(dest = "configuration")
     private File configuration;
+
+    private List<File> householdVotingAssignments = null;
 
     private List<ConfigModel> counties = new ArrayList<>();
 
@@ -150,6 +154,14 @@ public class ArgParse {
                     this.random = new Random();
                 }
 
+                if (result.contains("householdVotingAssignment"))  {
+                    this.householdVotingAssignments = new ArrayList<File>();
+                    TomlArray arr = result.getArray("householdVotingAssignment");
+                    for(int i = 0; i < arr.size(); i++) {
+                        this.householdVotingAssignments.add(findFile(new File(arr.getString(i))));
+                    }
+                }
+
                 if(result.contains("infectionseeding.perday") && this.diseaseseednumber == null) {
                     this.diseaseseednumber = result.getLong("infectionseeding.perday").intValue();
                 }
@@ -189,6 +201,10 @@ public class ArgParse {
             }
         }
         return null;
+    }
+
+    @Nullable public List<File> getHouseholdVotingAssignments() {
+        return householdVotingAssignments;
     }
 
     public List<ConfigModel> getCounties() {

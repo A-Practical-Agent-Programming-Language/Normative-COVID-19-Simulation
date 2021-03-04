@@ -5,10 +5,7 @@ import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
-import main.java.nl.uu.iss.ga.model.reader.ActivityFileReader;
-import main.java.nl.uu.iss.ga.model.reader.HouseholdReader;
-import main.java.nl.uu.iss.ga.model.reader.LocationFileReader;
-import main.java.nl.uu.iss.ga.model.reader.PersonReader;
+import main.java.nl.uu.iss.ga.model.reader.*;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
@@ -20,7 +17,6 @@ import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.trigger.AdjustTrustAttitudeGoal;
 import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
-import main.java.nl.uu.iss.ga.util.Methods;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentArguments;
@@ -32,10 +28,7 @@ import org.tomlj.TomlTable;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,6 +40,7 @@ public class ConfigModel {
     private final double fractionLiberal;
     private Random random;
     private final List<AgentID> agents = new ArrayList<>();
+    private List<File> householdVotingAssignmentsFiles = null;
     private final List<File> activityFiles;
     private final List<File> householdFiles;
     private final List<File> personFiles;
@@ -78,11 +72,18 @@ public class ConfigModel {
             throw new Exception(String.format("The fractionLiberal for the county %s is not specified", this.name));
         }
 
+        if(this.householdVotingAssignmentsFiles == null && this.table.contains("householdVotingAssignments")) {
+            this.householdVotingAssignmentsFiles = getFiles("householdVotingAssignments", false);
+        } else if (this.householdVotingAssignmentsFiles != null && this.table.contains("householdVotingAssignments")) {
+            LOGGER.warning("Household voting assignment specified on both the county and system level. " +
+                    "Ignoring county level specification, and using system level only.");
+        }
         this.activityFiles = getFiles("activities", true);
         this.householdFiles = getFiles("households", true);
         this.personFiles = getFiles("persons", true);
         this.locationsFiles = getFiles("locations", false);
         this.stateFile = getFile("statefile", false);
+
 
         if(this.table.contains("seed")) {
             this.random = new Random(table.getLong("seed"));
@@ -94,7 +95,15 @@ public class ConfigModel {
     }
 
     public void loadFiles() {
-        this.householdReader = new HouseholdReader(this.householdFiles, 1 - this.fractionLiberal, this.random);
+        Map<Long, Boolean> householdVotingAssignments = this.householdVotingAssignmentsFiles == null ?
+                null :
+                new HouseholdVotingAssignmentReader(this.householdVotingAssignmentsFiles).getHouseholdVotingAssignment();
+        this.householdReader = new HouseholdReader(
+                this.householdFiles,
+                householdVotingAssignments,
+                this.fractionLiberal,
+                this.random
+        );
         this.personReader = new PersonReader(this.personFiles, this.householdReader.getHouseholds());
         this.locationFileReader = new LocationFileReader(this.locationsFiles);
         this.activityFileReader = new ActivityFileReader(this.activityFiles, this.locationFileReader.getLocations());
