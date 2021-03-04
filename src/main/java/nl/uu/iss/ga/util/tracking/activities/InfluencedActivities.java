@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.util.tracking;
+package main.java.nl.uu.iss.ga.util.tracking.activities;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class InfluencedActivities {
+public class InfluencedActivities implements InfluencedActivitiesInterface {
 
     private final long tick;
 
@@ -39,34 +39,41 @@ public class InfluencedActivities {
 
     }
 
+    @Override
     public int getDeltaCases() {
         return deltaCases;
     }
 
+    @Override
     public int getnInfected() {
         return nInfected;
     }
 
+    @Override
     public void setNInfected(int nInfected) {
         this.deltaCases = nInfected - this.nInfected;
         this.nInfected = nInfected;
     }
 
+    @Override
     public long getTick() {
         return tick;
     }
 
+    @Override
     public void activityCancelled(Activity activity, Norm norm) {
         this.cancelledActivities.get(activity.getActivityType()).getAndIncrement();
         this.activitiesCancelledByNorm.get(norm.getClass()).get(activity.getActivityType()).getAndIncrement();
     }
 
+    @Override
     public void activityContinuing(Activity activity) {
         if(!this.continuedActivities.containsKey(activity.getActivityType()))
             this.continuedActivities.put(activity.getActivityType(), new AtomicInteger());
         this.continuedActivities.get(activity.getActivityType()).getAndIncrement();
     }
 
+    @Override
     public Map<Class<? extends Norm>, Map<ActivityType, Integer>> getActivitiesCancelledByNorm() {
         Map<Class<? extends Norm>, Map<ActivityType, Integer>> cancelled = new HashMap<>();
         for(Class<? extends Norm> norm : this.activitiesCancelledByNorm.keySet()) {
@@ -75,14 +82,17 @@ public class InfluencedActivities {
         return cancelled;
     }
 
+    @Override
     public Map<ActivityType, Integer> getCancelledActivities() {
         return atomicIntMapToIntMap(this.cancelledActivities);
     }
 
+    @Override
     public Map<ActivityType, Integer> getContinuedActivities() {
         return atomicIntMapToIntMap(this.continuedActivities);
     }
 
+    @Override
     public Map<ActivityType, Integer> getTotalActivities() {
         Map<ActivityType, Integer> continuing = getContinuedActivities();
         Map<ActivityType, Integer> cancelled = getCancelledActivities();
@@ -92,10 +102,12 @@ public class InfluencedActivities {
         return continuing;
     }
 
+    @Override
     public int getSumTotalActivities() {
         return getTotalActivities().values().stream().reduce(Integer::sum).orElse(0);
     }
 
+    @Override
     public Map<ActivityType, Double> getFractionActivitiesCancelled() {
         Map<ActivityType, Double> fractionCancelledTypes = new HashMap<>();
 
@@ -118,11 +130,4 @@ public class InfluencedActivities {
         return fractionCancelledTypes;
     }
 
-    private <T> Map<T, Integer> atomicIntMapToIntMap(Map<T, AtomicInteger> map) {
-        Map<T, Integer> newMap = new HashMap<>();
-        for(T key : map.keySet()) {
-            newMap.put(key, map.get(key).intValue());
-        }
-        return newMap;
-    }
 }

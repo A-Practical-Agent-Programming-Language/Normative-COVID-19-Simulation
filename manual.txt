@@ -6,7 +6,8 @@ usage: 2APL/SimpleEpiDemic Disease Simulation
        [--disease-seed-additional-frequency ADDITIONALDISEASEDAYS]
        [--disease-seed-additional-number ADDITIONALDISEASEDAYSNUM]
        [--threads THREADS] [--log-properties LOGPROPERTIES]
-       [--connect-pansim] [--write-graph] [--output-dir OUTPUTDIR]
+       [--connect-pansim] [--write-graph] [--suppress-calculations]
+       [--output-dir OUTPUTDIR]
 
 A ecological simulation environment for  simulation  of human acceptance of
 measures aimed at reducing spread of novel diseases
@@ -30,8 +31,8 @@ Behavior Calibration:
                          subtracted from the agent's  prior trust every day
                          (default: 0)
   --fatigue-start FATIGUESTART
-                         When to start decreasing  the  agent's trust using
-                         the fatigue factor (default: 0)
+                         When (time step) to  start  decreasing the agent's
+                         trust using the fatigue factor (default: 0)
 
 Disease Calibration:
   Arguments used for calibrating the disease model
@@ -99,8 +100,14 @@ Runtime optimization:
                          interactions over time,  but  slows the simulation
                          down  significantly,  and  is  more  demanding  on
                          memory resources. (default: false)
+  --suppress-calculations
+                         Suppress all secondary  calculations  not required
+                         to run the simulation,  such  as calculation ofthe
+                         radius   of   gyration,    visit   averages,   and
+                         everything   that    is    only    calculated   to
+                         performlogging (default: false)
   --output-dir OUTPUTDIR, -o OUTPUTDIR
                          Specify a sub directory  of  "output" where output
                          files of the  behavior  model  will  be stored. By
                          default,  the  current  time  code  will  be  used
-                         (default: 2021-02-18T14:19:57.606499)
+                         (default: 2021-03-04T11:25:58.988615)

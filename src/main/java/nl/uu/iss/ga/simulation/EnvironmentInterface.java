@@ -15,9 +15,10 @@ import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.tracking.GyrationRadius;
-import main.java.nl.uu.iss.ga.util.tracking.InfluencedActivities;
+import main.java.nl.uu.iss.ga.util.tracking.activities.InfluencedActivities;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTracker;
 import main.java.nl.uu.iss.ga.util.tracking.VisitGraph;
+import main.java.nl.uu.iss.ga.util.tracking.activities.SuppressCalculationsActivityTracker;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
@@ -62,7 +63,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.normSchedule = normSchedule.getEventsMap();
         this.allUsedNorms = normSchedule.getAllUsedNorms();
         this.observationNotifier = observationNotifier;
-        this.scheduleTracker = new ScheduleTracker(
+        this.scheduleTracker = arguments.suppressCalculations() ? null : new ScheduleTracker(
                 arguments.getOutputDir(),
                 this.agentStateMap,
                 normSchedule);
@@ -75,7 +76,8 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             LOGGER.log(Level.INFO, "Start date set to " + this.startDate.format(DateTimeFormatter.ofPattern("cccc dd MMMM yyyy")));
         }
 
-        this.gyrationRadius = new GyrationRadius(arguments.getOutputDir(), this.startDate, arguments.getCounties());
+        this.gyrationRadius = arguments.suppressCalculations() ? null :
+                new GyrationRadius(arguments.getOutputDir(), this.startDate, arguments.getCounties());
     }
 
     public void setSimulationStarted() {
@@ -116,7 +118,8 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         }
 
         // Reset tracker for influenced activities
-        GoalPlanScheme.influencedActivitiesTracker = new InfluencedActivities(tick, this.allUsedNorms);
+        GoalPlanScheme.influencedActivitiesTracker = arguments.suppressCalculations() ?
+                new SuppressCalculationsActivityTracker() : new InfluencedActivities(tick, this.allUsedNorms);
 
         processNormUpdates();
     }
@@ -146,8 +149,20 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                 "Tick %d took %d milliseconds for %d agents (roughly %fms per agent)",
                 tick, lastTickDuration, hashMap.size(), (double) lastTickDuration / hashMap.size()));
 
-        // Calculate and store radius of gyration
+
+        if(!arguments.suppressCalculations()) {
+            process_past_tick(tick, lastTickDuration, hashMap);
+        }
+    }
+
+    /**
+     * Single-threaded operations to process the result of a simulation time step
+     */
+    private void process_past_tick(long tick, int lastTickDuration, HashMap<AgentID, List<CandidateActivity>> hashMap) {
+
         long startCalculate = System.currentTimeMillis();
+
+        // Calculate and store radius of gyration
         this.gyrationRadius.processSimulationDay(tick, hashMap);
         LOGGER.log(Level.FINE, String.format(
                 "Calculated and stored radius of gyration in %d milliseconds", System.currentTimeMillis() - startCalculate

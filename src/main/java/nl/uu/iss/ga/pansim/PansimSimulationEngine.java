@@ -50,7 +50,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.arguments = arguments;
         this.observationNotifier = observationNotifier;
         this.executor = platform.getTickExecutor();
-        if(arguments.saveStateDataFrames()) {
+        if(arguments.saveStateDataFrames() && !arguments.suppressCalculations()) {
             prepare_output();
         }
     }
@@ -84,7 +84,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.next_visit_df_raw = VisitDataFrame.fromAgentActions(agentActions, this.agentStateMap, allocator).toBytes();
         this.next_state_df_raw = StateDataFrame.fromAgentStateMap(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
 
-        if(arguments.saveStateDataFrames()) {
+        if(arguments.saveStateDataFrames() && !arguments.suppressCalculations()) {
             write_state_dataframes(cur_state_df_raw, next_state_df_raw);
         }
 

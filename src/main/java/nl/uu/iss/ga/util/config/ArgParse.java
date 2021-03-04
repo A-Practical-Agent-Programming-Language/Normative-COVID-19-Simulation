@@ -62,6 +62,9 @@ public class ArgParse {
     @Arg(dest = "writegraph")
     private boolean writegraph;
 
+    @Arg(dest = "suppresscalculations")
+    private boolean suppresscalculations;
+
     @Arg(dest = "logproperties")
     private File logproperties;
 
@@ -234,6 +237,10 @@ public class ArgParse {
 
     public boolean writeGraph() {
         return writegraph;
+    }
+
+    public boolean suppressCalculations() {
+        return suppresscalculations;
     }
 
     public boolean saveStateDataFrames() {
@@ -430,6 +437,16 @@ public class ArgParse {
                         "as well as each visit-pair of agents who have been in the same location at the same time, to " +
                         "a file. This can be used to construct a network graph of interactions over time, but slows " +
                         "the simulation down significantly, and is more demanding on memory resources.");
+
+        optimization.addArgument("--suppress-calculations")
+                .type(Boolean.class)
+                .required(false)
+                .setDefault(false)
+                .action(new StoreTrueArgumentAction())
+                .dest("suppresscalculations")
+                .help("Suppress all secondary calculations not required to run the simulation, such as calculation of" +
+                        "the radius of gyration, visit averages, and everything that is only calculated to perform" +
+                        "logging");
 
         optimization.addArgument("--output-dir", "-o")
                 .type(String.class)

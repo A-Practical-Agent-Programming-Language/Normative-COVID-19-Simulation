@@ -105,7 +105,11 @@ public class Simulation {
     }
 
     private AgentStateMap mergeStateMaps() {
-        AgentStateMap merged = AgentStateMap.merge(arguments.getOutputDir(), this.arguments.getCounties().stream().map(ConfigModel::getAgentStateMap).collect(Collectors.toList()));
+        AgentStateMap merged = AgentStateMap.merge(
+                arguments.getOutputDir(),
+                arguments.suppressCalculations(),
+                this.arguments.getCounties().stream().map(ConfigModel::getAgentStateMap).collect(Collectors.toList())
+        );
         this.arguments.getCounties().forEach(x -> x.setAgentStateMap(merged));
         return merged;
     }
