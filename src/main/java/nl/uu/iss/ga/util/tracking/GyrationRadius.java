@@ -23,9 +23,13 @@ public class GyrationRadius {
     private final LocalDate simulationStartDate;
     private static final Logger LOGGER = Logger.getLogger(GyrationRadius.class.getName());
     private final List<ConfigModel> counties;
+    private final Map<String, Integer> numAgentsPerCounty = new HashMap<>();
 
     public GyrationRadius(String outputDir, LocalDate simulationStartDate, List<ConfigModel> counties) {
         this.counties = counties;
+        for(ConfigModel county : this.counties) {
+            this.numAgentsPerCounty.put(county.getName(), county.getPersonReader().getPersons().size());
+        }
         this.simulationStartDate = simulationStartDate;
         try {
             createOutFile(outputDir);
@@ -81,7 +85,7 @@ public class GyrationRadius {
                 throw new IOException("Failed to create file " + fout.getName());
             }
             if (writeHeader) {
-                bw.write("date,COUNTYFP,GyrationRadiusKm\n");
+                bw.write("date,COUNTYFP,GyrationRadiusKm,#agents\n");
             }
             for (String countyname : lastTickAverages.keySet()) {
                 bw.write(date.format(DateTimeFormatter.ISO_DATE));
@@ -89,6 +93,8 @@ public class GyrationRadius {
                 bw.write(Integer.toString(lastTickAverages.get(countyname).getValue0()));
                 bw.write(",");
                 bw.write(Double.toString(lastTickAverages.get(countyname).getValue1()));
+                bw.write(",");
+                bw.write(Integer.toString(this.numAgentsPerCounty.get(countyname)));
                 bw.write("\n");
             }
         } catch (IOException e) {
