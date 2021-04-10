@@ -3,7 +3,11 @@ package main.java.nl.uu.iss.ga.simulation.agent.context;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
@@ -14,7 +18,7 @@ public class LocationHistoryContext implements Context {
 
     private long lastDayTick = 0;
 
-    private Map<Long, LocationHistory> locationHistory = new HashMap<>();
+    private Map<Long, LocationHistory> locationHistory = new ConcurrentHashMap<>();
 
     /**
      * Add a new visit to the agent visit history

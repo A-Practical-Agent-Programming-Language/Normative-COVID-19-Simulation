@@ -4,7 +4,9 @@ import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
 import main.java.nl.uu.iss.ga.pansim.PansimSimulationEngine;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
+import main.java.nl.uu.iss.ga.simulation.DefaultTimingSimulationEngine;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
+import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
 import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
 import main.java.nl.uu.iss.ga.util.Java2APLLogger;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
@@ -37,7 +39,7 @@ public class Simulation {
     private final NormScheduleReader normScheduleReader;
 
     private Platform platform;
-    private DefaultBlockingTickExecutor<CandidateActivity> tickExecutor;
+    private NoRescheduleBlockingTickExecutor<CandidateActivity> tickExecutor;
     private EnvironmentInterface environmentInterface;
     private SimulationEngine<CandidateActivity> simulationEngine;
 
@@ -48,7 +50,7 @@ public class Simulation {
     public Simulation(ArgParse arguments) {
         this.arguments = arguments;
         this.normScheduleReader = new NormScheduleReader(arguments.getNormFile());
-        this.tickExecutor = new DefaultBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getSystemWideRandom());
+        this.tickExecutor = new NoRescheduleBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getSystemWideRandom());
 
         readCountyData();
         preparePlatform();
@@ -97,7 +99,8 @@ public class Simulation {
     }
 
     private SimulationEngine<CandidateActivity> getLocalSimulationEngine() {
-        return new DefaultSimulationEngine<>(this.platform, (int)arguments.getIterations(), this.environmentInterface);
+//        return new DefaultSimulationEngine<>(this.platform, (int)arguments.getIterations(), this.environmentInterface);
+        return new DefaultTimingSimulationEngine<>(this.platform, this.arguments, (int)this.arguments.getIterations(), this.environmentInterface);
     }
 
     private SimulationEngine<CandidateActivity> getPansimSimulationEngine() {

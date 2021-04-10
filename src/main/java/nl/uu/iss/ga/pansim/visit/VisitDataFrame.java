@@ -3,8 +3,9 @@ package main.java.nl.uu.iss.ga.pansim.visit;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
+import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
 import main.java.nl.uu.iss.ga.util.Constants;
-import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.ipc.ArrowFileWriter;
@@ -16,6 +17,9 @@ import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class VisitDataFrame {
     private BigIntVector lid;
@@ -124,24 +128,126 @@ public class VisitDataFrame {
         return outb;
     }
 
-    public static VisitDataFrame fromAgentActions(
-            HashMap<AgentID, List<CandidateActivity>> agentActions, AgentStateMap stateMap, BufferAllocator allocator
+    private static int get_max_rows_for_visits(List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+        int max_rows = 0;
+        try {
+            for (int i = 0; i < agentActions.size(); i++) {
+                max_rows += agentActions.get(i).get().getActions().size();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        return max_rows;
+    }
+
+    /**
+     * Encode agent actions on a data frame using the main thread of the JVM.
+     *
+     * This method serves as a reference for the same multi-threaded procedure.
+     * @param agentActions
+     * @param stateMap
+     * @param allocator
+     * @return
+     */
+    public static VisitDataFrame fromAgentActionsSingleThread(
+        List<Future<DeliberationResult<CandidateActivity>>> agentActions,
+        AgentStateMap stateMap,
+        BufferAllocator allocator
     ) {
-        int max_rows = agentActions.values().stream().map(List::size).reduce(Integer::sum).orElse(0);
+        int max_rows = get_max_rows_for_visits(agentActions);
+
         VisitDataFrame dataFrame = new VisitDataFrame(max_rows, allocator);
 
         int i = 0;
-        for(AgentID agentID : agentActions.keySet()) {
-            for(CandidateActivity activity : agentActions.get(agentID)) {
-                DiseaseState state = stateMap.getAgentState(agentID).getState();
-                dataFrame.addRow(i, activity, state);
-                activity.setDiseaseState(state);
-                i++;
+        try {
+            for(Future<DeliberationResult<CandidateActivity>> futureResult : agentActions) {
+                    for(CandidateActivity activity : futureResult.get().getActions()) {
+                        DiseaseState state = stateMap.getAgentState(futureResult.get().getAgentID()).getState();
+                        dataFrame.addRow(i, activity, state);
+                        activity.setDiseaseState(state);
+                        i++;
+                    }
             }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
         assert i == max_rows;
         dataFrame.setValueCount(i);
         return dataFrame;
+    }
+
+    /**
+     * Ideally, this should encode a data frame by making use of all available threads.
+     * @param agentActions
+     * @param stateMap
+     * @param allocator
+     * @param threads
+     * @param executor
+     * @return
+     */
+    public static VisitDataFrame fromAgentActionsMultiThread(
+            List<Future<DeliberationResult<CandidateActivity>>> agentActions,
+            AgentStateMap stateMap, BufferAllocator allocator,
+            int threads,
+            NoRescheduleBlockingTickExecutor<CandidateActivity> executor
+    ) {
+        int max_rows = get_max_rows_for_visits(agentActions);
+        VisitDataFrame dataFrame = new VisitDataFrame(max_rows, allocator);
+
+        List<WriteAgentVisitsCallable> callables = new ArrayList<>(threads);
+        for(int i = 0; i < threads; i++) {
+            callables.add(new WriteAgentVisitsCallable(i, threads, stateMap, agentActions, dataFrame));
+        }
+
+        try {
+            executor.useExecutorForTasks(callables);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        dataFrame.setValueCount(max_rows);
+
+        return dataFrame;
+    }
+
+    static class WriteAgentVisitsCallable implements Callable<Void> {
+
+        private final int thread;
+        private final int threads_total;
+        private final AgentStateMap agentStateMap;
+        private final List<Future<DeliberationResult<CandidateActivity>>> agentActions;
+        private final VisitDataFrame dataFrame;
+
+        public WriteAgentVisitsCallable(int thread, int threads_total, AgentStateMap agentStateMap, List<Future<DeliberationResult<CandidateActivity>>> agentActions, VisitDataFrame dataFrame) {
+            this.thread = thread;
+            this.threads_total = threads_total;
+            this.agentStateMap = agentStateMap;
+            this.agentActions = agentActions;
+            this.dataFrame = dataFrame;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            int start = thread * agentActions.size() / threads_total;
+            int end = (thread + 1) * agentActions.size() / threads_total;
+            if (end > agentActions.size()) end = agentActions.size() + 1;
+
+            int index = 0;
+            for(int i = 0; i < start; i++) {
+                index += agentActions.get(i).get().getActions().size();
+            }
+
+            for (int i = start; i < end; i++) {
+                DeliberationResult<CandidateActivity> result = agentActions.get(i).get();
+                for(int j = 0; j < result.getActions().size(); j++) {
+                    DiseaseState state = agentStateMap.getAgentState(result.getAgentID()).getState();
+                    dataFrame.addRow(index, result.getActions().get(j), state);
+                    index++;
+                }
+            }
+
+            return null;
+        }
     }
 
     public void close() {
@@ -155,7 +261,6 @@ public class VisitDataFrame {
         for (String name: attrs.keySet()) {
             attrs.get(name).close();
         }
-
     }
 
     public VectorSchemaRoot getSchemaRoot() {

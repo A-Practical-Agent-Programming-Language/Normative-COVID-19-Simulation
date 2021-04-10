@@ -1,7 +1,9 @@
 package main.java.nl.uu.iss.ga.pansim.state;
 
+import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
+import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.ipc.ArrowFileReader;
@@ -13,8 +15,10 @@ import org.apache.arrow.vector.util.ByteArrayReadableSeekableByteChannel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class StateDataFrame {
     private BigIntVector pid;
@@ -78,17 +82,66 @@ public class StateDataFrame {
         seed = (BigIntVector) schemaRoot.getVector("seed");
     }
 
-    public static StateDataFrame fromAgentStateMap(List<AgentState> agentStates, BufferAllocator allocator) {
+    public static StateDataFrame fromAgentStateMapSingleThead(List<AgentState> agentStates, BufferAllocator allocator) {
+        int max_rows = agentStates.size();
+        StateDataFrame dataFrame = new StateDataFrame(max_rows, allocator);
+        for(int i = 0; i < agentStates.size(); i++) {
+            dataFrame.addRow(i, agentStates.get(i));
+        }
+        dataFrame.setValueCount(max_rows);
+        return dataFrame;
+    }
+
+    public static StateDataFrame fromAgentStateMapMultiThread(
+            NoRescheduleBlockingTickExecutor<CandidateActivity> executor,
+            int total_num_threads,
+            List<AgentState> agentStates,
+            BufferAllocator allocator
+    ) {
         int max_rows = agentStates.size();
         StateDataFrame dataFrame = new StateDataFrame(max_rows, allocator);
 
-        int i = 0;
-        for(AgentState state : agentStates) {
-            dataFrame.addRow(i, state);
-            i++;
+        List<WriteStateMap> callables = new ArrayList<>();
+        for(int i = 0; i < total_num_threads; i++) {
+            callables.add(new WriteStateMap(i, total_num_threads, agentStates, dataFrame));
         }
-        dataFrame.setValueCount(i);
+
+        try {
+            executor.useExecutorForTasks(callables);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        dataFrame.setValueCount(max_rows);
+
         return dataFrame;
+    }
+
+    static class WriteStateMap implements Callable<Void> {
+
+        private final StateDataFrame dataFrame;
+        private final List<AgentState> agentStates;
+        private final int thread;
+        private final int threads_total;
+
+        public WriteStateMap(int thread, int threads_total, List<AgentState> agentStates, StateDataFrame dataFrame) {
+            this.dataFrame = dataFrame;
+            this.thread = thread;
+            this.threads_total = threads_total;
+            this.agentStates = agentStates;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            int start = this.thread * this.agentStates.size() / this.threads_total;
+            int end = (thread + 1) * this.agentStates.size() / this.threads_total;
+            if (end > this.agentStates.size()) end = agentStates.size();
+
+            for (int i = start; i < end; i++) {
+                this.dataFrame.addRow(i, this.agentStates.get(i));
+            }
+
+            return null;
+        }
     }
 
     public AgentState getAgentState(int row) {

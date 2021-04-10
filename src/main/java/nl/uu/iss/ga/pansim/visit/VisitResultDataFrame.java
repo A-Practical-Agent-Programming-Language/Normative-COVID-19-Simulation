@@ -115,4 +115,14 @@ public class VisitResultDataFrame {
     public VectorSchemaRoot getSchemaRoot() {
         return schemaRoot;
     }
+
+    public void close() {
+        this.pid.close();
+        this.lid.close();
+        this.inf_prob.close();
+        this.n_contacts.close();
+        this.attrs.get(Constants.VISIBLE_ATTRIBUTES[0]).close();
+        this.attrs.get(Constants.VISIBLE_ATTRIBUTES[1]).close();
+        this.attrs.get(Constants.VISIBLE_ATTRIBUTES[2]).close();
+    }
 }

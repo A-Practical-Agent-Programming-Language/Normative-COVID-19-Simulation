@@ -1,7 +1,9 @@
 package main.java.nl.uu.iss.ga.pansim.state;
 
+import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
+import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 
@@ -10,6 +12,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,8 +73,9 @@ public class AgentStateMap {
         }
     }
 
-    public void fromDataFrame(StateDataFrame dataFrame) {
+    public void fromDataFrameSingleThead(StateDataFrame dataFrame) {
         reset();
+
         int infected = 0;
         int symptomatic = 0;
         int total = 0;
@@ -85,13 +92,94 @@ public class AgentStateMap {
                 infected++;
             }
         }
-
         LOGGER.log(Level.INFO, String.format(
                 "Received state frame. %d people, of whom %d (%.2f%%) are infected, %d (%.2f%%) of which are symptomatic",
                 total,
                 infected, (double)infected/total * 100,
                 symptomatic, (double) symptomatic/infected * 100
                 ));
+    }
+
+    public void fromDataFrameMultiThreaded(StateDataFrame dataFrame, int threads, NoRescheduleBlockingTickExecutor<CandidateActivity> executor) {
+//        reset(); // If we do not reset, we can reuse buckets created on start, resulting in faster hashmap population
+
+        List<Callable<Vector<Integer>>> callables = new ArrayList<>();
+        for(int i = 0; i < threads; i++) {
+            callables.add(new FromDataFrameCallable(dataFrame, threads, i));
+        }
+
+        int infected = 0;
+        int symptomatic = 0;
+        int total = 0;
+
+        try {
+            List<Future<Vector<Integer>>> futures = executor.useExecutorForTasks(callables);
+
+            for(int i = 0; i < futures.size(); i++) {
+                infected += futures.get(i).get().get(0);
+                symptomatic += futures.get(i).get().get(1);
+                total += futures.get(i).get().get(2);
+            }
+
+            LOGGER.log(Level.INFO, String.format(
+                    "Received state frame. %d people, of whom %d (%.2f%%) are infected, %d (%.2f%%) of which are symptomatic",
+                    total,
+                    infected, (double)infected/total * 100,
+                    symptomatic, (double) symptomatic/infected * 100
+            ));
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    class FromDataFrameCallable implements Callable<Vector<Integer>> {
+
+        private final StateDataFrame dataFrame;
+        private final int totalThreads;
+        private final int thread;
+
+        public FromDataFrameCallable(StateDataFrame dataFrame, int totalThreads, int thread) {
+            this.dataFrame = dataFrame;
+            this.totalThreads = totalThreads;
+            this.thread = thread;
+        }
+
+        @Override
+        public Vector<Integer> call() throws Exception {
+            int infected = 0;
+            int symptomatic = 0;
+            int total = 0;
+
+            int start = thread * dataFrame.getSchemaRoot().getRowCount() / totalThreads;
+            int end = (thread + 1) * dataFrame.getSchemaRoot().getRowCount() / totalThreads;
+            if (end > dataFrame.getSchemaRoot().getRowCount()) end = dataFrame.getSchemaRoot().getRowCount();
+
+            try {
+                for (int i = start; i < end; i++) {
+                    AgentState state = dataFrame.getAgentState(i);
+                    AgentID aid = pidToAgentMap.get(state.getPid());
+                    pidStateMap.put(state.getPid(), state);
+                    agentStateMap.put(aid, state);
+                    total++;
+                    if (state.getState().equals(DiseaseState.INFECTED_SYMPTOMATIC)) {
+                        symptomatic++;
+                        infected++;
+                    } else if (state.getState().equals(DiseaseState.INFECTED_ASYMPTOMATIC)) {
+                        infected++;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(430);
+            }
+
+            Vector<Integer> v = new Vector<>();
+            v.add(infected);
+            v.add(symptomatic);
+            v.add(total);
+
+            return v;
+        }
     }
 
     public List<AgentState> getAllAgentStates() {
