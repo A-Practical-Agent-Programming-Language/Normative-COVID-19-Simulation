@@ -11,6 +11,7 @@ import main.java.nl.uu.iss.ga.model.norm.NormContainer;
 import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
@@ -20,6 +21,7 @@ import main.java.nl.uu.iss.ga.util.tracking.ScheduleTracker;
 import main.java.nl.uu.iss.ga.util.tracking.VisitGraph;
 import main.java.nl.uu.iss.ga.util.tracking.activities.SuppressCalculationsActivityTracker;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
 
@@ -28,6 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,6 +40,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
     private final AgentStateMap agentStateMap;
     private final Map<LocalDate, List<NormContainer>> normSchedule;
+    private final NormContext sharedNormContext;
     private final ObservationNotifier observationNotifier;
     private final GyrationRadius gyrationRadius;
     private final ScheduleTracker scheduleTracker;
@@ -62,6 +66,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.agentStateMap = agentStateMap;
         this.normSchedule = normSchedule.getEventsMap();
         this.allUsedNorms = normSchedule.getAllUsedNorms();
+        this.sharedNormContext = arguments.getSharedNormContext();
         this.observationNotifier = observationNotifier;
         this.scheduleTracker = arguments.suppressCalculations() ? null : new ScheduleTracker(
                 arguments.getOutputDir(),
@@ -130,13 +135,13 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             for(NormContainer norm : this.normSchedule.get(today)) {
                 if(norm.getStartDate().equals(today)) {
                     if(norm.getNorm() != null) {
-                        this.observationNotifier.notifyNorm(norm.getNorm());
+                        this.sharedNormContext.addNorm(norm.getNorm());
                         LOGGER.log(Level.INFO, "Activated norm " + norm.getNorm().toString());
                     }
                     if(!norm.getComment().isBlank())
                         LOGGER.log(Level.INFO, norm.getComment());
                 } else if (norm.getEndDate().equals(today) && norm.getNorm() != null) {
-                    this.observationNotifier.notifyNormCancelled(norm.getNorm());
+                    this.sharedNormContext.removeNorm(norm.getNorm());
                     LOGGER.log(Level.INFO, "Inactivated norm " + norm.getNorm().toString());
                 }
             }
@@ -144,14 +149,14 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     }
 
     @Override
-    public void tickPostHook(long tick, int lastTickDuration, HashMap<AgentID, List<CandidateActivity>> hashMap) {
+    public void tickPostHook(long tick, int lastTickDuration, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
         LOGGER.log(Level.FINE, String.format(
                 "Tick %d took %d milliseconds for %d agents (roughly %fms per agent)",
-                tick, lastTickDuration, hashMap.size(), (double) lastTickDuration / hashMap.size()));
+                tick, lastTickDuration, agentActions.size(), (double) lastTickDuration / agentActions.size()));
 
 
         if(!arguments.suppressCalculations()) {
-            process_past_tick(tick, lastTickDuration, hashMap);
+//            process_past_tick(tick, lastTickDuration, hashMap); // TODO update references
         }
     }
 

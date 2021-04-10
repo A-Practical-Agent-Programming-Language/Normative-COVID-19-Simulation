@@ -3,9 +3,9 @@ package main.java.nl.uu.iss.ga.pansim.state;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
-import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -100,7 +99,7 @@ public class AgentStateMap {
                 ));
     }
 
-    public void fromDataFrameMultiThreaded(StateDataFrame dataFrame, int threads, NoRescheduleBlockingTickExecutor<CandidateActivity> executor) {
+    public void fromDataFrameMultiThreaded(StateDataFrame dataFrame, int threads, TickExecutor<CandidateActivity> executor) {
 //        reset(); // If we do not reset, we can reuse buckets created on start, resulting in faster hashmap population
 
         List<Callable<Vector<Integer>>> callables = new ArrayList<>();

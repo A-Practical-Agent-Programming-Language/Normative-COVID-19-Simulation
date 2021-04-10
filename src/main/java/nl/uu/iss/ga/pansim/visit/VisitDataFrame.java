@@ -3,9 +3,9 @@ package main.java.nl.uu.iss.ga.pansim.visit;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
-import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
 import main.java.nl.uu.iss.ga.util.Constants;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
+import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.ipc.ArrowFileWriter;
@@ -189,7 +189,7 @@ public class VisitDataFrame {
             List<Future<DeliberationResult<CandidateActivity>>> agentActions,
             AgentStateMap stateMap, BufferAllocator allocator,
             int threads,
-            NoRescheduleBlockingTickExecutor<CandidateActivity> executor
+            TickExecutor<CandidateActivity> executor
     ) {
         int max_rows = get_max_rows_for_visits(agentActions);
         VisitDataFrame dataFrame = new VisitDataFrame(max_rows, allocator);

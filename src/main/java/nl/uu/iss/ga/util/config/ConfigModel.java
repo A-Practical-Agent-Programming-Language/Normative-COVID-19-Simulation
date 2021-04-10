@@ -11,12 +11,10 @@ import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.trigger.AdjustTrustAttitudeGoal;
-import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentArguments;
@@ -132,13 +130,12 @@ public class ConfigModel {
 
         LocationEntry homeLocation = this.findHomeLocation(schedule);
 
-        NormContext normContext = new NormContext();
         LocationHistoryContext locationHistoryContext = new LocationHistoryContext();
         BeliefContext beliefContext = new BeliefContext(environmentInterface, homeLocation, initialGovernmentAttitude);
         AgentArguments<CandidateActivity> arguments = new AgentArguments<CandidateActivity>()
                 .addContext(this.personReader.getPersons().get(schedule.getPerson()))
                 .addContext(schedule)
-                .addContext(normContext)
+                .addContext(this.arguments.getSharedNormContext())
                 .addContext(locationHistoryContext)
                 .addContext(beliefContext)
                 .addContext(new DayPlanContext())
@@ -157,8 +154,7 @@ public class ConfigModel {
             this.agents.add(aid);
             this.agentStateMap.addAgent(aid, schedule.getPerson(), this.fipsCode);
             beliefContext.setAgentID(aid);
-            ((DirectObservationNotifierNotifier) observationNotifier).addNormContext(aid, schedule.getPerson(), normContext);
-            ((DirectObservationNotifierNotifier) observationNotifier).addLocationHistoryContext(aid, schedule.getPerson(), locationHistoryContext);
+            observationNotifier.addLocationHistoryContext(aid, schedule.getPerson(), locationHistoryContext);
         } catch (URISyntaxException e) {
             LOGGER.log(Level.SEVERE, "Failed to create AgentID for agent " + schedule.getPerson(), e);
         }

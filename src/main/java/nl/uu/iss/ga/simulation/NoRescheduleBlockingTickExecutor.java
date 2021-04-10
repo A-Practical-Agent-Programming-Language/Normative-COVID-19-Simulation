@@ -39,9 +39,8 @@ public class NoRescheduleBlockingTickExecutor<T> implements TickExecutor<T> {
     }
 
     @Override
-    public HashMap<AgentID, List<T>> doTick() {
-//        return doTick(new HashMap<>());
-        return null;
+    public List<Future<DeliberationResult<T>>> doTick() {
+        return doTick(new HashMap<>());
     }
 
     public List<Future<DeliberationResult<T>>> doTick(HashMap<String, String> timingsMap) {

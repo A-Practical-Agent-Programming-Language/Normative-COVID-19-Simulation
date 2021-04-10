@@ -68,7 +68,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.timingsTracker = new ScheduleTrackerGroup(
                 outputDir.toFile().getAbsolutePath(),
                 "timings.csv",
-                List.of("tick", "communication", "stateExtracted", "visitsExtracted",
+                List.of("tick", "pansim", "stateExtracted", "visitsExtracted",
                         "visitsProcessed","prehook", "deliberation", "visitsEncoded", "stateEncoded", "posthook")
                 );
     }
@@ -76,7 +76,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     private void runFirstTick() {
         try {
             byte[] first_state_df_raw = StateDataFrame.fromAgentStateMapMultiThread(
-                    ((NoRescheduleBlockingTickExecutor<CandidateActivity>) this.executor),
+                    this.executor,
                     this.arguments.getThreads(),
                     this.agentStateMap.getAllAgentStates(),
                     this.allocator
@@ -103,7 +103,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         millis = System.currentTimeMillis();
 
         // TODO Multithreaded done
-        this.agentStateMap.fromDataFrameMultiThreaded(state_output_df, arguments.getThreads(), (NoRescheduleBlockingTickExecutor<CandidateActivity>) executor);
+        this.agentStateMap.fromDataFrameMultiThreaded(state_output_df, arguments.getThreads(), executor);
 //        this.agentStateMap.fromDataFrameSingleThead(state_output_df);
         timingsMap.put("stateProcessed", Long.toString(System.currentTimeMillis() - millis));
         state_output_df.close();
@@ -139,7 +139,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
         // Prepare results for pansim and misuse loop to set disease state on activities
         // TODO parallelize
-        VisitDataFrame visitDf = VisitDataFrame.fromAgentActionsMultiThread(agentActions, this.agentStateMap, allocator, arguments.getThreads(), ((NoRescheduleBlockingTickExecutor<CandidateActivity>) this.executor));
+        VisitDataFrame visitDf = VisitDataFrame.fromAgentActionsMultiThread(agentActions, this.agentStateMap, allocator, arguments.getThreads(), this.executor);
 //        VisitDataFrame visitDf = VisitDataFrame.fromAgentActionsSingleThread(agentActions, this.agentStateMap, this.allocator);
         this.next_visit_df_raw = visitDf.toBytes();
         visitDf.close();
@@ -147,7 +147,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         millis = System.currentTimeMillis();
 
         // TODO Multithreaded done
-        StateDataFrame stateDf = StateDataFrame.fromAgentStateMapMultiThread(((NoRescheduleBlockingTickExecutor<CandidateActivity>) this.executor), this.arguments.getThreads(), this.agentStateMap.getAllAgentStates(), this.allocator);
+        StateDataFrame stateDf = StateDataFrame.fromAgentStateMapMultiThread(this.executor, this.arguments.getThreads(), this.agentStateMap.getAllAgentStates(), this.allocator);
 //        StateDataFrame stateDf = StateDataFrame.fromAgentStateMapSingleThead(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
         this.next_state_df_raw = stateDf.toBytes();
         stateDf.close();
@@ -159,7 +159,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         }
 
         // TODO don't parallelize, as we suppress calculations anyway when doing scaling?
-        processTickPostHook(this.executor.getCurrentTick() - 1, this.executor.getLastTickDuration(), new HashMap<>());
+        processTickPostHook(this.executor.getCurrentTick() - 1, this.executor.getLastTickDuration(), agentActions);
         timingsMap.put("posthook", Long.toString(System.currentTimeMillis() - millis));
 
         this.timingsTracker.writeKeyMapToFile(
@@ -206,14 +206,13 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     }
 
     private void process_visit_output(VisitResultDataFrame visit_output_df) {
-        NoRescheduleBlockingTickExecutor<CandidateActivity> exec = (NoRescheduleBlockingTickExecutor<CandidateActivity>) this.executor;
         List<Callable<Void>> runnables = new ArrayList<>();
         for(int i = 0; i < this.arguments.getThreads(); i++) {
             runnables.add(new ProcessVisitOutput(observationNotifier, visit_output_df, i, arguments.getThreads(), executor.getCurrentTick()));
         }
 
         try {
-            exec.useExecutorForTasks(runnables);
+            this.executor.useExecutorForTasks(runnables);
         } catch (InterruptedException e) {
             e.printStackTrace();
             LOGGER.log(Level.SEVERE, "Failed to process tick visits concurrently. Exiting");

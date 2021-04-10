@@ -19,41 +19,10 @@ public class DirectObservationNotifierNotifier implements ObservationNotifier {
 
     private Map<Long, AgentID> pidAgentMap;
     private Map<AgentID, LocationHistoryContext> agentHistoryContextMap;
-    private Map<AgentID, NormContext> agentNormContextMap;
 
     public DirectObservationNotifierNotifier(Platform platform) {
         this.pidAgentMap = new HashMap<>();
         this.agentHistoryContextMap = new HashMap<>();
-        this.agentNormContextMap = new HashMap<>();
-    }
-
-    @Override
-    public void notifyNorm(AgentID agentID, Norm norm) {
-        this.agentNormContextMap.get(agentID).addNorm(norm);
-    }
-
-    @Override
-    public void notifyNorm(long pid, Norm norm) {
-        this.agentNormContextMap.get(this.pidAgentMap.get(pid)).addNorm(norm);
-    }
-
-    public void notifyNorm(Norm norm) {
-        this.agentNormContextMap.values().forEach(x -> x.addNorm(norm));
-    }
-
-    @Override
-    public void notifyNormCancelled(AgentID agentID, Norm norm) {
-        this.agentNormContextMap.get(agentID).removeNorm(norm);
-    }
-
-    @Override
-    public void notifyNormCancelled(long pid, Norm norm) {
-        this.agentNormContextMap.get(this.pidAgentMap.get(pid)).removeNorm(norm);
-    }
-
-    @Override
-    public void notifyNormCancelled(Norm norm) {
-        this.agentNormContextMap.values().forEach(x -> x.removeNorm(norm));
     }
 
     @Override
@@ -64,11 +33,6 @@ public class DirectObservationNotifierNotifier implements ObservationNotifier {
     @Override
     public void notifyVisit(long pid, long tick, LocationHistoryContext.Visit visit) {
         this.agentHistoryContextMap.get(this.pidAgentMap.get(pid)).addVisit(tick, visit);
-    }
-
-    public void addNormContext(AgentID aid, long pid, NormContext normContext) {
-        this.pidAgentMap.put(pid, aid);
-        this.agentNormContextMap.put(aid, normContext);
     }
 
     public void addLocationHistoryContext(AgentID aid, long pid, LocationHistoryContext locationHistoryContext) {

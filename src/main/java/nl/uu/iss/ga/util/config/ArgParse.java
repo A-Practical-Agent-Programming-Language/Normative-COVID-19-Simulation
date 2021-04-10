@@ -1,5 +1,6 @@
 package main.java.nl.uu.iss.ga.util.config;
 
+import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
 import main.java.nl.uu.iss.ga.util.Methods;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.annotation.Arg;
@@ -96,6 +97,8 @@ public class ArgParse {
     private boolean saveStateDataFrames = false;
 
     private Random random;
+
+    private final NormContext sharedNormContext = new NormContext();
 
     public ArgParse(String[] args) {
         ArgumentParser p = getParser();
@@ -301,6 +304,10 @@ public class ArgParse {
         } else {
             return this.additionaldiseasedaysnum == null ? this.diseaseseednumber : this.additionaldiseasedaysnum;
         }
+    }
+
+    public NormContext getSharedNormContext() {
+        return sharedNormContext;
     }
 
     public static File findFile(File f) throws FileNotFoundException {
