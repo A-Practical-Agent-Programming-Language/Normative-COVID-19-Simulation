@@ -1,8 +1,11 @@
+#savestate = true
+
 [simulation]
 norms = "norm-schedule.csv"
 startdate = 2020-03-01
-iterations = 2020-06-28 # End date; Alternatively, specify the number of iterations
+#iterations = 2020-06-28 # End date; Alternatively, specify the number of iterations
 diseasemodel = "../../../../pansim/tests/disease_models/seiar.toml"
+seed = 42
 
 # Optionally, specify a list of files making up the household assignments, with headers "hid,is_liberal", using 1 for true
 # and 0 for false

@@ -69,7 +69,10 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
                 outputDir.toFile().getAbsolutePath(),
                 "timings.csv",
                 List.of("tick", "pansim", "stateExtracted", "visitsExtracted",
-                        "visitsProcessed","prehook", "deliberation", "visitsEncoded", "stateEncoded", "posthook")
+                        "visitsProcessed","prehook",
+                        "reassignPointer", // TODO remove if not using DefaultTimingSimulaitonEngine
+                        "deliberation",
+                        "visitsEncoded", "stateEncoded", "posthook")
                 );
     }
 
@@ -134,7 +137,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         // Multithreaded done
 //        HashMap<AgentID, List<CandidateActivity>> agentActions = this.executor.doTick();
         List<Future<DeliberationResult<CandidateActivity>>> agentActions = ((NoRescheduleBlockingTickExecutor<CandidateActivity>) this.executor).doTick(timingsMap);
-        timingsMap.put("deliberation", Long.toString(System.currentTimeMillis() - millis));
+//        timingsMap.put("deliberation", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
         // Prepare results for pansim and misuse loop to set disease state on activities

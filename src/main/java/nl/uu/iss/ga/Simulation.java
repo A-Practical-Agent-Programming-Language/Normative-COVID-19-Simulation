@@ -14,8 +14,6 @@ import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultBlockingTickExecutor;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultSimulationEngine;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.SimulationEngine;
 
 import java.time.LocalDateTime;

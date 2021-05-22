@@ -9,6 +9,8 @@ import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.AdjustTrustAttitudePlan;
+import main.java.nl.uu.iss.ga.simulation.agent.plan.SleepGoal;
+import main.java.nl.uu.iss.ga.simulation.agent.plan.SleepPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.CancelActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.ExecuteScheduledActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.HandleTripPlan;
@@ -21,6 +23,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.plan.PlanScheme;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
@@ -67,6 +70,8 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
             if (context.getCurrentTick() >= adjustTrustAttitudeGoal.getFatigueStart()) {
                 return new AdjustTrustAttitudePlan(adjustTrustAttitudeGoal);
             }
+        } else if (trigger instanceof SleepGoal) {
+            return new SleepPlan((SleepGoal) trigger);
         }
 
         return Plan.UNINSTANTIATED();

@@ -11,6 +11,7 @@ import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import main.java.nl.uu.iss.ga.simulation.agent.plan.SleepGoal;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
@@ -118,11 +119,17 @@ public class ConfigModel {
     }
 
     public void createAgents(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface) {
+        this.adjustTrustAttitudeGoal =
+                new AdjustTrustAttitudeGoal(this.arguments.getFatigue(), this.arguments.getFatigueStart());
+//        this.sleepGoal = new SleepGoal(5);
         for (ActivitySchedule schedule : this.activityFileReader.getActivitySchedules()) {
             schedule.splitActivitiesByDay();
             createAgentFromSchedule(platform, observationNotifier, environmentInterface, schedule);
         }
     }
+
+    private AdjustTrustAttitudeGoal adjustTrustAttitudeGoal;
+//    private SleepGoal sleepGoal;
 
     private void createAgentFromSchedule(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface, ActivitySchedule schedule) {
         boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
@@ -150,7 +157,8 @@ public class ConfigModel {
             for(Activity activity : schedule.getSchedule().values()) {
                 agent.adoptGoal(activity);
             }
-            agent.adoptGoal(new AdjustTrustAttitudeGoal(this.arguments.getFatigue(), this.arguments.getFatigueStart()));
+            agent.adoptGoal(adjustTrustAttitudeGoal);
+//            agent.adoptGoal(sleepGoal);
             this.agents.add(aid);
             this.agentStateMap.addAgent(aid, schedule.getPerson(), this.fipsCode);
             beliefContext.setAgentID(aid);
