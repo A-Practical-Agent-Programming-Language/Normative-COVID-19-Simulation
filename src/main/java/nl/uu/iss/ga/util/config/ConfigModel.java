@@ -44,11 +44,13 @@ public class ConfigModel {
     private final List<File> householdFiles;
     private final List<File> personFiles;
     private final List<File> locationsFiles;
+    private final List<File> locationDesignationFiles;
     private final File stateFile;
 
     private HouseholdReader householdReader;
     private PersonReader personReader;
     private LocationFileReader locationFileReader;
+    private LocationDesignationFileReader locationDesignationFileReader;
     private ActivityFileReader activityFileReader;
     private AgentStateMap agentStateMap;
 
@@ -82,6 +84,7 @@ public class ConfigModel {
         this.personFiles = getFiles("persons", true);
         this.locationsFiles = getFiles("locations", false);
         this.stateFile = getFile("statefile", false);
+        this.locationDesignationFiles = getFiles("locationDesignations", false);
 
 
         if(this.table.contains("seed")) {
@@ -105,10 +108,12 @@ public class ConfigModel {
         );
         this.personReader = new PersonReader(this.personFiles, this.householdReader.getHouseholds());
         this.locationFileReader = new LocationFileReader(this.locationsFiles);
-        this.activityFileReader = new ActivityFileReader(this.activityFiles, this.locationFileReader.getLocations());
+        this.activityFileReader = new ActivityFileReader(this.activityFiles, this.locationFileReader);
         this.agentStateMap = this.stateFile == null ?
             new AgentStateMap(this.personReader.getPersons(), this.random) :
             new AgentStateMap(Collections.singletonList(this.stateFile), this.random);
+        this.locationDesignationFileReader =
+                new LocationDesignationFileReader(locationDesignationFiles, this.locationFileReader.getLocationsByIDMap());
     }
 
     public Callable<Void> getAsyncLoadFiles() {
@@ -173,6 +178,7 @@ public class ConfigModel {
 
         for(Activity activity : schedule.getSchedule().values()) {
             if(activity.getActivityType().equals(ActivityType.HOME) && activity.getLocation().getLocationID() == lid) {
+                activity.getLocation().setResidential(true);
                 return activity.getLocation();
             }
         }

@@ -24,6 +24,10 @@ public class LocationEntry {
     private final double longitude;
     private final double latitude;
 
+    // Artificially added
+    private Designation designation = Designation.none;
+    private boolean isResidential = false;
+
     public LocationEntry(Long hid, Long pid, int activity_number, ActivityType activity_type, ActivityTime starttime, int duration, Long lid, double longitude, double latitude, TransportMode travelmode) {
         this.pid = pid;
         this.activity_number = activity_number;
@@ -75,6 +79,33 @@ public class LocationEntry {
 
     public double getLatitude() {
         return latitude;
+    }
+
+    public Designation getDesignation() {
+        return designation;
+    }
+
+    public boolean isResidential() {
+        return isResidential;
+    }
+
+    public void setDesignation(String designation, boolean isResidential) {
+        this.designation = designation.isEmpty() ? Designation.none : Designation.valueOf(designation);
+        this.isResidential = isResidential;
+    }
+
+    /**
+     * Some norms, e.g. business closure, only apply to non-essential businesses or the like. From these norms,
+     * both locations that are essential, and those that are residences can be excluded.
+     *
+     * @return True if this location can be excluded from a norm only applying to N.E.B. type businesses
+     */
+    public boolean isEssentialOrResidential() {
+        return !this.designation.equals(Designation.none) || this.isResidential;
+    }
+
+    public void setResidential(boolean isResidential) {
+        this.isResidential = isResidential;
     }
 
     public static LocationEntry fromLine(Map<String, String> keyValue) {

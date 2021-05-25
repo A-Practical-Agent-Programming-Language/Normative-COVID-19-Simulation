@@ -23,10 +23,12 @@ public class ActivityFileReader {
     private final List<File> activityScheduleFiles;
     private final List<ActivitySchedule> activitySchedules;
     private final Map<Long, Map<Integer, LocationEntry>> locationMap;
+    private final Map<Long, LocationEntry> locationsByIDMap;
 
-    public ActivityFileReader(List<File> activityScheduleFiles, Map<Long, Map<Integer, LocationEntry>> locationMap) {
+    public ActivityFileReader(List<File> activityScheduleFiles, LocationFileReader locationFileReader) {
         this.activityScheduleFiles = activityScheduleFiles;
-        this.locationMap = locationMap;
+        this.locationMap = locationFileReader.getLocations();
+        this.locationsByIDMap = locationFileReader.getLocationsByIDMap();
 
         this.activitySchedules = new ArrayList<>();
         for(File f : this.activityScheduleFiles) {
@@ -100,6 +102,20 @@ public class ActivityFileReader {
         if (activity.getActivityType().equals(ActivityType.TRIP)) {
             activity = TripActivity.fromLine(activity, keyValue);
         } else {
+            if(
+                    this.locationMap.containsKey(activity.getPid()) &&
+                            this.locationMap.get(activity.getPid()).containsKey(activity.getActivityNumber())) {
+                activity.setLocation(this.locationMap.get(activity.getPid()).get(activity.getActivityNumber()));
+            } else {
+                LocationEntry entry = LocationEntry.fromLine(keyValue);
+                activity.setLocation(entry);
+                if(!this.locationMap.containsKey(activity.getPid())) {
+                    this.locationMap.put(activity.getPid(), new HashMap<>());
+                }
+                this.locationMap.get(activity.getPid()).put(activity.getActivityNumber(), entry);
+                this.locationsByIDMap.put(entry.getLocationID(), entry);
+            }
+
             if(this.locationMap.isEmpty()) {
                 activity.setLocation(LocationEntry.fromLine(keyValue));
             } else {

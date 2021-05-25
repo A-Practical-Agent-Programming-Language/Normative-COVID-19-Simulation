@@ -25,3 +25,4 @@ additional_every_other_days_num = 1
 	 activities = ["goochland_county_1_9_0/goochland_location_assignment_adult_1_9_0.csv", "goochland_county_1_9_0/goochland_location_assignment_child_1_9_0.csv"]
 	 households = ["goochland_county_1_9_0/goochland_household_1_9_0.csv"]
 	 persons = ["goochland_county_1_9_0/goochland_person_1_9_0.csv"]
+	 locationDesignations = ["goochland_county_1_9_0/location_designation.csv"]

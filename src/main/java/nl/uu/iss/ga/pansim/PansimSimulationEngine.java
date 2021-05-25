@@ -155,12 +155,13 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.next_state_df_raw = stateDf.toBytes();
         stateDf.close();
         timingsMap.put("stateEncoded", Long.toString(System.currentTimeMillis() - millis));
-        millis = System.currentTimeMillis();
+
 
         if(arguments.saveStateDataFrames()) {
             write_state_dataframes(cur_state_df_raw, next_state_df_raw);
         }
 
+        millis = System.currentTimeMillis();
         // TODO don't parallelize, as we suppress calculations anyway when doing scaling?
         processTickPostHook(this.executor.getCurrentTick() - 1, this.executor.getLastTickDuration(), agentActions);
         timingsMap.put("posthook", Long.toString(System.currentTimeMillis() - millis));
