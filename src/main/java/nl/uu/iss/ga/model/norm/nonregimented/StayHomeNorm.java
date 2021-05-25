@@ -4,6 +4,7 @@ import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
@@ -48,11 +49,15 @@ public class StayHomeNorm extends NonRegimentedNorm {
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         if(this.appliesTo.equals(APPLIES.NONE))
             return false;
-        if(this.appliesTo.equals(APPLIES.AGE)) {
-            return !activity.getActivityType().equals(ActivityType.HOME) && agentContextInterface.getContext(Person.class).getAge() >= this.age;
-        } else {
-            return !activity.getActivityType().equals(ActivityType.HOME);
-        }
+
+        boolean isEssential = ActivityType.WORK.equals(activity.getActivityType()) &&
+                !Designation.none.equals(agentContextInterface.getContext(Person.class).getDesignation());
+
+        // APPLIES.NONE is already excluded
+        boolean appliesToAgeGroup = APPLIES.ALL.equals(this.appliesTo) ||
+                agentContextInterface.getContext(Person.class).getAge() >= this.age;
+
+        return appliesToAgeGroup && !isEssential && !activity.getActivityType().equals(ActivityType.HOME);
     }
 
     enum APPLIES{

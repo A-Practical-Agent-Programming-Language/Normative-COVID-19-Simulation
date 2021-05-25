@@ -2,7 +2,9 @@ package main.java.nl.uu.iss.ga.model.norm.nonregimented;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
@@ -29,8 +31,13 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
     private static final double CURVE_SLOPE_FACTOR = .4;
     private static final int N_DAYS_LOOKBACK = 14; // used to be 7;
 
-    private APPLIES appliesToSetting;
-    private int maxAllowed;
+    private final APPLIES appliesToSetting;
+    private final int maxAllowed;
+
+    private static final List<ActivityType> applicablePrivateActivityTypes =
+            Arrays.asList(ActivityType.OTHER, ActivityType.RELIGIOUS, ActivityType.SCHOOL, ActivityType.COLLEGE);
+    private static final List<ActivityType> applicablePublicActivityTypes =
+            Arrays.asList(ActivityType.WORK, ActivityType.SHOP, ActivityType.COLLEGE);
 
     public KeepGroupsSmallNorm(String parameter) {
         boolean pu = parameter.toLowerCase().contains("public");
@@ -67,21 +74,9 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         // Factors
 
         // Normalize the difference to be between 0 and 1, with smaller differences more likely to be ignored
-//        double normalizedDiff = 1 / (CURVE_SLOPE_FACTOR * diff + 1);
         double normalizedDiff = 1 - (1 / (CURVE_SLOPE_FACTOR * diff + 1)); //https://www.desmos.com/calculator/rcfitmh0ms
-//        double gov = 1 - beliefContext.getGovernmentTrustFactor();
-//        double fraction_symptomatic_factor = 1 - averageSymptomaticPreviously;
 
         return Norm.norm_violation_posterior(beliefContext.getPriorTrustAttitude(), normalizedDiff, averageSymptomaticPreviously);
-
-//        // Weights
-//        double ndWeight = weight(normalizedDiff); // TODO does it make sense to weigh this?
-//        double govWeight = weight(gov);
-//        double fsfWeight = 1; //weight(fraction_symptomatic_factor); // TODO we should not weigh this, right?
-//
-//        // Weigh the value by how much the agent wants to follow norm and the risk involved with the number of symptomatic people
-//        return ((ndWeight * normalizedDiff) + (govWeight * gov) + (fsfWeight * fraction_symptomatic_factor)) /
-//                (ndWeight + govWeight + fsfWeight);
     }
 
     @Override
@@ -98,12 +93,39 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
      */
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
-        if(!this.appliesToSetting.applicableActivityTypes.contains(activity.getActivityType()))
+        BeliefContext beliefContext = agentContextInterface.getContext(BeliefContext.class);
+        LocationHistoryContext context = agentContextInterface.getContext(LocationHistoryContext.class);
+
+        if(ActivityType.WORK.equals(activity.getActivityType()) &&
+                !agentContextInterface.getContext(Person.class).getDesignation().equals(Designation.none)) {
+            // TODO Essential workers do not have to follow this norm?
+            return false;
+        }
+
+        boolean privateApplicable = this.appliesToSetting.appliesToPrivate && applicablePrivateActivityTypes.contains(activity.getActivityType());
+        boolean publicApplicable = this.appliesToSetting.appliesToPublic && applicablePublicActivityTypes.contains(activity.getActivityType());
+
+        if(!privateApplicable && !publicApplicable)
+            // The current restriction does not apply to this activity type
             return false;
 
-        LocationHistoryContext context = agentContextInterface.getContext(LocationHistoryContext.class);
+        if(
+                !this.appliesToSetting.appliesToPrivate &&
+                activity.getLocation().isResidential() &&
+                Designation.none.equals(activity.getLocation().getDesignation())
+        ) {
+            // This is a private visit at a residential location, but the restriction does not (yet) apply to
+            // private settings
+            return false;
+        }
+
+        // Norm applies to activity type and setting. Check if agent would violate group size
         double averageSeenPreviously = context.getLastDaysSeenAtAverage(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
-        return averageSeenPreviously > this.maxAllowed;
+
+        // A fraction of the people can randomly still go as a proxy for communication of who will show up
+        // The norm does not apply to those randomly selected agents.
+        // The following is always true if maxAllowed > averageSeenPreviously
+        return beliefContext.getRandom().nextDouble() < (this.maxAllowed / averageSeenPreviously);
     }
 
     public APPLIES getAppliesToSetting() {
@@ -115,15 +137,18 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
     }
 
     enum APPLIES {
-        NONE(),
-        PUBLIC(ActivityType.RELIGIOUS, ActivityType.UNKNOWN_OTHER, ActivityType.OTHER),
-        PRIVATE(ActivityType.OTHER, ActivityType.RELIGIOUS, ActivityType.UNKNOWN_OTHER),
-        ALL(ActivityType.WORK, ActivityType.SHOP, ActivityType.OTHER, ActivityType.SCHOOL, ActivityType.UNKNOWN_OTHER, ActivityType.RELIGIOUS);
+        NONE(false, false),
+        PUBLIC(false, true),
+        PRIVATE(true, false),
+        ALL(true, true);
 
-        private List<ActivityType> applicableActivityTypes;
 
-        APPLIES(ActivityType... activityTypes) {
-            this.applicableActivityTypes = Arrays.asList(activityTypes);
+        private final boolean appliesToPrivate;
+        private final boolean appliesToPublic;
+
+        APPLIES(boolean appliesToPrivate, boolean appliesToPublic) {
+            this.appliesToPrivate = appliesToPrivate;
+            this.appliesToPublic = appliesToPublic;
         }
     }
 

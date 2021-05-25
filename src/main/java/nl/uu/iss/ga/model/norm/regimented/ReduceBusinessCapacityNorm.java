@@ -3,11 +3,14 @@ package main.java.nl.uu.iss.ga.model.norm.regimented;
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
+
+import java.util.Arrays;
 
 /**
  * This norm indicates that business may operate with reduced capacity, and can come in two forms: Either a percentage
@@ -35,7 +38,7 @@ public class ReduceBusinessCapacityNorm extends Norm {
     /**
      *
      * @param capacity  Is this value a capacity percentage (true) or a maximum allowed value (false)
-     * @param value
+     * @param value     Percentage of absolute number of maximum allowed visitors (depending on capacity flag)
      */
     public ReduceBusinessCapacityNorm(boolean capacity, int value) {
         this.capacityPercentage = capacity ? value : -1;
@@ -60,9 +63,13 @@ public class ReduceBusinessCapacityNorm extends Norm {
      */
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
-        if(!activity.getActivityType().equals(ActivityType.OTHER))
+        if(!Arrays.asList(ActivityType.SHOP, ActivityType.OTHER).contains(activity.getActivityType())) {
+            // Business visits can only be of type SHOP and OTHER
             return false;
-        else if (this.capacityPercentage >= 0) {
+        } else if (!activity.getLocation().getDesignation().equals(Designation.none) || activity.getLocation().isResidential()) {
+            // If the visited location is essential, or a home location, assume the norm does not apply
+            return false;
+        } else if (this.capacityPercentage >= 0) {
             // Simulate only {this.capacityPercentage} of people going to the location
             return agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() * 100 > this.capacityPercentage;
         } else if (this.maxAllowed >= 0) {
@@ -72,7 +79,7 @@ public class ReduceBusinessCapacityNorm extends Norm {
             if(actuallySeenAverage <= this.maxAllowed) {
                 return false;
             } else {
-                // Simulate only maxAllowed people going to the location
+                // Simulate only maxAllowed people going to the location (on average)
                 double percentageStillAllowed = this.maxAllowed / (double) actuallySeenAverage;
                 return agentContextInterface.getContext(BeliefContext.class).getRandom().nextDouble() > percentageStillAllowed;
             }
