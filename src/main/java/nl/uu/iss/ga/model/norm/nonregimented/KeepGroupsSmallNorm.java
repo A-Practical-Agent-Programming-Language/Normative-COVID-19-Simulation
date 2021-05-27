@@ -125,7 +125,7 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         // A fraction of the people can randomly still go as a proxy for communication of who will show up
         // The norm does not apply to those randomly selected agents.
         // The following is always true if maxAllowed > averageSeenPreviously
-        return beliefContext.getRandom().nextDouble() < (this.maxAllowed / averageSeenPreviously);
+        return beliefContext.getRandom().nextDouble() > (this.maxAllowed / averageSeenPreviously);
     }
 
     public APPLIES getAppliesToSetting() {
