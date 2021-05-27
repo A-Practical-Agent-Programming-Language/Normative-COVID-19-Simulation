@@ -26,3 +26,4 @@ additional_every_other_days_num = 1
 	households = ["charlottesville_examples/usa_va_charlottesville_household_1_6_0.csv"]
 	persons = ["charlottesville_examples/usa_va_charlottesville_person_1_6_0.csv"]
 	locations = ["charlottesville_examples/usa_va_charlottesville_location_assignment_week_1_6_0.csv"]
+	locationDesignations = ["charlottesville_examples/location_designation.csv"]

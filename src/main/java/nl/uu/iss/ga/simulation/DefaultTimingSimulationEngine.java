@@ -1,9 +1,7 @@
 package main.java.nl.uu.iss.ga.simulation;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
-import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.AbstractSimulationEngine;
@@ -62,12 +60,11 @@ public class DefaultTimingSimulationEngine<T> extends AbstractSimulationEngine<T
         timingsMap.put("prehook", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
-//        HashMap<AgentID, List<T>> agentActions = ((NoRescheduleBlockingTickExecutor<T>)this.executor).doTick(timingsMap);
         List<Future<DeliberationResult<T>>> agentActions = ((NoRescheduleBlockingTickExecutor<T>)this.executor).doTick(timingsMap);
         timingsMap.put("deliberation", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
-//        this.processTickPostHook(tick, this.executor.getLastTickDuration(), agentActions);
+        this.processTickPostHook(tick, this.executor.getLastTickDuration(), agentActions);
         timingsMap.put("posthook", Long.toString(System.currentTimeMillis() - millis));
 
         this.timingsTracker.writeKeyMapToFile(

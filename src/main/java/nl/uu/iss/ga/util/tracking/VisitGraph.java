@@ -5,6 +5,7 @@ import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.pansim.state.AgentState;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -12,6 +13,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class VisitGraph {
 
@@ -23,11 +26,11 @@ public class VisitGraph {
     private BufferedWriter bw;
     private OutputStreamWriter osw;
 
-    public VisitGraph(String date, HashMap<AgentID, List<CandidateActivity>> hashMap, AgentStateMap agentStateMap) {
+    public VisitGraph(String date, List<Future<DeliberationResult<CandidateActivity>>> agentActions, AgentStateMap agentStateMap) throws ExecutionException, InterruptedException {
         this.date = date;
         this.locations = new HashMap<>();
         this.agentStateMap = agentStateMap;
-        createVisitLocations(hashMap);
+        createVisitLocations(agentActions);
     }
 
     public void createVisitEdges(String outputDir) {
@@ -43,10 +46,11 @@ public class VisitGraph {
         }
     }
 
-    private void createVisitLocations(HashMap<AgentID, List<CandidateActivity>> hashMap) {
-        for(AgentID agentID : hashMap.keySet()) {
-            Long pid = this.agentStateMap.getAgentToPidMap().get(agentID);
-            for(CandidateActivity activity : hashMap.get(agentID)) {
+    private void createVisitLocations(List<Future<DeliberationResult<CandidateActivity>>> agentActions) throws ExecutionException, InterruptedException {
+        for(Future<DeliberationResult<CandidateActivity>> future : agentActions) {
+            DeliberationResult<CandidateActivity> result = future.get();
+            Long pid = this.agentStateMap.getAgentToPidMap().get(result.getAgentID());
+            for(CandidateActivity activity : result.getActions()) {
                 Long lid = activity.getActivity().getLocation().getLocationID();
                 if(!locations.containsKey(lid)) {
                     locations.put(lid, new VisitLocation());
@@ -58,7 +62,7 @@ public class VisitGraph {
 
     class VisitLocation {
 
-        private List<PersonVisitTuple> visits = new ArrayList<>();;
+        private final List<PersonVisitTuple> visits = new ArrayList<>();;
 
         public void addVisit(long pid, CandidateActivity activity) {
             this.visits.add(new PersonVisitTuple(pid, activity));
@@ -66,6 +70,8 @@ public class VisitGraph {
 
         public void findAndWriteEdges() throws IOException {
             this.visits.sort(null);
+
+            // TODO perhaps this can be parallelized? But we hardly use it, so leave for future work
 
             for(int i = 0; i < visits.size(); i++) {
                 for(int j = i + 1; j < visits.size(); j++) {
@@ -91,18 +97,17 @@ public class VisitGraph {
 
     static class PersonVisitTuple implements Comparable<PersonVisitTuple> {
 
-        private long pid;
-        private Activity activity;
-        private Integer startTime;
+        private final long pid;
+        private final Integer startTime;
         private int duration;
-        private int endTime;
+        private final int endTime;
 
         public PersonVisitTuple(long pid, CandidateActivity candidateActivity){
             this.pid = pid;
-            this.activity = candidateActivity.getActivity();
-            this.startTime = this.activity.getStart_time().getSeconds();
-            this.duration = this.activity.getDuration();
-            this.endTime = this.activity.getStart_time().getSeconds() + this.activity.getDuration();
+            Activity activity = candidateActivity.getActivity();
+            this.startTime = activity.getStart_time().getSeconds();
+            this.duration = activity.getDuration();
+            this.endTime = activity.getStart_time().getSeconds() + activity.getDuration();
         }
 
         boolean hasMet(PersonVisitTuple personVisitTuple) {
@@ -110,7 +115,6 @@ public class VisitGraph {
         }
 
         long get_duration(PersonVisitTuple personVisitTuple) {
-            long duration = this.activity.getDuration();
             if (this.startTime < personVisitTuple.startTime) {
                 duration -= (personVisitTuple.startTime - this.startTime);
             }

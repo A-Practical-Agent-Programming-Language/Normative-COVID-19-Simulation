@@ -8,9 +8,12 @@ import main.java.nl.uu.iss.ga.model.norm.NormContainer;
 import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
 import main.java.nl.uu.iss.ga.pansim.state.AgentState;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
+import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.Constants;
-import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
+import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.javatuples.Pair;
 
 import java.io.File;
@@ -18,12 +21,26 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * Class to keep track of changes in schedule due to applied norms
  */
 public class ScheduleTracker {
+
+    private static final Logger LOGGER = Logger.getLogger(ScheduleTracker.class.getName());
+
+    private final ArgParse arguments;
+    private final TickExecutor<CandidateActivity> executor;
+
     public static final String AVERAGE_SCHEDULE_FILENAME = "average-schedules_%s";
     public static final String EPICURVE_FILENAME = "epicurve.sim2apl";
     public static final String ALL_HOME_PCT = "ALL_HOME_PCT";
@@ -45,9 +62,11 @@ public class ScheduleTracker {
 
     private final String suffix;
 
-    public ScheduleTracker(String outdir, AgentStateMap agentStateMap, NormScheduleReader normScheduleReader) {
-        this.parentDir = (Path.of(outdir).isAbsolute() ? Path.of(outdir) : Path.of("output", outdir)).toFile().getAbsolutePath();
-        this.suffix = new File(outdir).getName();
+    public ScheduleTracker(TickExecutor<CandidateActivity> executor, ArgParse arguments, AgentStateMap agentStateMap, NormScheduleReader normScheduleReader) {
+        this.executor = executor;
+        this.arguments = arguments;
+        this.parentDir = (Path.of(arguments.getOutputDir()).isAbsolute() ? Path.of(arguments.getOutputDir()) : Path.of("output", arguments.getOutputDir())).toFile().getAbsolutePath();
+        this.suffix = new File(arguments.getOutputDir()).getName();
         this.agentStateMap = agentStateMap;
         this.normScheduleReader = normScheduleReader;
         this.allUsedNorms = normScheduleReader.getAllUsedNorms();
@@ -113,11 +132,11 @@ public class ScheduleTracker {
      * @param simulationDay Date of the current simulation day
      * @param agentActions  Actions produced by the agents during this simulation day
      */
-    public void processTick(LocalDate simulationDay, HashMap<AgentID, List<CandidateActivity>> agentActions) {
+    public void processTick(LocalDate simulationDay, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
         List<String> changedNorms = findDayNorms(simulationDay);
 
         // Write to files what percentage of each type of activity was cancelled
-        Pair<Map<String,String>, Map<ActivityType, Map<String, Integer>>> processed = calculateActivityFractions(agentActions);
+        Pair<Map<String,String>, ConcurrentMap<ActivityType, ConcurrentMap<String, AtomicInteger>>> processed = calculateActivityFractions(agentActions);
         Map<String,String> averageScheduleMap = processed.getValue0();
         averageScheduleMap.put(NORMS_ACTIVATED_HEADER, changedNorms.get(0));
         averageScheduleMap.put(NORMS_DEACTIVATED_HEADER, changedNorms.get(1));
@@ -174,7 +193,7 @@ public class ScheduleTracker {
                                             List<String> normChanges,
                                             ActivityType activityType,
                                             Map<Class<? extends Norm>, Map<ActivityType, Integer>> cancelledActivities,
-                                            Map<String, Integer> visibleAttributes) {
+                                            ConcurrentMap<String, AtomicInteger> visibleAttributes) {
 
         ScheduleTrackerGroup group = this.fileObjects.get(activityTypeCancelledByNormFile(activityType));
         Map<String, Map<ActivityType, Integer>> stringMap = new HashMap<>();
@@ -190,9 +209,9 @@ public class ScheduleTracker {
         int totalNormsApplied = appliedNorms.values().stream().reduce(Integer::sum).orElse(0);
         List<String> orderedValues = new ArrayList<>(List.of(simulationDay.format(DateTimeFormatter.ISO_DATE), this.suffix));
         orderedValues.addAll(normChanges);
-        orderedValues.add(Integer.toString(visibleAttributes.get("TOTAL")));
+        orderedValues.add(Integer.toString(visibleAttributes.get("TOTAL").get()));
         for(String visibleAttribute : Constants.VISIBLE_ATTRIBUTES) {
-            orderedValues.add(Integer.toString(visibleAttributes.get(visibleAttribute)));
+            orderedValues.add(Integer.toString(visibleAttributes.get(visibleAttribute).get()));
         }
 
         orderedValues.add(Integer.toString(GoalPlanScheme.influencedActivitiesTracker.getCancelledActivities().getOrDefault(activityType, 0)));
@@ -241,68 +260,139 @@ public class ScheduleTracker {
      * @return HashMap containing the relative proportion of occurrences of activities during this
      * time step
      */
-    private Pair<Map<String, String>, Map<ActivityType, Map<String, Integer>>> calculateActivityFractions(HashMap<AgentID, List<CandidateActivity>> agentActions) {
-        int numActivities = 0;
-        long activityDuration = 0;
-        int stayedHome = 0;
+    private Pair<Map<String, String>, ConcurrentMap<ActivityType, ConcurrentMap<String, AtomicInteger>>> calculateActivityFractions(List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+        AtomicInteger numActivities = new AtomicInteger();
+        AtomicLong activityDuration = new AtomicLong();
+        AtomicInteger stayedHome = new AtomicInteger();
 
-        int mask = 0;
-        int distance = 0;
-        int symptomatic = 0;
+        AtomicInteger mask = new AtomicInteger();
+        AtomicInteger distance = new AtomicInteger();
+        AtomicInteger symptomatic = new AtomicInteger();
 
-        Map<ActivityType, Integer> encounteredActivities = new HashMap<>();
-        Map<ActivityType, Long> encounteredActivityDurations = new HashMap<>();
-        Map<ActivityType, Map<String, Integer>> attributePerActivityMap = createVisibleAttributePerActivityMap();
+        ConcurrentMap<ActivityType, AtomicInteger> encounteredActivities = new ConcurrentHashMap<>();
+        ConcurrentMap<ActivityType, AtomicLong> encounteredActivityDurations = new ConcurrentHashMap<>();
+        ConcurrentMap<ActivityType, ConcurrentMap<String, AtomicInteger>> attributePerActivityMap = createVisibleAttributePerActivityMap();
 
-        for (List<CandidateActivity> agentActivities : agentActions.values()) {
-            boolean isAllHome = true;
-            for (CandidateActivity ca : agentActivities) {
-                Map<String, Integer> activityTypeMap = attributePerActivityMap.get(ca.getActivity().getActivityType());
-                numActivities++;
-                activityDuration += ca.getActivity().getDuration();
-                activityTypeMap.put("TOTAL", activityTypeMap.get("TOTAL") + 1);
-                if (ca.isMask()) {
-                    mask++;
-                    activityTypeMap.put(Constants.VISIBLE_ATTRIBUTE_MASK, activityTypeMap.get(Constants.VISIBLE_ATTRIBUTE_MASK) + 1);
-                }
-                if (ca.isDistancing()) {
-                    distance++;
-                    activityTypeMap.put(Constants.VISIBLE_ATTRIBUTE_DISTANCING, activityTypeMap.get(Constants.VISIBLE_ATTRIBUTE_DISTANCING) + 1);
-                }
-                if (ca.getDiseaseState().equals(DiseaseState.INFECTED_SYMPTOMATIC)) {
-                    symptomatic++;
-                    activityTypeMap.put(Constants.VISIBLE_ATTRIBUTE_SYMPTOMATIC, activityTypeMap.get(Constants.VISIBLE_ATTRIBUTE_SYMPTOMATIC) + 1);
-                }
-                ActivityType type = ca.getActivity().getActivityType();
-                if (!encounteredActivityDurations.containsKey(type)) {
-                    encounteredActivityDurations.put(type, 0L);
-                    encounteredActivities.put(type, 0);
-                }
-                encounteredActivityDurations.put(type, encounteredActivityDurations.get(type) + ca.getActivity().getDuration());
-                encounteredActivities.put(type, encounteredActivities.get(type) + 1);
-                isAllHome &= ActivityType.HOME.equals(type);
-            }
+        List<CountVisitorsCallable> callables = new ArrayList<>(this.arguments.getThreads());
+        for(int i = 0; i < this.arguments.getThreads(); i++) {
+            callables.add(new CountVisitorsCallable(
+                    i, this.arguments.getThreads(),
+                    agentActions,
+                    numActivities, activityDuration, stayedHome,
+                    mask, distance, symptomatic,
+                    encounteredActivities, encounteredActivityDurations, attributePerActivityMap
+            ));
+        }
 
-            if (isAllHome)
-                stayedHome++;
+        try {
+            this.executor.useExecutorForTasks(callables);
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Failed to process location visits", e);
         }
 
         Map<String, String> fractions = new HashMap<>();
-        fractions.put(VISITORS_TOTAL, Integer.toString(numActivities));
-        fractions.put(VISIT_DURATION_TOTAL, Double.toString(activityDuration));
-        fractions.put(MASK_TOTAL, Integer.toString(mask));
-        fractions.put(DISTANCE_TOTAL, Integer.toString(distance));
-        fractions.put(SYMPTOMATIC_TOTAL, Integer.toString(symptomatic));
-        fractions.put(MASK_PCT, Double.toString((double) mask / numActivities));
-        fractions.put(DISTANCE_PCT, Double.toString((double) distance / numActivities));
-        fractions.put(SYMPTOMATIC_PCT, Double.toString((double) symptomatic / numActivities));
-        fractions.put(ALL_HOME_PCT, Double.toString((double) stayedHome / agentActions.size()));
+        fractions.put(VISITORS_TOTAL, Integer.toString(numActivities.get()));
+        fractions.put(VISIT_DURATION_TOTAL, Double.toString(activityDuration.get()));
+        fractions.put(MASK_TOTAL, Integer.toString(mask.get()));
+        fractions.put(DISTANCE_TOTAL, Integer.toString(distance.get()));
+        fractions.put(SYMPTOMATIC_TOTAL, Integer.toString(symptomatic.get()));
+        fractions.put(MASK_PCT, Double.toString((double) mask.get() / numActivities.get()));
+        fractions.put(DISTANCE_PCT, Double.toString((double) distance.get() / numActivities.get()));
+        fractions.put(SYMPTOMATIC_PCT, Double.toString((double) symptomatic.get() / numActivities.get()));
+        fractions.put(ALL_HOME_PCT, Double.toString((double) stayedHome.get() / agentActions.size()));
         for (ActivityType type : encounteredActivityDurations.keySet()) {
-            fractions.put(type.name() + "_DURATION", Double.toString(encounteredActivityDurations.get(type)));
-            fractions.put(type.name() + "_COUNT", Integer.toString(encounteredActivities.get(type)));
+            fractions.put(type.name() + "_DURATION", Double.toString(encounteredActivityDurations.get(type).get()));
+            fractions.put(type.name() + "_COUNT", Integer.toString(encounteredActivities.get(type).get()));
         }
 
         return new Pair<>(fractions, attributePerActivityMap);
+    }
+
+    private static class CountVisitorsCallable implements Callable<Void> {
+        private final int thread;
+        private final int threads_total;
+        private final List<Future<DeliberationResult<CandidateActivity>>> agentActions;
+
+        private final AtomicInteger numActivities;
+        private final AtomicLong activityDuration;
+        private final AtomicInteger stayedHome;
+
+        private final AtomicInteger mask;
+        private final AtomicInteger distance;
+        private final AtomicInteger symptomatic;
+
+        private final ConcurrentMap<ActivityType, AtomicInteger> encounteredActivities;
+        private final ConcurrentMap<ActivityType, AtomicLong> encounteredActivityDurations;
+        private final ConcurrentMap<ActivityType, ConcurrentMap<String, AtomicInteger>> attributePerActivityMap;
+
+        public CountVisitorsCallable(int thread,
+                                     int threads_total,
+                                     List<Future<DeliberationResult<CandidateActivity>>> agentActions,
+                                     AtomicInteger numActivities,
+                                     AtomicLong activityDuration,
+                                     AtomicInteger stayedHome,
+                                     AtomicInteger mask,
+                                     AtomicInteger distance,
+                                     AtomicInteger symptomatic,
+                                     ConcurrentMap<ActivityType, AtomicInteger> encounteredActivities,
+                                     ConcurrentMap<ActivityType, AtomicLong> encounteredActivityDurations,
+                                     ConcurrentMap<ActivityType, ConcurrentMap<String, AtomicInteger>> attributePerActivityMap) {
+            this.thread = thread;
+            this.threads_total = threads_total;
+            this.agentActions = agentActions;
+            this.numActivities = numActivities;
+            this.activityDuration = activityDuration;
+            this.stayedHome = stayedHome;
+            this.mask = mask;
+            this.distance = distance;
+            this.symptomatic = symptomatic;
+            this.encounteredActivities = encounteredActivities;
+            this.encounteredActivityDurations = encounteredActivityDurations;
+            this.attributePerActivityMap = attributePerActivityMap;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            int start = this.thread * this.agentActions.size() / this.threads_total;
+            int end = (thread + 1) * this.agentActions.size() / this.threads_total;
+            if (end > this.agentActions.size()) end = this.agentActions.size();
+
+            for(int i = start; i < end; i++) {
+                boolean isAllHome = true;
+                DeliberationResult<CandidateActivity> result = this.agentActions.get(i).get();
+                for (CandidateActivity ca : result.getActions()) {
+                    ConcurrentMap<String, AtomicInteger> activityTypeMap = attributePerActivityMap.get(ca.getActivity().getActivityType());
+                    numActivities.getAndIncrement();
+                    activityDuration.getAndAdd(ca.getActivity().getDuration());
+                    activityTypeMap.get("TOTAL").getAndIncrement();
+                    if (ca.isMask()) {
+                        mask.getAndIncrement();
+                        activityTypeMap.get(Constants.VISIBLE_ATTRIBUTE_MASK).getAndIncrement();
+                    }
+                    if (ca.isDistancing()) {
+                        distance.getAndIncrement();
+                        activityTypeMap.get(Constants.VISIBLE_ATTRIBUTE_DISTANCING).getAndIncrement();
+                    }
+                    if (ca.getDiseaseState().equals(DiseaseState.INFECTED_SYMPTOMATIC)) {
+                        symptomatic.getAndIncrement();
+                        activityTypeMap.get(Constants.VISIBLE_ATTRIBUTE_SYMPTOMATIC).getAndIncrement();
+                    }
+                    ActivityType type = ca.getActivity().getActivityType();
+                    if (!encounteredActivityDurations.containsKey(type)) {
+                        encounteredActivityDurations.put(type, new AtomicLong());
+                        encounteredActivities.put(type, new AtomicInteger());
+                    }
+                    encounteredActivityDurations.get(type).addAndGet(ca.getActivity().getDuration());
+                    encounteredActivities.get(type).getAndIncrement();
+                    isAllHome &= ActivityType.HOME.equals(type);
+                }
+
+                if (isAllHome)
+                    stayedHome.getAndIncrement();
+            }
+
+            return null;
+        }
     }
 
     private Map<String, String> createEpicurveMap() {
@@ -321,13 +411,13 @@ public class ScheduleTracker {
         return epicurveStringMap;
     }
 
-    private Map<ActivityType, Map<String, Integer>> createVisibleAttributePerActivityMap() {
-        Map<ActivityType, Map<String, Integer>> m = new HashMap<>();
+    private ConcurrentMap<ActivityType, ConcurrentMap<String, AtomicInteger>> createVisibleAttributePerActivityMap() {
+        ConcurrentMap<ActivityType, ConcurrentMap<String, AtomicInteger>> m = new ConcurrentHashMap<>();
         for(ActivityType type : ActivityType.values()) {
-            m.put(type, new HashMap<>());
-            m.get(type).put("TOTAL", 0);
+            m.put(type, new ConcurrentHashMap<>());
+            m.get(type).put("TOTAL", new AtomicInteger());
             for(String visibleAttribute : Constants.VISIBLE_ATTRIBUTES) {
-                m.get(type).put(visibleAttribute, 0);
+                m.get(type).put(visibleAttribute, new AtomicInteger());
             }
         }
         return m;

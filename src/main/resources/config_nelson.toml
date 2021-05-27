@@ -28,4 +28,5 @@ additional_every_other_days_num = 1
 	 activities = ["nelson_county_examples/nelson_county_located_activities_adult.csv", "nelson_county_examples/nelson_county_located_activities_child.csv"]
 	 households = ["nelson_county_examples/nelson_county_household.csv"]
 	 persons = ["nelson_county_examples/nelson_county_person.csv"]
+	 locationDesignations = ["nelson_county_examples/location_designation.csv"]
 

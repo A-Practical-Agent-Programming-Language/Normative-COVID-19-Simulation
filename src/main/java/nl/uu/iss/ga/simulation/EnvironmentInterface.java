@@ -30,7 +30,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,7 +70,8 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.sharedNormContext = arguments.getSharedNormContext();
         this.observationNotifier = observationNotifier;
         this.scheduleTracker = arguments.suppressCalculations() ? null : new ScheduleTracker(
-                arguments.getOutputDir(),
+                this.platform.getTickExecutor(),
+                this.arguments,
                 this.agentStateMap,
                 normSchedule);
         this.trackVisits = !arguments.isConnectpansim();
@@ -82,7 +84,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         }
 
         this.gyrationRadius = arguments.suppressCalculations() ? null :
-                new GyrationRadius(arguments.getOutputDir(), this.startDate, arguments.getCounties());
+                new GyrationRadius(this.platform.getTickExecutor(), this.arguments, this.startDate);
     }
 
     public void setSimulationStarted() {
@@ -156,19 +158,19 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
 
         if(!arguments.suppressCalculations()) {
-//            process_past_tick(tick, lastTickDuration, hashMap); // TODO update references
+            process_past_tick(tick, lastTickDuration, agentActions); // TODO update references
         }
     }
 
     /**
      * Single-threaded operations to process the result of a simulation time step
      */
-    private void process_past_tick(long tick, int lastTickDuration, HashMap<AgentID, List<CandidateActivity>> hashMap) {
+    private void process_past_tick(long tick, int lastTickDuration, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
 
         long startCalculate = System.currentTimeMillis();
 
         // Calculate and store radius of gyration
-        this.gyrationRadius.processSimulationDay(tick, hashMap);
+        this.gyrationRadius.processSimulationDay(tick, agentActions);
         LOGGER.log(Level.FINE, String.format(
                 "Calculated and stored radius of gyration in %d milliseconds", System.currentTimeMillis() - startCalculate
         ));
@@ -176,7 +178,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         // Calculate and store visit history of each location
         if (this.trackVisits) {
             startCalculate = System.currentTimeMillis();
-            storeLocationData(hashMap);
+            storeLocationData(agentActions);
             LOGGER.log(Level.FINE, String.format(
                     "Stored locations in %d milliseconds", System.currentTimeMillis() - startCalculate));
         }
@@ -184,18 +186,22 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         if(this.arguments.writeGraph()){
             startCalculate = System.currentTimeMillis();
             String date = this.startDate.plusDays(tick).format(DateTimeFormatter.ISO_DATE);
-            VisitGraph vg = new VisitGraph(date, hashMap, this.agentStateMap);
-            vg.createVisitEdges(this.arguments.getOutputDir());
-            vg.createVisitNodes(this.arguments.getOutputDir());
-            LOGGER.log(Level.FINE, String.format(
-                    "Calculated and stored edges for the visit graph in %d milliseconds",
-                    System.currentTimeMillis() - startCalculate
-            ));
+            try {
+                VisitGraph vg = new VisitGraph(date, agentActions, this.agentStateMap);
+                vg.createVisitEdges(this.arguments.getOutputDir());
+                vg.createVisitNodes(this.arguments.getOutputDir());
+                LOGGER.log(Level.FINE, String.format(
+                        "Calculated and stored edges for the visit graph in %d milliseconds",
+                        System.currentTimeMillis() - startCalculate
+                ));
+            } catch (ExecutionException | InterruptedException e) {
+                LOGGER.log(Level.SEVERE, "Failed to create visit graph", e);
+            }
         }
 
         // Calculate and store effects of norms on activities
         startCalculate = System.currentTimeMillis();
-        this.scheduleTracker.processTick(this.startDate.plusDays(tick), hashMap);
+        this.scheduleTracker.processTick(this.startDate.plusDays(tick), agentActions);
         LOGGER.log(Level.FINE, String.format(
                 "Stored schedule tracking logs in %d milliseconds", System.currentTimeMillis() - startCalculate));
     }
@@ -226,15 +232,62 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                 .toLowerCase();
     }
 
-    private void storeLocationData(HashMap<AgentID, List<CandidateActivity>> hashMap) {
-        HashMap<Long, TrackVisit> thisRoundVisits = getVisits(hashMap);
-        notifyVisits(hashMap, thisRoundVisits);
+    private void storeLocationData(List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+        ConcurrentMap<Long, TrackVisit> thisRoundVisits = getVisits(agentActions);
+        notifyVisits(agentActions, thisRoundVisits);
     }
 
-    private HashMap<Long, TrackVisit> getVisits(HashMap<AgentID, List<CandidateActivity>> agentActions) {
-        HashMap<Long, TrackVisit> visits = new HashMap<>();
-        for (List<CandidateActivity> actions : agentActions.values()) {
-            for (CandidateActivity action : actions) {
+    private ConcurrentMap<Long, TrackVisit> getVisits(List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+        final List<GetVisitsCallable> callables = new ArrayList<>(this.arguments.getThreads());
+        ConcurrentMap<Long, TrackVisit> visits = new ConcurrentHashMap<>();
+        AtomicInteger atomicIndex = new AtomicInteger();
+        for(int i = 0; i < this.arguments.getThreads(); i++) {
+            callables.add(new GetVisitsCallable(atomicIndex, agentActions, visits));
+        }
+        try {
+            this.platform.getTickExecutor().useExecutorForTasks(callables);
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Failed to extract location visits");
+        }
+        return visits;
+    }
+
+    private void notifyVisits(List<Future<DeliberationResult<CandidateActivity>>> agentActions, ConcurrentMap<Long, TrackVisit> thisRoundVisits) {
+        final List<NotifyVisitsCallable> callables = new ArrayList<>(this.arguments.getThreads());
+        AtomicInteger atomicIndex = new AtomicInteger();
+        for(int i = 0; i < this.arguments.getThreads(); i++) {
+            callables.add(new NotifyVisitsCallable(atomicIndex, agentActions, thisRoundVisits));
+        }
+        try {
+            this.platform.getTickExecutor().useExecutorForTasks(callables);
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Failed to notify agents of location visits");
+        }
+    }
+
+    private static class TrackVisit {
+        private final AtomicInteger visited = new AtomicInteger();
+        private final AtomicInteger mask = new AtomicInteger();
+        private final AtomicInteger distance = new AtomicInteger();
+        private final AtomicInteger symptomatic = new AtomicInteger();
+    }
+
+
+    private static class GetVisitsCallable implements Callable<Void> {
+        private final AtomicInteger sharedIndex;
+        private final List<Future<DeliberationResult<CandidateActivity>>> agentActions;
+        private final ConcurrentMap<Long, TrackVisit> visits;
+
+        public GetVisitsCallable(AtomicInteger sharedIndex, List<Future<DeliberationResult<CandidateActivity>>> agentActions, ConcurrentMap<Long, TrackVisit> visits) {
+            this.sharedIndex = sharedIndex;
+            this.agentActions = agentActions;
+            this.visits = visits;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            DeliberationResult<CandidateActivity> result = this.agentActions.get(this.sharedIndex.getAndIncrement()).get();
+            for (CandidateActivity action : result.getActions()) {
                 long locationID = action.getActivity().getLocation().getLocationID();
                 RiskMitigationPolicy p = action.getRiskMitigationPolicy();
                 DiseaseState state = action.getDiseaseState();
@@ -243,39 +296,45 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                     visits.put(locationID, new TrackVisit());
                 }
 
-                visits.get(locationID).visited++;
-                if (p.isMask()) visits.get(locationID).mask++;
-                if (p.isDistance()) visits.get(locationID).distance++;
-                if (state.equals(DiseaseState.INFECTED_SYMPTOMATIC)) visits.get(locationID).symptomatic++;
+                visits.get(locationID).visited.getAndIncrement();
+                if (p.isMask()) visits.get(locationID).mask.getAndDecrement();
+                if (p.isDistance()) visits.get(locationID).distance.getAndIncrement();
+                if (state.equals(DiseaseState.INFECTED_SYMPTOMATIC)) visits.get(locationID).symptomatic.getAndIncrement();
             }
+
+            return null;
         }
-        return visits;
     }
 
-    private void notifyVisits(HashMap<AgentID, List<CandidateActivity>> agentActions, HashMap<Long, TrackVisit> thisRoundVisits) {
-        for (AgentID aid : agentActions.keySet()) {
-            for (CandidateActivity activity : agentActions.get(aid)) {
-                TrackVisit tv = thisRoundVisits.get(activity.getActivity().getLocation().getLocationID());
+    private class NotifyVisitsCallable implements Callable<Void> {
+        private final AtomicInteger sharedIndex;
+        private final List<Future<DeliberationResult<CandidateActivity>>> agentActions;
+        private final ConcurrentMap<Long, TrackVisit> visits;
+
+        public NotifyVisitsCallable(AtomicInteger sharedIndex, List<Future<DeliberationResult<CandidateActivity>>> agentActions, ConcurrentMap<Long, TrackVisit> visits) {
+            this.sharedIndex = sharedIndex;
+            this.agentActions = agentActions;
+            this.visits = visits;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            DeliberationResult<CandidateActivity> result = this.agentActions.get(this.sharedIndex.getAndIncrement()).get();
+            for (CandidateActivity activity : result.getActions()) {
+                TrackVisit tv = this.visits.get(activity.getActivity().getLocation().getLocationID());
                 LocationHistoryContext.Visit v = new LocationHistoryContext.Visit(
                         activity.getActivity().getPid(),
                         activity.getActivity().getLocation().getLocationID(),
-                        (double) tv.symptomatic / tv.visited,
-                        tv.visited,
-                        tv.symptomatic,
-                        tv.mask,
-                        tv.distance
+                        (double) tv.symptomatic.get() / tv.visited.get(),
+                        tv.visited.get(),
+                        tv.symptomatic.get(),
+                        tv.mask.get(),
+                        tv.distance.get()
                 );
-                this.observationNotifier.notifyVisit(aid, this.currentTick, v);
+                EnvironmentInterface.this.observationNotifier.notifyVisit(result.getAgentID(), EnvironmentInterface.this.currentTick, v);
             }
+
+            return null;
         }
     }
-
-
-    private static class TrackVisit {
-        private int visited;
-        private int mask;
-        private int distance;
-        private int symptomatic;
-    }
-
 }
