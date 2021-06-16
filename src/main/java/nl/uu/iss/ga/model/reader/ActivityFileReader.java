@@ -102,26 +102,26 @@ public class ActivityFileReader {
         if (activity.getActivityType().equals(ActivityType.TRIP)) {
             activity = TripActivity.fromLine(activity, keyValue);
         } else {
-            if(
-                    this.locationMap.containsKey(activity.getPid()) &&
-                            this.locationMap.get(activity.getPid()).containsKey(activity.getActivityNumber())) {
-                activity.setLocation(this.locationMap.get(activity.getPid()).get(activity.getActivityNumber()));
+            long lid = ParserUtil.parseAsLong(keyValue.get("lid"));
+            LocationEntry entry;
+            if(lid < 0) {
+                // This means the locations are provided in a separate file
+                entry = this.locationMap.get(activity.getPid()).get(activity.getActivityNumber());
+            } else if(this.locationsByIDMap.containsKey(lid)) {
+                 entry = this.locationsByIDMap.get(lid);
             } else {
-                LocationEntry entry = LocationEntry.fromLine(keyValue);
-                activity.setLocation(entry);
-                if(!this.locationMap.containsKey(activity.getPid())) {
-                    this.locationMap.put(activity.getPid(), new HashMap<>());
-                }
-                this.locationMap.get(activity.getPid()).put(activity.getActivityNumber(), entry);
-                this.locationsByIDMap.put(entry.getLocationID(), entry);
+                entry = LocationEntry.fromLine(keyValue);
             }
 
-            if(this.locationMap.isEmpty()) {
-                activity.setLocation(LocationEntry.fromLine(keyValue));
-            } else {
-                activity.setLocation(this.locationMap.get(activity.getPid()).get(activity.getActivityNumber()));
-            }
+            activity.setLocation(entry);
+            if(!this.locationsByIDMap.containsKey(entry.getLocationID()))
+                this.locationsByIDMap.put(entry.getLocationID(), entry);
+            if(!this.locationMap.containsKey(activity.getPid()))
+                this.locationMap.put(activity.getPid(), new TreeMap<>());
+            if(!this.locationMap.get(activity.getPid()).containsKey(activity.getActivityNumber()))
+                this.locationMap.get(activity.getPid()).put(activity.getActivityNumber(), entry);
         }
+
         if(activity.getDetailed_activity() == null && activity.getActivityType().equals(ActivityType.TRIP)) {
             activity.setDetailed_activity(DetailedActivity.TRIP);
         } else if (activity.getDetailed_activity() == null) {
