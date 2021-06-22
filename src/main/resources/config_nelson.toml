@@ -1,4 +1,5 @@
-#savestate = true
+savestate = true
+savevisits = true
 
 [simulation]
 norms = "norm-schedule.csv"

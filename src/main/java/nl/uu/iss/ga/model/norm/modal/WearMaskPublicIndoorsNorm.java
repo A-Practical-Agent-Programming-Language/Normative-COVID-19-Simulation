@@ -44,6 +44,6 @@ public class WearMaskPublicIndoorsNorm extends ModalNorm {
 
     @Override
     public String toString() {
-        return "WarMaskIndoors";
+        return "WearMaskIndoors";
     }
 }

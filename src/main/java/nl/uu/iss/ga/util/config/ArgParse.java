@@ -95,6 +95,7 @@ public class ArgParse {
     private BetaDistribution conservativeTrustDistribution;
 
     private boolean saveStateDataFrames = false;
+    private boolean saveVisitsDataFrames = false;
 
     private Random random;
 
@@ -180,6 +181,9 @@ public class ArgParse {
                 if(result.contains("savestate")) {
                     this.saveStateDataFrames = result.getBoolean("savestate");
                 }
+                if(result.contains("savevisits")) {
+                    this.saveVisitsDataFrames = result.getBoolean("savevisits");
+                }
 
                 this.descriptor = result.getString("output.descriptor");
                 this.node = (int) result.getLong("output.node", () -> -1);
@@ -264,6 +268,10 @@ public class ArgParse {
 
     public boolean saveStateDataFrames() {
         return saveStateDataFrames;
+    }
+
+    public boolean saveVisitsDataFrames() {
+        return saveVisitsDataFrames;
     }
 
     public int getThreads() {

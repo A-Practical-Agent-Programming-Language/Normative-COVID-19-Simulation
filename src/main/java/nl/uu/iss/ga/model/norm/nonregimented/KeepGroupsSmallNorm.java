@@ -154,6 +154,6 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
 
     @Override
     public String toString() {
-        return String.format("KeepGroupsSmall[appliesTo=%s, max=%d", appliesToSetting, maxAllowed);
+        return String.format("KeepGroupsSmall[appliesTo=%s, max=%d]", appliesToSetting, maxAllowed);
     }
 }

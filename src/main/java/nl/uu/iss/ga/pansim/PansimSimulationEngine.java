@@ -49,6 +49,10 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     private long tickEnd = -1;
     private final ScheduleTrackerGroup timingsTracker;
 
+    private String parentDir;
+    private final String STATE_DATAFRAME_DIR_NAME = "state_df_raw";
+    private final String VISITS_DATAFRAME_DIR_NAME = "visits_df_raw";
+
     public RootAllocator allocator = new RootAllocator(Long.MAX_VALUE);
 
     public PansimSimulationEngine(Platform platform, ArgParse arguments, ObservationNotifier observationNotifier, AgentStateMap agentStateMap, TickHookProcessor<CandidateActivity>... processors) {
@@ -59,7 +63,10 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.observationNotifier = observationNotifier;
         this.executor = platform.getTickExecutor();
         if(arguments.saveStateDataFrames()) {
-            prepare_output();
+            this.parentDir = prepare_output(STATE_DATAFRAME_DIR_NAME);
+        }
+        if(arguments.saveVisitsDataFrames()) {
+            this.parentDir = prepare_output(VISITS_DATAFRAME_DIR_NAME);
         }
 
         Path outputDir = Path.of(arguments.getOutputDir()).isAbsolute() ?
@@ -158,7 +165,11 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
 
         if(arguments.saveStateDataFrames()) {
-            write_state_dataframes(cur_state_df_raw, next_state_df_raw);
+            write_state_dataframes(STATE_DATAFRAME_DIR_NAME, cur_state_df_raw, next_state_df_raw);
+        }
+
+        if(arguments.saveVisitsDataFrames()) {
+            write_state_dataframes(VISITS_DATAFRAME_DIR_NAME, visit_output_df_raw, next_visit_df_raw);
         }
 
         millis = System.currentTimeMillis();
@@ -291,9 +302,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         return true;
     }
 
-    File parentDir;
-
-    private void prepare_output() {
+    private String prepare_output(String dir) {
         String parent =
                 (Path.of(
                         arguments.getOutputDir()).isAbsolute() ?
@@ -301,34 +310,35 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
                         Path.of("output", arguments.getOutputDir())
                 ).toFile().getAbsolutePath();
 
-        this.parentDir = Paths.get(parent, "state_df_raw").toFile();
-        if (!(this.parentDir.exists() || this.parentDir.mkdirs())) {
-            LOGGER.log(Level.SEVERE, "Failed to create state dataframe output directory " + this.parentDir.getAbsolutePath());
+        File outputDir = Paths.get(parent, dir).toFile();
+        if (!(outputDir.exists() || outputDir.mkdirs())) {
+            LOGGER.log(Level.SEVERE, "Failed to create state dataframe output directory " + outputDir.getAbsolutePath());
         }
+        return new File(parent).getAbsolutePath();
     }
 
-    private void write_state_dataframe_to_file(byte[] state_dataframe, File out) {
+    private void write_state_dataframe_to_file(byte[] data_frame, File out) {
         try {
             if (!(out.exists() || out.createNewFile())) {
                 throw new IOException("Failed to create file " + out.getAbsolutePath());
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to create state data frame file " + out.getAbsolutePath());
+            LOGGER.log(Level.SEVERE, "Failed to create data frame file " + out.getAbsolutePath());
             LOGGER.log(Level.SEVERE, e.getMessage());
             return;
         }
 
         try(FileOutputStream fos = new FileOutputStream(out)) {
-            fos.write(state_dataframe);
+            fos.write(data_frame);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to write state data frame to file " + out.getAbsolutePath());
+            LOGGER.log(Level.SEVERE, "Failed to write data frame to file " + out.getAbsolutePath());
             LOGGER.log(Level.SEVERE, e.getMessage());
         }
     }
 
-    private void write_state_dataframes(byte[] current_state_df_raw, byte[] next_state_df_raw) {
-        File fout_pansim = Paths.get(this.parentDir.getAbsolutePath(), String.format("state_df_raw_tick_%03d_pansim.raw", this.executor.getCurrentTick())).toFile();
-        File fout_behavior = Paths.get(this.parentDir.getAbsolutePath(), String.format("state_df_raw_tick_%03d_behavior.raw", this.executor.getCurrentTick())).toFile();
+    private void write_state_dataframes(String subDir, byte[] current_state_df_raw, byte[] next_state_df_raw) {
+        File fout_pansim = Paths.get(this.parentDir, subDir, String.format("%s_tick_%03d_pansim.raw", subDir, this.executor.getCurrentTick())).toFile();
+        File fout_behavior = Paths.get(this.parentDir, subDir, String.format("%s_tick_%03d_behavior.raw", subDir, this.executor.getCurrentTick())).toFile();
 
         write_state_dataframe_to_file(current_state_df_raw, fout_pansim);
         write_state_dataframe_to_file(next_state_df_raw, fout_behavior);
