@@ -149,16 +149,16 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
         // Prepare results for pansim and misuse loop to set disease state on activities
         // TODO parallelize
-        VisitDataFrame visitDf = VisitDataFrame.fromAgentActionsMultiThread(agentActions, this.agentStateMap, allocator, arguments.getThreads(), this.executor);
-//        VisitDataFrame visitDf = VisitDataFrame.fromAgentActionsSingleThread(agentActions, this.agentStateMap, this.allocator);
+//        VisitDataFrame visitDf = VisitDataFrame.fromAgentActionsMultiThread(agentActions, this.agentStateMap, allocator, arguments.getThreads(), this.executor);
+        VisitDataFrame visitDf = VisitDataFrame.fromAgentActionsSingleThread(agentActions, this.agentStateMap, this.allocator);
         this.next_visit_df_raw = visitDf.toBytes();
         visitDf.close();
         timingsMap.put("visitsEncoded", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
         // TODO Multithreaded done
-        StateDataFrame stateDf = StateDataFrame.fromAgentStateMapMultiThread(this.executor, this.arguments.getThreads(), this.agentStateMap.getAllAgentStates(), this.allocator);
-//        StateDataFrame stateDf = StateDataFrame.fromAgentStateMapSingleThead(this.agentStateMap.getAllAgentStates(), this.allocator).toBytes();
+//        StateDataFrame stateDf = StateDataFrame.fromAgentStateMapMultiThread(this.executor, this.arguments.getThreads(), this.agentStateMap.getAllAgentStates(), this.allocator);
+        StateDataFrame stateDf = StateDataFrame.fromAgentStateMapSingleThead(this.agentStateMap.getAllAgentStates(), this.allocator);
         this.next_state_df_raw = stateDf.toBytes();
         stateDf.close();
         timingsMap.put("stateEncoded", Long.toString(System.currentTimeMillis() - millis));
