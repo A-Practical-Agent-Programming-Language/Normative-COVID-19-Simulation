@@ -212,7 +212,7 @@ public class GyrationRadius {
     private static class RadiusGyrationCalculator implements Callable<RadiusSubResult> {
 
         private final List<Future<DeliberationResult<CandidateActivity>>> agentActions;
-        private final List<AgentID> countyAgents;
+        private final Set<AgentID> countyAgents;
         private final int thread;
         private final int threads_total;
 
@@ -223,7 +223,7 @@ public class GyrationRadius {
                 int threads_total
         ) {
             this.agentActions = agentActions;
-            this.countyAgents = countyAgents;
+            this.countyAgents = new HashSet<>(countyAgents);
             this.thread = thread;
             this.threads_total = threads_total;
         }
