@@ -182,6 +182,16 @@ public class AgentStateMap {
     }
 
     public List<AgentState> getAllAgentStates() {
+        if(this.pidStateMap == null) {
+            LOGGER.log(Level.SEVERE, "PID to State map is null! This should not be possible");
+        }
+        if(this.agentStateMap == null) {
+            LOGGER.log(Level.SEVERE, "AgentID to State map is nulL! This should not be possible");
+        }
+        if(this.pidStateMap != null && this.agentStateMap != null && this.agentStateMap.size() !=  this.pidStateMap.size()) {
+            LOGGER.log(Level.SEVERE, "PID to state and AID to state map sizes differ!");
+            LOGGER.log(Level.SEVERE, String.format("PID map is %d big, AID map is %d big", this.pidStateMap.size(), this.agentStateMap.size()));
+        }
         return new ArrayList<>(this.pidStateMap.values());
     }
 
