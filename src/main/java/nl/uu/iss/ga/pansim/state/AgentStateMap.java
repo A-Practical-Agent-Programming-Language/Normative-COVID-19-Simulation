@@ -207,6 +207,47 @@ public class AgentStateMap {
     }
 
     public Random getRandom(AgentID agentID) {
+        if(this.agentStateMap == null || !this.agentStateMap.containsKey(agentID)) {
+            List<String> messages = new ArrayList<>(Arrays.asList("Failed to get Random object for agent " + agentID));
+            if(this.agentStateMap == null) {
+                messages.add("Agent state map is null");
+            } else {
+                messages.add(String.format(
+                        "Agent state map has size %d but does not contain key %s",
+                        this.agentStateMap.size(),
+                        agentID.toString()
+                ));
+                String pid2aidSize = this.pidToAgentMap == null ? "null" : Integer.toString(this.pidToAgentMap.size());
+                String pid2stateSize = this.pidStateMap == null ? "null" : Integer.toString(this.pidStateMap.size());
+                String aid2pidSize = "null";
+
+                if(this.agentToPidMap != null) {
+                    aid2pidSize = Integer.toString(this.agentToPidMap.size());
+                    if(this.agentToPidMap.containsKey(agentID)) {
+                        long pid = this.agentToPidMap.get(agentID);
+                        messages.add(String.format("AgentID %s is associated with PID %d", agentID, pid));
+                        if(this.pidToAgentMap != null && this.pidToAgentMap.containsKey(pid)) {
+                            messages.add(String.format(
+                                    "AgentID %s associated with %d maps back to AgentID %s",
+                                    agentID, pid, this.pidToAgentMap.get(pid))
+                            );
+                        } else if (this.pidToAgentMap != null) {
+                            messages.add(String.format(
+                                    "AgentID %s is associated with PID %d but this PID does not map back to any agent",
+                                    agentID, pid
+                            ));
+                        }
+                    } else {
+                        messages.add("AgentID " + agentID + " is not in the aid2pid map");
+                    }
+                }
+
+                messages.add(String.format("pid2state size %s\tpidToAid size %s\taidToPid size %s", pid2stateSize, pid2aidSize, aid2pidSize));
+            }
+            for(String str : messages) {
+                LOGGER.log(Level.SEVERE, str);
+            }
+        }
         return getAgentState(agentID).getRandom();
     }
 
@@ -275,5 +316,27 @@ public class AgentStateMap {
             merged.aidCountyCodeMap.putAll(map.aidCountyCodeMap);
         }
         return merged;
+    }
+
+    /****
+     * THE FOLLOWING IS FOR TESTING PURPOSES ONLY AND SHOULD NEVER BE INVOKED IN PRODUCTION
+     */
+    private AgentState removedState;
+    private AgentID removedAgent;
+
+    public void removeRandomAgent() {
+        // Remove random agent, see if we can reproduce issue on compute cluster
+        List<AgentID> ids = new ArrayList<>(this.agentStateMap.keySet());
+        int rnd = (int) Math.round(Math.random() * ids.size());
+        this.removedAgent = ids.get(rnd);
+        this.removedState = this.agentStateMap.remove(this.removedAgent);
+        LOGGER.log(Level.SEVERE, "Removed agent " + this.removedAgent + " from agent state map. FOR TESTING PURPOSES ONLY! Do not forget to restore!!!");
+    }
+
+    public void restoreRandomAgent() {
+        this.agentStateMap.put(this.removedAgent, this.removedState);
+        LOGGER.log(Level.SEVERE, "Restored agent " + this.removedAgent + ". FOR TESTING PURPOSES ONLY! Remove method calls in production");
+        this.removedAgent = null;
+        this.removedState = null;
     }
 }
