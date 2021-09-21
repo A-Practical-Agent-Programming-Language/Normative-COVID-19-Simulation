@@ -33,6 +33,10 @@ public class LocationHistoryContext implements Context {
         this.locationHistory.get(visit.getLocationID()).addVisit(tick, visit);
     }
 
+    public void setLastDayTick(int lastDayTick) {
+        this.lastDayTick = lastDayTick;
+    }
+
     /**
      * Get last time step's visit from the agent visit history
      *

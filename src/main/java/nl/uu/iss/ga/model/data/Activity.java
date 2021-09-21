@@ -126,6 +126,18 @@ public class Activity extends Goal implements Cloneable {
         );
     }
 
+    public boolean overlaps(Activity other) {
+        return this.getStartTime() < other.getEndTime() && other.getStartTime() < this.getEndTime();
+    }
+
+    public int getStartTime() {
+        return start_time.getSeconds();
+    }
+
+    public int getEndTime() {
+        return start_time.getSeconds() + duration;
+    }
+
     @Override
     protected Activity clone() {
         Activity activity = new Activity(

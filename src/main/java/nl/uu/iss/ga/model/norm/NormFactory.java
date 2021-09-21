@@ -10,13 +10,24 @@ import main.java.nl.uu.iss.ga.model.norm.nonregimented.KeepGroupsSmallNorm;
 import main.java.nl.uu.iss.ga.model.norm.nonregimented.StayHomeNorm;
 import main.java.nl.uu.iss.ga.model.norm.regimented.*;
 
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class NormFactory {
 
     private static final Logger LOGGER = Logger.getLogger(NormFactory.class.getName());
+
+    private static final List<String> ALL_NORM_STRINGS = Arrays.asList(
+            "EncourageTelework", "AllowWearMask", "SchoolsClosed[K12]", "SchoolsClosed[K12;HIGHER_EDUCATION]",
+            "SmallGroups[100,public]", "SmallGroups[10,public]", "SmallGroups[10,PP]", "SmallGroups[50,PP]",
+            "SmallGroups[250,PP]", "EncourageSocialDistance", "StayHomeSick", "StayHome[age>65]", "StayHome[all]",
+            "ReduceBusinessCapacity[10]", "ReduceBusinessCapacity[50%]", "ReduceBusinessCapacity[75%]",
+            "BusinessClosed[DMV]", "BusinessClosed[DMV;NEB]", "TakeawayOnly", "MaintainDistance", "BeachesClosed[all]",
+            "BeachesClosed[VirginiaBeach]", "EmployeesWearMask", "TakeawayAndOutdoorOnly", "WearMasInPublicIndoor",
+            "ReduceBusinessHours", "ReduceHigherEducCapacity"
+    );
 
     public static Norm fromCSVLine(Map<String, String> keyValue) {
         switch (keyValue.get("norm")) {
@@ -60,6 +71,24 @@ public class NormFactory {
                 LOGGER.log(Level.WARNING, String.format("Could not map norm identifier to norm class: \"%s\"%n", keyValue.get("norm")));
                 return null;
         }
+    }
+
+    public static Map<String, List<Norm>> instantiateAllNorms() {
+        Map<String, List<Norm>> allNormsCodes = new HashMap<>();
+        for(String normString : ALL_NORM_STRINGS) {
+            List<Map<String, String>> keyValues = new ArrayList<>();
+            if (normString.contains("[")) {
+                String normName = normString.substring(0, normString.indexOf('['));
+                String[] normParams = normString.substring(normString.indexOf('[') + 1, normString.indexOf(']')).split(";");
+                for(String normParam : normParams) {
+                    keyValues.add(Map.of("norm", normName, "param", normParam));
+                }
+            } else {
+                keyValues.add(Map.of("norm", normString));
+            }
+            allNormsCodes.put(normString, keyValues.stream().map(NormFactory::fromCSVLine).collect(Collectors.toList()));
+        }
+        return allNormsCodes;
     }
 
     public static ReduceHigherEducationCapacityNorm ReduceHigherEducationCapacityNorm(Map<String, String> keyValue) {

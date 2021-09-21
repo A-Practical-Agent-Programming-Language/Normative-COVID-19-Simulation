@@ -1,12 +1,14 @@
 package main.java.nl.uu.iss.ga;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import main.java.nl.uu.iss.ga.model.norm.NormFactory;
 import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
 import main.java.nl.uu.iss.ga.pansim.PansimSimulationEngine;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.DefaultTimingSimulationEngine;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
+import main.java.nl.uu.iss.ga.util.CountNormApplication;
 import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
 import main.java.nl.uu.iss.ga.util.Java2APLLogger;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
@@ -57,8 +59,20 @@ public class Simulation {
             county.createAgents(this.platform, this.observationNotifier, this.environmentInterface);
         }
 
-        this.environmentInterface.setSimulationStarted();
-        this.simulationEngine.start();
+        if (arguments.isCountAffectedAgents()) {
+            CountNormApplication normCounter = new CountNormApplication(
+                    this.platform,
+                    this.arguments,
+                    this.environmentInterface,
+                    this.agentStateMap,
+                    NormFactory.instantiateAllNorms()
+            );
+            normCounter.writeAffectedAgentsToFile();
+            System.exit(0);
+        } else {
+            this.environmentInterface.setSimulationStarted();
+            this.simulationEngine.start();
+        }
     }
 
     private void readCountyData() {

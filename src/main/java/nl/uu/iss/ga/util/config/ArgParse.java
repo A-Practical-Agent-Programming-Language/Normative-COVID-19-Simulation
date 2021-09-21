@@ -91,6 +91,9 @@ public class ArgParse {
     @Arg(dest = "fatiguestart")
     private long fatigueStart;
 
+    @Arg(dest = "countaffectedagents")
+    private boolean countaffectedagents;
+
     private BetaDistribution liberalTrustDistribution;
     private BetaDistribution conservativeTrustDistribution;
 
@@ -314,6 +317,10 @@ public class ArgParse {
         }
     }
 
+    public boolean isCountAffectedAgents() {
+        return this.countaffectedagents;
+    }
+
     public NormContext getSharedNormContext() {
         return sharedNormContext;
     }
@@ -457,6 +464,17 @@ public class ArgParse {
                 .help("If this argument is present, the simulation will run in PANSIM mode, meaning it will send" +
                         "the generated behavior to the PANSIM environment. If absent, no PANSIM connection is required," +
                         "but behavior is not interpreted");
+
+        optimization.addArgument("--count-affected-agents")
+                .type(Boolean.class)
+                .required(false)
+                .setDefault(false)
+                .action(new StoreTrueArgumentAction())
+                .dest("countaffectedagents")
+                .help("If set to true, instead of performing the simulation, the applicability of each norm" +
+                        "will be tested against each agent activity, to produce a file with the number of" +
+                        "agents affected by each norm, and the total duration of activities that would be" +
+                        "cancelled under 100% norm compliance");
 
         optimization.addArgument("--write-graph", "-g")
                 .type(Boolean.class)
