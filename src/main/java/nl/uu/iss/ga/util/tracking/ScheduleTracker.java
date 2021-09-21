@@ -8,7 +8,6 @@ import main.java.nl.uu.iss.ga.model.norm.NormContainer;
 import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
 import main.java.nl.uu.iss.ga.pansim.state.AgentState;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
-import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.Constants;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
@@ -16,8 +15,6 @@ import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.javatuples.Pair;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -55,7 +52,6 @@ public class ScheduleTracker {
     public static final String NORMS_ACTIVATED_HEADER = "NORMS_ACTIVATED";
     public static final String NORMS_DEACTIVATED_HEADER = "NORMS_DEACTIVATED";
     private final Map<String, ScheduleTrackerGroup> fileObjects = new HashMap<>();
-    private final String parentDir;
     private final AgentStateMap agentStateMap;
     private final NormScheduleReader normScheduleReader;
     private final Set<Class<? extends Norm>> allUsedNorms;
@@ -65,8 +61,7 @@ public class ScheduleTracker {
     public ScheduleTracker(TickExecutor<CandidateActivity> executor, ArgParse arguments, AgentStateMap agentStateMap, NormScheduleReader normScheduleReader) {
         this.executor = executor;
         this.arguments = arguments;
-        this.parentDir = (Path.of(arguments.getOutputDir()).isAbsolute() ? Path.of(arguments.getOutputDir()) : Path.of("output", arguments.getOutputDir())).toFile().getAbsolutePath();
-        this.suffix = new File(arguments.getOutputDir()).getName();
+        this.suffix = arguments.getOutputDir().getName();
         this.agentStateMap = agentStateMap;
         this.normScheduleReader = normScheduleReader;
         this.allUsedNorms = normScheduleReader.getAllUsedNorms();
@@ -92,17 +87,17 @@ public class ScheduleTracker {
         averageScheduleHeaders.addAll(activityTypeNames.stream().map(x -> x + "_COUNT").collect(Collectors.toList()));
         averageScheduleHeaders.addAll(activityTypeNames.stream().map(x -> x + "_DURATION").collect(Collectors.toList()));
         ScheduleTrackerGroup g =
-                new ScheduleTrackerGroup(this.parentDir, String.format(AVERAGE_SCHEDULE_FILENAME, this.suffix) + ".csv", averageScheduleHeaders);
+                new ScheduleTrackerGroup(arguments.getOutputDir(), String.format(AVERAGE_SCHEDULE_FILENAME, this.suffix) + ".csv", averageScheduleHeaders);
         this.fileObjects.put(AVERAGE_SCHEDULE_FILENAME, g);
 
         List<String> epicurveHeaders = Arrays.stream(DiseaseState.values()).map(DiseaseState::toString).collect(Collectors.toList());
-        ScheduleTrackerGroup epicurve = new ScheduleTrackerGroup(this.parentDir, EPICURVE_FILENAME + ".csv", epicurveHeaders);
+        ScheduleTrackerGroup epicurve = new ScheduleTrackerGroup(arguments.getOutputDir(), EPICURVE_FILENAME + ".csv", epicurveHeaders);
         this.fileObjects.put(EPICURVE_FILENAME, epicurve);
 
         for (Class<? extends Norm> norm : allUsedNorms) {
             this.fileObjects.put(
                     normToAppliedActivitiesFile(norm),
-                    new ScheduleTrackerGroup(this.parentDir,
+                    new ScheduleTrackerGroup(arguments.getOutputDir(),
                             normToAppliedActivitiesFile(norm) + ".csv",
                             activityTypeNames,
                             NORMS_ACTIVATED_HEADER,
@@ -115,7 +110,7 @@ public class ScheduleTracker {
         for (ActivityType activityType : ActivityType.values()) {
             this.fileObjects.put(
                     activityTypeCancelledByNormFile(activityType),
-                    new ScheduleTrackerGroup(this.parentDir,
+                    new ScheduleTrackerGroup(arguments.getOutputDir(),
                             activityTypeCancelledByNormFile(activityType) + ".csv",
                             activityTypeHeaders,
                             NORMS_ACTIVATED_HEADER,

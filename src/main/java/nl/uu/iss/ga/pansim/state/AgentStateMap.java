@@ -313,11 +313,10 @@ public class AgentStateMap {
         this.pidStateMap = new HashMap<>();
     }
 
-    public static AgentStateMap merge(String outputDir, boolean suppressCalculations, List<AgentStateMap> maps) {
+    public static AgentStateMap merge(File outputDir, boolean suppressCalculations, List<AgentStateMap> maps) {
         AgentStateMap merged = new AgentStateMap();
-        String parentDir = (Path.of(outputDir).isAbsolute() ? Path.of(outputDir) : Path.of("output", outputDir)).toFile().getAbsolutePath();
         merged.seededAgentsGroup = suppressCalculations ? null :
-                new ScheduleTrackerGroup(parentDir, SEEDED_AGENTS_FILE_NAME, Collections.singletonList("AgentID"));
+                new ScheduleTrackerGroup(outputDir, SEEDED_AGENTS_FILE_NAME, Collections.singletonList("AgentID"));
         for(AgentStateMap map : maps) {
             merged.pidStateMap.putAll(map.pidStateMap);
             merged.agentStateMap.putAll(map.agentStateMap);

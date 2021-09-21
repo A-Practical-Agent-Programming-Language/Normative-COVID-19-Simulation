@@ -7,6 +7,7 @@ import main.java.nl.uu.iss.ga.pansim.visit.VisitDataFrame;
 import main.java.nl.uu.iss.ga.pansim.visit.VisitResultDataFrame;
 import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import main.java.nl.uu.iss.ga.util.Methods;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
@@ -20,8 +21,9 @@ import py4j.GatewayServer;
 import py4j.GatewayServerListener;
 import py4j.Py4JServerConnection;
 
-import java.io.*;
-import java.nio.file.Path;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,11 +71,8 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
             this.parentDir = prepare_output(VISITS_DATAFRAME_DIR_NAME);
         }
 
-        Path outputDir = Path.of(arguments.getOutputDir()).isAbsolute() ?
-                Path.of(arguments.getOutputDir()) : Path.of("output", arguments.getOutputDir());
-
         this.timingsTracker = new ScheduleTrackerGroup(
-                outputDir.toFile().getAbsolutePath(),
+                arguments.getOutputDir(),
                 "timings.csv",
                 List.of("tick", "pansim", "stateExtracted", "visitsExtracted",
                         "visitsProcessed","prehook",
@@ -303,30 +302,13 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     }
 
     private String prepare_output(String dir) {
-        String parent =
-                (Path.of(
-                        arguments.getOutputDir()).isAbsolute() ?
-                        Path.of(arguments.getOutputDir()) :
-                        Path.of("output", arguments.getOutputDir())
-                ).toFile().getAbsolutePath();
-
-        File outputDir = Paths.get(parent, dir).toFile();
-        if (!(outputDir.exists() || outputDir.mkdirs())) {
-            LOGGER.log(Level.SEVERE, "Failed to create state dataframe output directory " + outputDir.getAbsolutePath());
-        }
-        return new File(parent).getAbsolutePath();
+        File outputDir = Paths.get(arguments.getOutputDir().getAbsolutePath(), dir).toFile();
+        Methods.createOutputFile(outputDir);
+        return arguments.getOutputDir().getAbsolutePath();
     }
 
     private void write_state_dataframe_to_file(byte[] data_frame, File out) {
-        try {
-            if (!(out.exists() || out.createNewFile())) {
-                throw new IOException("Failed to create file " + out.getAbsolutePath());
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to create data frame file " + out.getAbsolutePath());
-            LOGGER.log(Level.SEVERE, e.getMessage());
-            return;
-        }
+        if (!Methods.createOutputFile(out)) return;
 
         try(FileOutputStream fos = new FileOutputStream(out)) {
             fos.write(data_frame);

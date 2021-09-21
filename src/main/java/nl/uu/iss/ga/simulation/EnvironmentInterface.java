@@ -69,7 +69,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.allUsedNorms = normSchedule.getAllUsedNorms();
         this.sharedNormContext = arguments.getSharedNormContext();
         this.observationNotifier = observationNotifier;
-        this.scheduleTracker = arguments.suppressCalculations() ? null : new ScheduleTracker(
+        this.scheduleTracker = arguments.isSuppressCalculations() ? null : new ScheduleTracker(
                 this.platform.getTickExecutor(),
                 this.arguments,
                 this.agentStateMap,
@@ -83,7 +83,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             LOGGER.log(Level.INFO, "Start date set to " + this.startDate.format(DateTimeFormatter.ofPattern("cccc dd MMMM yyyy")));
         }
 
-        this.gyrationRadius = arguments.suppressCalculations() ? null :
+        this.gyrationRadius = arguments.isSuppressCalculations() ? null :
                 new GyrationRadius(this.platform.getTickExecutor(), this.arguments, this.startDate);
     }
 
@@ -125,7 +125,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         }
 
         // Reset tracker for influenced activities
-        GoalPlanScheme.influencedActivitiesTracker = arguments.suppressCalculations() ?
+        GoalPlanScheme.influencedActivitiesTracker = arguments.isSuppressCalculations() ?
                 new SuppressCalculationsActivityTracker() : new InfluencedActivities(tick, this.allUsedNorms);
 
         processNormUpdates();
@@ -157,7 +157,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                 tick, lastTickDuration, agentActions.size(), (double) lastTickDuration / agentActions.size()));
 
 
-        if(!arguments.suppressCalculations()) {
+        if(!arguments.isSuppressCalculations()) {
             process_past_tick(tick, lastTickDuration, agentActions); // TODO update references
         }
     }

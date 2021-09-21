@@ -52,6 +52,10 @@ public class Simulation {
         this.normScheduleReader = new NormScheduleReader(arguments.getNormFile());
         this.tickExecutor = new NoRescheduleBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getSystemWideRandom());
 
+        if(arguments.isCountAffectedAgents()) {
+            arguments.setSuppressCalculations(true);
+        }
+
         readCountyData();
         preparePlatform();
 
@@ -122,7 +126,7 @@ public class Simulation {
     private AgentStateMap mergeStateMaps() {
         AgentStateMap merged = AgentStateMap.merge(
                 arguments.getOutputDir(),
-                arguments.suppressCalculations(),
+                arguments.isSuppressCalculations(),
                 this.arguments.getCounties().stream().map(ConfigModel::getAgentStateMap).collect(Collectors.toList())
         );
         this.arguments.getCounties().forEach(x -> x.setAgentStateMap(merged));

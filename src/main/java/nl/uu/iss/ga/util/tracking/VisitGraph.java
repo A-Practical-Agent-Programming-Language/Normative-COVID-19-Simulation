@@ -4,12 +4,10 @@ import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.pansim.state.AgentState;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
-import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
+import main.java.nl.uu.iss.ga.util.Methods;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +31,7 @@ public class VisitGraph {
         createVisitLocations(agentActions);
     }
 
-    public void createVisitEdges(String outputDir) {
+    public void createVisitEdges(File outputDir) {
         try {
             createOutputWriter(outputDir);
             for (VisitLocation location : locations.values()) {
@@ -130,23 +128,11 @@ public class VisitGraph {
         }
     }
 
-    public void createVisitNodes(String outputDir) {
-        File fout = (Path.of(outputDir).isAbsolute() ?
-                Paths.get(outputDir, "visits-nodes.csv") :
-                Paths.get("output", outputDir, "visits-nodes.csv")).toFile();
-
+    public void createVisitNodes(File outputDir) {
+        File fout = new File(outputDir, "visits-nodes.csv");
         boolean writeHeader = !fout.exists();
-        try {
-            if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs()) ||
-                    !(fout.exists() || fout.createNewFile())) {
-                throw new IOException("Failed to create file " + fout.getAbsolutePath());
-            }
-            if (!(fout.exists() || fout.createNewFile())) {
-                throw new IOException("Failed to create file " + fout.getName());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        Methods.createOutputFile(fout);
 
         try(FileOutputStream fos = new FileOutputStream(fout, true);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos))
@@ -168,20 +154,10 @@ public class VisitGraph {
         }
     }
 
-    private void createOutputWriter(String outputDir) throws IOException {
-        File fout = (Path.of(outputDir).isAbsolute() ?
-                Paths.get(outputDir, "visits-edges.csv") :
-                Paths.get("output", outputDir, "visits-edges.csv")).toFile();
-
+    private void createOutputWriter(File outputDir) throws IOException {
+        File fout = new File(outputDir, "visits-edges.csv");
         boolean writeHeader = !fout.exists();
-
-        if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs()) ||
-                !(fout.exists() || fout.createNewFile())) {
-            throw new IOException("Failed to create file " + fout.getAbsolutePath());
-        }
-        if (!(fout.exists() || fout.createNewFile())) {
-            throw new IOException("Failed to create file " + fout.getName());
-        }
+        Methods.createOutputFile(fout);
 
         this.fos = new FileOutputStream(fout, true);
         this.osw = new OutputStreamWriter(fos);

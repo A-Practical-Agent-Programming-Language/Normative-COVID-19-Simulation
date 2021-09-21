@@ -1,5 +1,7 @@
 package main.java.nl.uu.iss.ga.util.tracking;
 
+import main.java.nl.uu.iss.ga.util.Methods;
+
 import java.io.*;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -17,11 +19,11 @@ public class ScheduleTrackerGroup {
     private final File fout;
     private final List<String> headers;
 
-    public ScheduleTrackerGroup(String parentDir, String filename, List<String> headers, String... nonAutomaticStartingHeaders) {
-        this.fout = Paths.get(parentDir, filename).toFile();
-        this.dir = new File(parentDir).getName();
+    public ScheduleTrackerGroup(File parentDir, String filename, List<String> headers, String... nonAutomaticStartingHeaders) {
+        this.dir = parentDir.getAbsolutePath();
+        this.fout = Paths.get(this.dir, filename).toFile();
         this.headers = new ArrayList<>(headers);
-        createFile();
+        Methods.createOutputFile(this.fout);
         writeLineToFile("Date;Dir;");
         for (String start : nonAutomaticStartingHeaders) {
             writeLineToFile(start + ";");
@@ -45,20 +47,6 @@ public class ScheduleTrackerGroup {
 
     public void writeValuesToFile(List<String> values) {
         writeLineToFile(String.join(";", values) + System.lineSeparator());
-    }
-
-    private void createFile() {
-        try {
-            if (!(this.fout.getParentFile().exists() || this.fout.getParentFile().mkdirs())) {
-                throw new IOException("Failed to create parent directories for file " + fout.getAbsolutePath());
-            }
-            if (!(this.fout.exists() || this.fout.createNewFile()))
-                throw new IOException("Failed to create file " + this.fout.getAbsolutePath());
-            LOGGER.log(Level.INFO, "Created file " + this.fout.getAbsolutePath());
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to create schedule tracker file " + this.fout.getAbsolutePath());
-            LOGGER.log(Level.SEVERE, e.getMessage());
-        }
     }
 
     public void writeLineToFile(String line) {

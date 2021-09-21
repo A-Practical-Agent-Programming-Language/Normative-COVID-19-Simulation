@@ -23,11 +23,8 @@ public class DefaultTimingSimulationEngine<T> extends AbstractSimulationEngine<T
         this.executor = platform.getTickExecutor();
         this.arguments = arguments;
 
-        Path outputDir = Path.of(arguments.getOutputDir()).isAbsolute() ?
-                Path.of(arguments.getOutputDir()) : Path.of("output", arguments.getOutputDir());
-
         this.timingsTracker = new ScheduleTrackerGroup(
-                outputDir.toFile().getAbsolutePath(),
+                arguments.getOutputDir(),
                 "timings.csv",
                 List.of("tick", "prehook", "copy", "reassignPointer", "sort", "deliberation", "gatheringActions", "posthook")
         );

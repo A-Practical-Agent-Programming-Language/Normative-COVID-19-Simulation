@@ -220,7 +220,7 @@ public class CountNormApplication {
     }
 
     public void writeAffectedAgentsToFile() {
-        createFile();
+        Methods.createOutputFile(this.outputFile);
         try(
                 FileOutputStream fos = new FileOutputStream(this.outputFile);
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
@@ -239,20 +239,6 @@ public class CountNormApplication {
         }
     }
 
-    private void createFile() {
-        try {
-            if (!this.outputFile.getParentFile().exists() && !this.outputFile.getParentFile().mkdirs()) {
-                throw new IOException("Failed to create parent directories for file " + this.outputFile.getAbsolutePath());
-            }
-            if (!(this.outputFile.exists() || this.outputFile.createNewFile())) {
-                throw new IOException("Failed to create file " + this.outputFile.getAbsolutePath());
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to create file to store affected agents for norms " + this.outputFile.getAbsolutePath());
-            LOGGER.log(Level.SEVERE, e.getMessage(), e);
-        }
-    }
-
     private File getFileName() {
         String fileName = String.format(
                 "affected-agents-per-norm-%s.csv",
@@ -262,7 +248,7 @@ public class CountNormApplication {
                         collect(Collectors.toList()).
                         toArray(String[]::new))
         );
-        return Paths.get(this.arguments.getOutputDir(), fileName).toFile();
+        return new File(arguments.getOutputDir(), fileName);
     }
 
 }

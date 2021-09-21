@@ -17,6 +17,7 @@ import org.tomlj.TomlTable;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -265,8 +266,12 @@ public class ArgParse {
         return writegraph;
     }
 
-    public boolean suppressCalculations() {
+    public boolean isSuppressCalculations() {
         return suppresscalculations;
+    }
+
+    public void setSuppressCalculations(boolean suppressCalculations) {
+        this.suppresscalculations = suppressCalculations;
     }
 
     public boolean saveStateDataFrames() {
@@ -289,8 +294,8 @@ public class ArgParse {
         return startdate;
     }
 
-    public String getOutputDir() {
-        return outputdir;
+    public File getOutputDir() {
+        return Path.of(Path.of(outputdir).isAbsolute() ? outputdir : "output", outputdir).toFile();
     }
 
     public boolean isDiseaseSeeding() {

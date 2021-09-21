@@ -2,6 +2,7 @@ package main.java.nl.uu.iss.ga.util.tracking;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
+import main.java.nl.uu.iss.ga.util.Methods;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
@@ -10,8 +11,6 @@ import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.javatuples.Pair;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -41,10 +40,8 @@ public class GyrationRadius {
             this.numAgentsPerCounty.put(county.getName(), county.getPersonReader().getPersons().size());
         }
         this.simulationStartDate = simulationStartDate;
-        try {
-            createOutFile(arguments.getOutputDir());
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage());
+        this.fout = new File(arguments.getOutputDir(), "tick-averages.csv");
+        if(!Methods.createOutputFile(this.fout)) {
             System.exit(65);
         }
     }
@@ -69,20 +66,6 @@ public class GyrationRadius {
         }
 
         writeAveragesToFile(perCountyRadii, simulationDay);
-    }
-
-    private void createOutFile(String outputDir) throws IOException {
-        this.fout = (Path.of(outputDir).isAbsolute() ?
-                Paths.get(outputDir, "tick-averages.csv") :
-                Paths.get("output", outputDir, "tick-averages.csv")).toFile();
-
-        if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs()) ||
-                !(fout.exists() || fout.createNewFile())) {
-            throw new IOException("Failed to create file " + fout.getAbsolutePath());
-        }
-        if (!(fout.exists() || fout.createNewFile())) {
-            throw new IOException("Failed to create file " + fout.getName());
-        }
     }
 
     private void writeAveragesToFile(HashMap<String, Pair<Integer, Double>> lastTickAverages, LocalDate date) {
