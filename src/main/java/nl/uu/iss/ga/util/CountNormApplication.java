@@ -242,11 +242,12 @@ public class CountNormApplication {
     private File getFileName() {
         String fileName = String.format(
                 "affected-agents-per-norm-%s.csv",
-                String.join("-", this.arguments.getCounties().
-                        stream().
-                        map(x -> Integer.toString(x.getFipsCode())).
-                        collect(Collectors.toList()).
-                        toArray(String[]::new))
+                String.join("-", this.arguments.getCounties()
+                        .stream()
+                        .sorted()
+                        .map(x -> Integer.toString(x.getFipsCode()))
+                        .collect(Collectors.toList())
+                        .toArray(String[]::new))
         );
         return new File(arguments.getOutputDir(), fileName);
     }
