@@ -303,7 +303,6 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     private String prepare_output(String dir) {
         File outputDir = Paths.get(arguments.getOutputDir().getAbsolutePath(), dir).toFile();
-        Methods.createOutputFile(outputDir);
         return arguments.getOutputDir().getAbsolutePath();
     }
 

@@ -295,7 +295,11 @@ public class ArgParse {
     }
 
     public File getOutputDir() {
-        return Path.of(Path.of(outputdir).isAbsolute() ? outputdir : "output", outputdir).toFile();
+        if (Path.of(outputdir).isAbsolute()) {
+            return Path.of(outputdir).toFile();
+        } else {
+            return Path.of("output", outputdir).toFile();
+        }
     }
 
     public boolean isDiseaseSeeding() {

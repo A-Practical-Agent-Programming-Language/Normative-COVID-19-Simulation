@@ -55,6 +55,17 @@
 
     <build>
         <sourceDirectory>src</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>*/*.csv</exclude>
+                    <exclude>*.py</exclude>
+                    <exclude>*.toml</exclude>
+                </excludes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
 
         <plugins>
             <plugin>

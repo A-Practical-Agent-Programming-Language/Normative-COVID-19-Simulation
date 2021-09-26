@@ -22,9 +22,8 @@ public class Methods {
 
     public static boolean createOutputFile(File fout){
         try {
-            if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs()) ||
-                    !(fout.exists() || fout.createNewFile())) {
-                throw new IOException("Failed to create file " + fout.getAbsolutePath());
+            if (!(fout.getParentFile().exists() || fout.getParentFile().mkdirs())) {
+                throw new IOException("Failed to create file " + fout.getParentFile().getAbsolutePath());
             }
             if (!(fout.exists() || fout.createNewFile())) {
                 throw new IOException("Failed to create file " + fout.getName());
