@@ -9,6 +9,7 @@ import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
@@ -240,14 +241,18 @@ public class CountNormApplication {
     }
 
     private File getFileName() {
+        List<Integer> fipsCodes = new ArrayList<>();
+        for(ConfigModel countyConfig : this.arguments.getCounties()) {
+            fipsCodes.add(countyConfig.getFipsCode());
+        }
+        Collections.sort(fipsCodes);
+        String[] fipsCodeStrings = new String[fipsCodes.size()];
+        for(int i = 0; i < fipsCodes.size(); i++) {
+            fipsCodeStrings[i] = Integer.toString(fipsCodes.get(i));
+        }
         String fileName = String.format(
                 "affected-agents-per-norm-%s.csv",
-                String.join("-", this.arguments.getCounties()
-                        .stream()
-                        .sorted()
-                        .map(x -> Integer.toString(x.getFipsCode()))
-                        .collect(Collectors.toList())
-                        .toArray(String[]::new))
+                String.join("-", fipsCodeStrings)
         );
         return new File(arguments.getOutputDir(), fileName);
     }

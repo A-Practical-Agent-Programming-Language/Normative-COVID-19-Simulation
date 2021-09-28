@@ -24,7 +24,7 @@ public class NormFactory {
             "SmallGroups[100,public]", "SmallGroups[10,public]", "SmallGroups[10,PP]", "SmallGroups[50,PP]",
             "SmallGroups[250,PP]", "EncourageSocialDistance", "StayHomeSick", "StayHome[age>65]", "StayHome[all]",
             "ReduceBusinessCapacity[10]", "ReduceBusinessCapacity[50%]", "ReduceBusinessCapacity[75%]",
-            "BusinessClosed[DMV]", "BusinessClosed[DMV;NEB]", "TakeawayOnly", "MaintainDistance", "BeachesClosed[all]",
+            "BusinessClosed[7 DMV offices]", "BusinessClosed[7 DMV offices;NEB]", "TakeawayOnly", "MaintainDistance", "BeachesClosed[all]",
             "BeachesClosed[VirginiaBeach]", "EmployeesWearMask", "TakeawayAndOutdoorOnly", "WearMasInPublicIndoor",
             "ReduceBusinessHours", "ReduceHigherEducCapacity"
     );
