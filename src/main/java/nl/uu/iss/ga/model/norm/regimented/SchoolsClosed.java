@@ -28,7 +28,7 @@ public class SchoolsClosed extends Norm {
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         GradeLevel level = agentContextInterface.getContext(Person.class).getGrade_level();
-        if(!activity.getActivityType().equals(ActivityType.SCHOOL) || level == null)
+        if(!(activity.getActivityType().equals(ActivityType.SCHOOL) && !activity.getActivityType().equals(ActivityType.COLLEGE)) || level == null)
             return false;
         else
             return
