@@ -17,11 +17,14 @@ These are the Susceptible-Infected-Recovered (SIR) plots for these experiments, 
 
 | | |
 |---|---|
-|![SIR plot for E<sub>_0_</sub>](SIR-plots/experiment-0-norms-until0000-00-00.png){width=300 height=225}|![SIR plot for E<sub>_1_</sub>](SIR-plots/experiment-1-norms-until2020-03-12.png){width=300 height=225}|
-|![SIR plot for E<sub>_2_</sub>](SIR-plots/experiment-2-norms-until2020-03-13.png){width=300 height=225}|![SIR plot for E<sub>_3_</sub>](SIR-plots/experiment-3-norms-until2020-03-15.png){width=300 height=225}|
-|![SIR plot for E<sub>_4_</sub>](SIR-plots/experiment-4-norms-until2020-03-17.png){width=300 height=225}|![SIR plot for E<sub>_5_</sub>](SIR-plots/experiment-5-norms-until2020-03-23.png){width=300 height=225}|
-|![SIR plot for E<sub>_6_</sub>](SIR-plots/experiment-6-norms-until2020-03-30.png){width=300 height=225}|![SIR plot for E<sub>_7_</sub>](SIR-plots/experiment-7-norms-until2020-05-08.png){width=300 height=225}|
-|![SIR plot for E<sub>_8_</sub>](SIR-plots/experiment-8-norms-until2020-05-26.png){width=300 height=225}|![SIR plot for E<sub>_9_</sub>](SIR-plots/experiment-9-norms-until2020-06-02.png){width=300 height=225}|
+|![SIR plot for E<sub>_0_</sub>](SIR-plots/experiment-0-norms-until0000-00-00.png)|![SIR plot for E<sub>_1_</sub>](SIR-plots/experiment-1-norms-until2020-03-12.png)|
+|![SIR plot for E<sub>_2_</sub>](SIR-plots/experiment-2-norms-until2020-03-13.png)|![SIR plot for E<sub>_3_</sub>](SIR-plots/experiment-3-norms-until2020-03-15.png)|
+|![SIR plot for E<sub>_4_</sub>](SIR-plots/experiment-4-norms-until2020-03-17.png)|![SIR plot for E<sub>_5_</sub>](SIR-plots/experiment-5-norms-until2020-03-23.png)|
+|![SIR plot for E<sub>_6_</sub>](SIR-plots/experiment-6-norms-until2020-03-30.png)|![SIR plot for E<sub>_7_</sub>](SIR-plots/experiment-7-norms-until2020-05-08.png)|
+|![SIR plot for E<sub>_8_</sub>](SIR-plots/experiment-8-norms-until2020-05-26.png)|![SIR plot for E<sub>_9_</sub>](SIR-plots/experiment-9-norms-until2020-06-02.png)|
+
+In conjunction with PanSim, which acts both as the environment and disease progression simulation for the agents and as the simulation distribution framework,
+we have been able to run simulations employing the full population (~8 million agents) of Virginia.
 
 # Invoking program
 See manual.txt for command line arguments, or call --help when running the application
@@ -44,12 +47,12 @@ Prerequisites:
 * (Maven)
 
 ## Sim2APL
-Download Sim2APL from Bitbucket, and checkout the `feature/generic-plan-return` branch.
+Download Sim2APL from Bitbucket, and checkout the `jaamas-2021-submission` tag.
 
 ```bash
 $ git clone https://bitbucket.org/goldenagents/sim2apl.git
 $ cd sim2apl
-$ git checkout origin/feature/generic-plan-return -b feature/generic-plan-return
+$ git checkout jaamas-2021-submission
 ```
 
 Install the package using Maven:
@@ -72,5 +75,5 @@ $ mvn -U clean install
 The application requires various arguments, either when invoked from the command line or when used in an IDE.
 See [manual.txt](manual.txt) for more information, or invoke the program with the argument `--help`
 
-An example of a configuration file (using the [TOML](https://github.com/toml-lang/toml) language) is given in [config.toml](src/main/resources/config.toml) 
+An example of a configuration file (using the [TOML](https://github.com/toml-lang/toml) language) is given in [src/main/resources/config.toml](src/main/resources/config.toml) 
 
