@@ -5,6 +5,11 @@ but we have not been granted the right to redistribute these files.
 In this manual we detail the specifications of the synthetic population
 required to instantiate our simulation, so that you may be able to produce or convert your own.
 
+We have also taken a sample from the synthetic population representing the details and activities of 3 agents
+(2 adults and one child) from a single household. These files can be found in 
+[src/main/resources/charlottesville_example](src/main/resources/charlottesville_examples)
+and can serve as extra illustration of this documentation.
+
 ## Why we use a synthetic population
 Agents in our simulation are drawn from a synthetic
 population of the state of Virginia, USA. This synthetic population has been constructed from multiple
@@ -72,9 +77,10 @@ In the [sample configuration](src/main/resources/config.toml) with which the sim
 we refer to the synthetic population for the county of Charlottesville City.
 
 Not all values in the synthetic population used for this research are actually employed in the simulation. 
-However, they are all parsed by the model, so their presence is required. 
+However, some are still parsed by the model, so their presence is required. 
 The unused values are below marked with an asterisk, and can be given arbitrary values (within their type constraints) 
-without having an effect on the simulation. 
+without having an effect on the simulation, while the values from the synthetic population (present in the sample
+files) are not documented here at all.
 Do note that this repository contains ongoing research, and these values may be used in later versions.
 
 In the following, categorical types are distinguished in that they are linked to a 
@@ -82,7 +88,7 @@ Java ENUM where the possible value types are also documented.
 
 ### Person files
 In the sample config, one Person file for Charlottesville City is specified: 
-`charlottesville_examples/usa_va_charlottesville_person_1_6_0.csv`
+[`charlottesville_examples/usa_va_charlottesville_person_1_6_0.csv`](src/main/resources/charlottesville_examples/usa_va_charlottesville_person_1_6_0.csv)
 
 Each of the person files is parsed using the [`PersonReader`](src/main/java/nl/uu/iss/ga/model/reader/PersonReader.java) 
 and each person record is instantiated in the [`Person`](src/main/java/nl/uu/iss/ga/model/data/Person.java) class.
@@ -125,7 +131,8 @@ Possible designations are {`military`, `government`, `retail`, `none`, `educatio
 `care_facilitation`, `dmv`}, where `none` and a null value are equivalent
 
 ### Household files
-In the sample config, one Household file for Charlottesville City is specified: `charlottesville_examples/usa_va_charlottesville_household_1_6_0.csv`
+In the sample config, one Household file for Charlottesville City is specified: 
+[`charlottesville_examples/usa_va_charlottesville_household_1_6_0.csv`](src/main/resources/charlottesville_examples/usa_va_charlottesville_household_1_6_0.csv)
 
 Each of the household files is parsed using the [`HouseholdReader`](src/main/java/nl/uu/iss/ga/model/reader/HouseholdReader.java)
 and each household record is instantiated in the [`Household`](src/main/java/nl/uu/iss/ga/model/data/Household.java) class.
@@ -175,8 +182,8 @@ The semantics of the values can be found in the
 
 ### Activity files
 In the sample config, two Activity files for Charlottesville City are specified, one for adult agents, and one for children:
-* `charlottesville_examples/usa_va_charlottesville_activity_assignment_adult_week_1_6_0.csv`
-* `charlottesville_examples/usa_va_charlottesville_activity_assignment_child_week_1_6_0.csv`
+* [`charlottesville_examples/usa_va_charlottesville_activity_assignment_adult_week_1_6_0.csv`](src/main/resources/charlottesville_examples/usa_va_charlottesville_activity_assignment_adult_week_1_6_0.csv)
+* [`charlottesville_examples/usa_va_charlottesville_activity_assignment_child_week_1_6_0.csv`](src/main/resources/charlottesville_examples/usa_va_charlottesville_activity_assignment_child_week_1_6_0.csv)
 
 The activity files encode the activities over the course of one week for each agent in the population.
 
@@ -207,3 +214,30 @@ for more information.
 A long value representing a time stamp for when the activity starts as the number of seconds since monday morning
 (so `0` represents the first second of a Monday, and `24 * 60 * 60 = 86400` represents the first second of Tuesday).
 * `duration`: The number of seconds an activity continues
+* `lid`<sup>♰</sup>: A long-typed value representing the unique ID of the location to be visited. Multiple visits of this
+or other agents to the same location should have the same ID
+* `longitude`<sup>♰</sup>: The longitude of the activity location.
+  **IMPORTANT**: This value is used to calculate the radius of gyration, so should be sampled accurately
+* `latitude`<sup>♰</sup>: The latitude of the activity location.
+  **IMPORTANT**: This value is used to calculate the radius of gyration, so should be sampled accurately
+* [`travel_mode*`](src/main/java/nl/uu/iss/ga/model/data/dictionary/TransportMode.java)<sup>♰</sup>:
+  A categorical integer in the range [-9,-7] ∪ [1,20] ∪ {97} representing the mode of transport employed during a
+  `TRIP` type activity (no value required for other activity types)
+  The semantics of the values can be found in the
+  [`TransportMode*`](src/main/java/nl/uu/iss/ga/model/data/dictionary/TransportMode.java) enum.
+
+
+### An optional class of files: Location assignment
+The location designation of activities can be split to a separate class of files, as long as for each activity number
+generated in the activity files, 
+there is a location assigned in one of the location designation files.
+This is the case in the provided samples, but it is not necessary, as all the relevant information used by the 
+simulation can be specified as above.
+
+In the sample config, one location assignment file is specified:
+[`charlottesville_examples/usa_va_charlottesville_location_assignment_week_1_6_0.csv`](src/main/resources/charlottesville_examples/usa_va_charlottesville_location_assignment_week_1_6_0.csv)
+
+Each record encodes the location for exactly one activity that is specified in the activity files.
+If this approach is taken, the fields marked with a cross (<sup>♰</sup>) can be *moved* to this class of files
+(i.e. deleted from the activity files), while the fields `hid`, `pid`, `activity_number`, `activity_type`, 
+`start_time`, and `duration` should be replicated, with the exact same values for matching records.

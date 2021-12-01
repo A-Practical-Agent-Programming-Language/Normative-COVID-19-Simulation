@@ -20,7 +20,6 @@ src/main/resources/va_adult_weekly_activity_sample.csv
 # County data synthetic populations
 src/main/resources/va_examples
 src/main/resources/charlottesville_county_1_9_0
-src/main/resources/charlottesville_examples
 src/main/resources/nelson_county_examples
 src/main/resources/nelson-county-subset/
 src/main/resources/goochland_county_1_9_0

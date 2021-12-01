@@ -1,0 +1,4 @@
+hid,pid,serialno,person_number,record_type,age,relationship,sex,school_enrollment,grade_level_attending,employment_status,employment_socp,cell_id,designation
+2214223,5606503,2015000952034,3,P,3,2,1,1,,,,,none
+2214223,5606501,2015000952034,1,P,34,0,1,1,,1,119XXX,,none
+2214223,5606502,2015000952034,2,P,33,1,2,1,,1,399011,,none
