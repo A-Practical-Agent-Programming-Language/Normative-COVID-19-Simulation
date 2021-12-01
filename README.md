@@ -92,7 +92,7 @@ This will automatically add the library to your local Maven repository, so no fu
 Clone the master branch of this library and install with Maven, or open in an IDE with Maven support (e.g. VSCode, Idea Intellij, Eclipse or NetBeans) and let the IDE set up the project.
 
 ```bash
-$ git clone https://github.com/A-Practical-Agent-Programming-Language/COVID-19-simulation.git
+$ git clone https://github.com/A-Practical-Agent-Programming-Language/Normative-COVID-19-Simulation.git
 $ cd COVID-19-simulation
 $ git checkout v2.0.0
 $ mvn -U clean install
