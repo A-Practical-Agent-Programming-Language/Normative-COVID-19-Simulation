@@ -6,8 +6,8 @@ usage: 2APL/SimpleEpiDemic Disease Simulation
        [--disease-seed-additional-frequency ADDITIONALDISEASEDAYS]
        [--disease-seed-additional-number ADDITIONALDISEASEDAYSNUM]
        [--threads THREADS] [--log-properties LOGPROPERTIES]
-       [--connect-pansim] [--write-graph] [--suppress-calculations]
-       [--output-dir OUTPUTDIR]
+       [--connect-pansim] [--count-affected-agents] [--write-graph]
+       [--suppress-calculations] [--output-dir OUTPUTDIR]
 
 A ecological simulation environment for  simulation  of human acceptance of
 measures aimed at reducing spread of novel diseases
@@ -92,6 +92,14 @@ Runtime optimization:
                          generated behavior to  the  PANSIM environment. If
                          absent,  no  PANSIM   connection  is  required,but
                          behavior is not interpreted (default: false)
+  --count-affected-agents
+                         If  set  to  true,   instead   of  performing  the
+                         simulation, the applicability of  each normwill be
+                         tested against each agent  activity,  to produce a
+                         file with the  number  ofagents  affected  by each
+                         norm, and the  total  duration  of activities that
+                         would  becancelled  under   100%  norm  compliance
+                         (default: false)
   --write-graph, -g      If this  argument  is  passed,  the  program will,
                          every time step, write the  state of each agent,as
                          well as each visit-pair  of  agents  who have been
@@ -110,4 +118,4 @@ Runtime optimization:
                          Specify a sub directory  of  "output" where output
                          files of the  behavior  model  will  be stored. By
                          default,  the  current  time  code  will  be  used
-                         (default: 2021-03-04T11:25:58.988615)
+                         (default: 2021-11-30T15:19:36.637189)
