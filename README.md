@@ -23,34 +23,59 @@ These are the Susceptible-Infected-Recovered (SIR) plots for these experiments, 
 |![SIR plot for E<sub>_6_</sub>](SIR-plots/experiment-6-norms-until2020-03-30.png)|![SIR plot for E<sub>_7_</sub>](SIR-plots/experiment-7-norms-until2020-05-08.png)|
 |![SIR plot for E<sub>_8_</sub>](SIR-plots/experiment-8-norms-until2020-05-26.png)|![SIR plot for E<sub>_9_</sub>](SIR-plots/experiment-9-norms-until2020-06-02.png)|
 
-In conjunction with PanSim, which acts both as the environment and disease progression simulation for the agents and as the simulation distribution framework,
+In conjunction with [PanSim](https://github.com/parantapa/pansim), which acts both as the environment and disease 
+progression simulation for the agents and as the simulation distribution framework,
 we have been able to run simulations employing the full population (~8 million agents) of Virginia.
 
 # Invoking program
 See manual.txt for command line arguments, or call --help when running the application
-Note the flag `-c` (or `--connect-pansim`) should be used to share data with the [PanSim](https://github.com/parantapa/pansim) simulation environment.
+Note the flag `-c` (or `--connect-pansim`) should be used to share data with the 
+[PanSim](https://github.com/parantapa/pansim) simulation environment, which is the required configuration 
+when modeling disease progression, and also allows distributing the simulation across multiple compute nodes.
 
-In the [resource](src/main/resources) directory, an example configuration file is given. Any parameter (or county) can be uncommented to ignore it. For repeatable simulations, make sure to specify the global seed, and a seed for each county (uncommented in the example configuration)
+We have provided a library containing many utilities for automated repeated runs of the simulation
+(e.g., for calibration, running experiments, sensitivity analysis) at 
+https://github.com/A-Practical-Agent-Programming-Language/covid-19-simulation-utilities
 
-The JAR file is automatically generated and placed in the `target` directory. In order to use the JAR file, make sure to use the Java version used by Maven, and call
+The library is a work in progress, so checkout the jaamas-2021-submission tag to ensure compatibility with the version
+of this repository. Also note not all parts of the code are strictly documented. Running with the `-h` flag does show
+manual pages for the core parts of the code. The `scripts` directory contains stand-alone scripts that may be helpful
+for analysis. The library comes with absolutely no warranties.
+
+In the [resource](src/main/resources) directory, an example [configuration](src/main/resources/config.toml) TOML file is given. 
+Any parameter (or county) can be uncommented to ignore it. 
+For repeatable simulations, make sure to specify the global seed, 
+and a seed for each county (uncommented in the example configuration).
+The files referenced in the configuration TOML file are explained in 
+[our description of the synthetic population we use](synthetic-population-instructions.md)
+
+The JAR file is automatically generated and placed in the `target` directory. 
+In order to use the JAR file, make sure to use the Java version also used by Maven, and call
 
 ```bashs
 $ java -jar sim2apl-episimpledemic-simulation-1.0-SNAPSHOT-jar-with-dependencies.jar [args]
 ```
 
-# Prerequisites
+For setting up and running PanSim, see the ([PanSim](https://github.com/parantapa/pansim)) repository.
+
+# Build instructions
+This section describes how to set up the code in your own development environment.
+
+## Prerequisites
 This manual assumes Maven is installed for easy package management
 
 Prerequisites:
-* Java 14+ (not tested with lower versions)
-* Sim2APL
+* Java 11+ (not tested with lower versions)
+* [Sim2APL](https://github.com/A-Practical-Agent-Programming-Language/Sim2APL)
+* ([PanSim](https://github.com/parantapa/pansim))
 * (Maven)
 
 ## Sim2APL
-Download Sim2APL from Bitbucket, and checkout the `jaamas-2021-submission` tag.
+Download [Sim2APL](https://github.com/A-Practical-Agent-Programming-Language/Sim2APL) from Github, 
+and, to ensure compatibility, checkout the `jaamas-2021-submission` tag.
 
 ```bash
-$ git clone https://bitbucket.org/goldenagents/sim2apl.git
+$ git clone https://github.com/A-Practical-Agent-Programming-Language/Sim2APL.git
 $ cd sim2apl
 $ git checkout jaamas-2021-submission
 ```
@@ -67,13 +92,19 @@ This will automatically add the library to your local Maven repository, so no fu
 Clone the master branch of this library and install with Maven, or open in an IDE with Maven support (e.g. VSCode, Idea Intellij, Eclipse or NetBeans) and let the IDE set up the project.
 
 ```bash
-$ git clone https://bitbucket.org/goldenagents/sim2apl-episimpledemics.git
-$ cd sim2apl-episimpledemics
+$ git clone https://github.com/A-Practical-Agent-Programming-Language/COVID-19-simulation.git
+$ cd COVID-19-simulation
+$ git checkout jaamas-2021-submission
 $ mvn -U clean install
 ```
 
 The application requires various arguments, either when invoked from the command line or when used in an IDE.
 See [manual.txt](manual.txt) for more information, or invoke the program with the argument `--help`
 
-An example of a configuration file (using the [TOML](https://github.com/toml-lang/toml) language) is given in [src/main/resources/config.toml](src/main/resources/config.toml) 
 
+An example of a configuration file (using the [TOML](https://github.com/toml-lang/toml) language) is given in 
+[src/main/resources/config.toml](src/main/resources/config.toml) 
+
+# License
+This library contains free software; The code can be freely used under the Mozilla Public License 2.0. See the license file for details.
+This code comes with ABSOLUTELY NO WARRANTY, to the extent permitted by applicable law.`

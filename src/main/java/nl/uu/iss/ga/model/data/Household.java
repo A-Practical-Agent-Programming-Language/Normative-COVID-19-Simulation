@@ -269,7 +269,7 @@ public class Household {
                 StringCodeTypeInterface.parseAsEnum(Fuel.class, keyValue.get("heating_fuel")),
                 StringCodeTypeInterface.parseAsEnum(Language.class, keyValue.get("household_language")),
                 StringCodeTypeInterface.parseAsEnum(FamilyEmployment.class, keyValue.get("family_type_and_employment_status")),
-                ParserUtil.parseAsInt(keyValue.get("workers_in_famuly")),
+                ParserUtil.parseAsInt(keyValue.get("workers_in_family")),
                 ParserUtil.parseAsLong(keyValue.get("rlid")),
                 ParserUtil.parseAsDouble(keyValue.get("residence_longitude")),
                 ParserUtil.parseAsDouble(keyValue.get("residence_latitude"))
