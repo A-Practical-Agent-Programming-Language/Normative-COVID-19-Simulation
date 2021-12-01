@@ -37,7 +37,7 @@ We have provided a library containing many utilities for automated repeated runs
 (e.g., for calibration, running experiments, sensitivity analysis) at 
 https://github.com/A-Practical-Agent-Programming-Language/covid-19-simulation-utilities
 
-The library is a work in progress, so checkout the jaamas-2021-submission tag to ensure compatibility with the version
+The library is a work in progress, so checkout the v2.0.0 version tag to ensure compatibility with the version
 of this repository. Also note not all parts of the code are strictly documented. Running with the `-h` flag does show
 manual pages for the core parts of the code. The `scripts` directory contains stand-alone scripts that may be helpful
 for analysis. The library comes with absolutely no warranties.
@@ -72,12 +72,12 @@ Prerequisites:
 
 ## Sim2APL
 Download [Sim2APL](https://github.com/A-Practical-Agent-Programming-Language/Sim2APL) from Github, 
-and, to ensure compatibility, checkout the `jaamas-2021-submission` tag.
+and, to ensure compatibility, checkout the `v2.0.0` version tag.
 
 ```bash
 $ git clone https://github.com/A-Practical-Agent-Programming-Language/Sim2APL.git
 $ cd sim2apl
-$ git checkout jaamas-2021-submission
+$ git checkout v2.0.0
 ```
 
 Install the package using Maven:
@@ -94,7 +94,7 @@ Clone the master branch of this library and install with Maven, or open in an ID
 ```bash
 $ git clone https://github.com/A-Practical-Agent-Programming-Language/COVID-19-simulation.git
 $ cd COVID-19-simulation
-$ git checkout jaamas-2021-submission
+$ git checkout v2.0.0
 $ mvn -U clean install
 ```
 
@@ -106,5 +106,5 @@ An example of a configuration file (using the [TOML](https://github.com/toml-lan
 [src/main/resources/config.toml](src/main/resources/config.toml) 
 
 # License
-This library contains free software; The code can be freely used under the Mozilla Public License 2.0. See the license file for details.
+This library contains free software; The code can be freely used under the Mozilla Public License 2.0. See the [license](LICENSE) file for details.
 This code comes with ABSOLUTELY NO WARRANTY, to the extent permitted by applicable law.`
