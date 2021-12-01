@@ -5,6 +5,11 @@ but we have not been granted the right to redistribute these files.
 In this manual we detail the specifications of the synthetic population
 required to instantiate our simulation, so that you may be able to produce or convert your own.
 
+We have also taken a sample from the synthetic population representing the details and activities of 3 agents
+(2 adults and one child) from a single household. These files can be found in 
+[src/main/resources/charlottesville_example](src/main/resources/charlottesville_examples)
+and can serve as extra illustration of this documentation.
+
 ## Why we use a synthetic population
 Agents in our simulation are drawn from a synthetic
 population of the state of Virginia, USA. This synthetic population has been constructed from multiple
