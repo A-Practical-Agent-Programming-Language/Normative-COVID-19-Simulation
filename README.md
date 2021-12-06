@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/433454077.svg)](https://zenodo.org/badge/latestdoi/433454077)
+
+
 A large-scale data-driven agent-based simulation model where individual agents reason about their beliefs, objectives, trust in government, 
 and the norms imposed by the government to model the public's response to behavioral interventions to mitigate the spread of novel diseases. 
 The agents' internal and external attitudes are based on actual data concerning daily activities of individuals, their political orientation, 
