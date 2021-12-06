@@ -70,17 +70,17 @@ This manual assumes Maven is installed for easy package management
 
 Prerequisites:
 * Java 11+ (not tested with lower versions)
-* [Sim2APL](https://github.com/A-Practical-Agent-Programming-Language/Sim2APL)
+* [Sim-2APL](https://github.com/A-Practical-Agent-Programming-Language/Sim-2APL)
 * ([PanSim](https://github.com/parantapa/pansim))
 * (Maven)
 
-## Sim2APL
-Download [Sim2APL](https://github.com/A-Practical-Agent-Programming-Language/Sim2APL) from Github, 
+## Sim-2APL
+Download [Sim-2APL](https://github.com/A-Practical-Agent-Programming-Language/Sim-2APL) from Github, 
 and, to ensure compatibility, checkout the `v2.0.0` version tag.
 
 ```bash
-$ git clone https://github.com/A-Practical-Agent-Programming-Language/Sim2APL.git
-$ cd sim2apl
+$ git clone https://github.com/A-Practical-Agent-Programming-Language/Sim-2APL.git sim-2apl
+$ cd sim-2apl
 $ git checkout v2.0.0
 ```
 
