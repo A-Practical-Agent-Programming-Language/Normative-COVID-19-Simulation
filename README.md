@@ -1,5 +1,6 @@
 [![DOI](https://zenodo.org/badge/433454077.svg)](https://zenodo.org/badge/latestdoi/433454077)
-
+![GitHub](https://img.shields.io/github/license/A-Practical-Agent-Programming-Language/Normative-COVID-19-Simulation)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/A-Practical-Agent-Programming-Language/Normative-COVID-19-Simulation)
 
 A large-scale data-driven agent-based simulation model where individual agents reason about their beliefs, objectives, trust in government, 
 and the norms imposed by the government to model the public's response to behavioral interventions to mitigate the spread of novel diseases. 
