@@ -149,7 +149,7 @@ public class VisitDataFrame {
      * @param allocator
      * @return
      */
-    public static VisitDataFrame fromAgentActionsSingleThread(
+    public static VisitDataFrame fromAgentActions(
         List<Future<DeliberationResult<CandidateActivity>>> agentActions,
         AgentStateMap stateMap,
         BufferAllocator allocator
@@ -174,80 +174,6 @@ public class VisitDataFrame {
         assert i == max_rows;
         dataFrame.setValueCount(i);
         return dataFrame;
-    }
-
-    /**
-     * Ideally, this should encode a data frame by making use of all available threads.
-     * @param agentActions
-     * @param stateMap
-     * @param allocator
-     * @param threads
-     * @param executor
-     * @return
-     */
-    public static VisitDataFrame fromAgentActionsMultiThread(
-            List<Future<DeliberationResult<CandidateActivity>>> agentActions,
-            AgentStateMap stateMap, BufferAllocator allocator,
-            int threads,
-            TickExecutor<CandidateActivity> executor
-    ) {
-        int max_rows = get_max_rows_for_visits(agentActions);
-        VisitDataFrame dataFrame = new VisitDataFrame(max_rows, allocator);
-
-        List<WriteAgentVisitsCallable> callables = new ArrayList<>(threads);
-        for(int i = 0; i < threads; i++) {
-            callables.add(new WriteAgentVisitsCallable(i, threads, stateMap, agentActions, dataFrame));
-        }
-
-        try {
-            executor.useExecutorForTasks(callables);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        dataFrame.setValueCount(max_rows);
-
-        return dataFrame;
-    }
-
-    static class WriteAgentVisitsCallable implements Callable<Void> {
-
-        private final int thread;
-        private final int threads_total;
-        private final AgentStateMap agentStateMap;
-        private final List<Future<DeliberationResult<CandidateActivity>>> agentActions;
-        private final VisitDataFrame dataFrame;
-
-        public WriteAgentVisitsCallable(int thread, int threads_total, AgentStateMap agentStateMap, List<Future<DeliberationResult<CandidateActivity>>> agentActions, VisitDataFrame dataFrame) {
-            this.thread = thread;
-            this.threads_total = threads_total;
-            this.agentStateMap = agentStateMap;
-            this.agentActions = agentActions;
-            this.dataFrame = dataFrame;
-        }
-
-        @Override
-        public Void call() throws Exception {
-            int start = thread * agentActions.size() / threads_total;
-            int end = (thread + 1) * agentActions.size() / threads_total;
-            if (end > agentActions.size()) end = agentActions.size() + 1;
-
-            int index = 0;
-            for(int i = 0; i < start; i++) {
-                index += agentActions.get(i).get().getActions().size();
-            }
-
-            for (int i = start; i < end; i++) {
-                DeliberationResult<CandidateActivity> result = agentActions.get(i).get();
-                for(int j = 0; j < result.getActions().size(); j++) {
-                    DiseaseState state = agentStateMap.getAgentState(result.getAgentID()).getState();
-                    dataFrame.addRow(index, result.getActions().get(j), state);
-                    index++;
-                }
-            }
-
-            return null;
-        }
     }
 
     public void close() {

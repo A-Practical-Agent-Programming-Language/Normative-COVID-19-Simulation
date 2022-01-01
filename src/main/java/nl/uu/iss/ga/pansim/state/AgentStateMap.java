@@ -2,6 +2,7 @@ package main.java.nl.uu.iss.ga.pansim.state;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.Person;
+import main.java.nl.uu.iss.ga.model.disease.AgentGroup;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
@@ -10,7 +11,6 @@ import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -38,7 +38,7 @@ public class AgentStateMap {
     public AgentStateMap(List<File> initialStateFiles, Random rnd) {
         reset();
         for(File f : initialStateFiles) {
-            LOGGER.log(Level.INFO, "Creating agent state map from file " + initialStateFiles.toString());
+            LOGGER.log(Level.INFO, "Creating agent state map from file " + initialStateFiles);
             readStateFile(f, rnd);
         }
     }
@@ -67,41 +67,12 @@ public class AgentStateMap {
     public AgentStateMap(Map<Long, Person> personMap, Random rnd) {
         reset();
         for(long pid : personMap.keySet()) {
-            AgentState state = new AgentState(pid, 0, DiseaseState.SUSCEPTIBLE, DiseaseState.NOT_SET, -1, rnd.nextInt());
+            AgentState state = new AgentState(pid, AgentGroup.fromPerson(personMap.get(pid)), DiseaseState.SUSCEPTIBLE, DiseaseState.NOT_SET, -1, rnd.nextInt());
             this.pidStateMap.put(pid, state);
         }
     }
 
-    public void fromDataFrameSingleThead(StateDataFrame dataFrame) {
-        reset();
-
-        int infected = 0;
-        int symptomatic = 0;
-        int total = 0;
-        for(int i = 0; i < dataFrame.getSchemaRoot().getRowCount(); i++) {
-            AgentState state = dataFrame.getAgentState(i);
-            AgentID aid = this.pidToAgentMap.get(state.getPid());
-            this.pidStateMap.put(state.getPid(), state);
-            this.agentStateMap.put(aid, state);
-            total++;
-            if(state.getState().equals(DiseaseState.INFECTED_SYMPTOMATIC)) {
-                symptomatic++;
-                infected++;
-            } else if (state.getState().equals(DiseaseState.INFECTED_ASYMPTOMATIC)) {
-                infected++;
-            }
-        }
-        LOGGER.log(Level.INFO, String.format(
-                "Received state frame. %d people, of whom %d (%.2f%%) are infected, %d (%.2f%%) of which are symptomatic",
-                total,
-                infected, (double)infected/total * 100,
-                symptomatic, (double) symptomatic/infected * 100
-                ));
-    }
-
-    public void fromDataFrameMultiThreaded(StateDataFrame dataFrame, int threads, TickExecutor<CandidateActivity> executor) {
-//        reset(); // If we do not reset, we can reuse buckets created on start, resulting in faster hashmap population
-
+    public void fromDataframe(StateDataFrame dataFrame, int threads, TickExecutor<CandidateActivity> executor) {
         List<Callable<Vector<Integer>>> callables = new ArrayList<>();
         for(int i = 0; i < threads; i++) {
             callables.add(new FromDataFrameCallable(dataFrame, threads, i));

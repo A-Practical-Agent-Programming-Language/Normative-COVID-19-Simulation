@@ -2,6 +2,7 @@ package main.java.nl.uu.iss.ga.pansim.state;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
+import main.java.nl.uu.iss.ga.model.disease.AgentGroup;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.apache.arrow.memory.BufferAllocator;
@@ -82,7 +83,7 @@ public class StateDataFrame {
         seed = (BigIntVector) schemaRoot.getVector("seed");
     }
 
-    public static StateDataFrame fromAgentStateMapSingleThead(List<AgentState> agentStates, BufferAllocator allocator) {
+    public static StateDataFrame fromAgentStateMap(List<AgentState> agentStates, BufferAllocator allocator) {
         int max_rows = agentStates.size();
         StateDataFrame dataFrame = new StateDataFrame(max_rows, allocator);
         for(int i = 0; i < agentStates.size(); i++) {
@@ -92,62 +93,10 @@ public class StateDataFrame {
         return dataFrame;
     }
 
-    public static StateDataFrame fromAgentStateMapMultiThread(
-            TickExecutor<CandidateActivity> executor,
-            int total_num_threads,
-            List<AgentState> agentStates,
-            BufferAllocator allocator
-    ) {
-        int max_rows = agentStates.size();
-        StateDataFrame dataFrame = new StateDataFrame(max_rows, allocator);
-
-        List<WriteStateMap> callables = new ArrayList<>();
-        for(int i = 0; i < total_num_threads; i++) {
-            callables.add(new WriteStateMap(i, total_num_threads, agentStates, dataFrame));
-        }
-
-        try {
-            executor.useExecutorForTasks(callables);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        dataFrame.setValueCount(max_rows);
-
-        return dataFrame;
-    }
-
-    static class WriteStateMap implements Callable<Void> {
-
-        private final StateDataFrame dataFrame;
-        private final List<AgentState> agentStates;
-        private final int thread;
-        private final int threads_total;
-
-        public WriteStateMap(int thread, int threads_total, List<AgentState> agentStates, StateDataFrame dataFrame) {
-            this.dataFrame = dataFrame;
-            this.thread = thread;
-            this.threads_total = threads_total;
-            this.agentStates = agentStates;
-        }
-
-        @Override
-        public Void call() throws Exception {
-            int start = this.thread * this.agentStates.size() / this.threads_total;
-            int end = (thread + 1) * this.agentStates.size() / this.threads_total;
-            if (end > this.agentStates.size()) end = agentStates.size();
-
-            for (int i = start; i < end; i++) {
-                this.dataFrame.addRow(i, this.agentStates.get(i));
-            }
-
-            return null;
-        }
-    }
-
     public AgentState getAgentState(int row) {
         return new AgentState(
                 pid.get(row),
-                group.get(row),
+                CodeTypeInterface.parseAsEnum(AgentGroup.class, group.get(row)),
                 CodeTypeInterface.parseAsEnum(DiseaseState.class, String.valueOf(current_state.get(row))),
                 CodeTypeInterface.parseAsEnum(DiseaseState.class, String.valueOf(next_state.get(row))),
                 dwell_time.get(row),
@@ -157,7 +106,7 @@ public class StateDataFrame {
 
     public void addRow(int index, AgentState state) {
         this.pid.set(index, state.getPid());
-        this.group.set(index, state.getGroup());
+        this.group.set(index, state.getGroup().getCode());
         this.current_state.set(index, state.getState().getCode());
         this.next_state.set(index, state.getNextState().getCode());
         this.dwell_time.set(index, state.getDwell_time());

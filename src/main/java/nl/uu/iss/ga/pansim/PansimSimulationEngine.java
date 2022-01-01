@@ -57,7 +57,15 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     public RootAllocator allocator = new RootAllocator(Long.MAX_VALUE);
 
-    public PansimSimulationEngine(Platform platform, ArgParse arguments, ObservationNotifier observationNotifier, AgentStateMap agentStateMap, TickHookProcessor<CandidateActivity>... processors) {
+    @SafeVarargs
+    public PansimSimulationEngine(
+            Platform platform,
+            ArgParse arguments,
+            ObservationNotifier
+                    observationNotifier,
+            AgentStateMap agentStateMap,
+            TickHookProcessor<CandidateActivity>... processors
+    ) {
         super(platform, processors);
         this.gatewayServer = new GatewayServer(this);
         this.agentStateMap = agentStateMap;
@@ -84,9 +92,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     private void runFirstTick() {
         try {
-            byte[] first_state_df_raw = StateDataFrame.fromAgentStateMapMultiThread(
-                    this.executor,
-                    this.arguments.getThreads(),
+            byte[] first_state_df_raw = StateDataFrame.fromAgentStateMap(
                     this.agentStateMap.getAllAgentStates(),
                     this.allocator
             ).toBytes();
@@ -106,25 +112,21 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         timingsMap.put("tick", Integer.toString(this.executor.getCurrentTick()));
         timingsMap.put("pansim", this.tickEnd > -1 ? Long.toString(millis - tickEnd) : "");
 
-        // TODO Cannot be parallelized
+        // Cannot be parallelized
         StateDataFrame state_output_df = new StateDataFrame(cur_state_df_raw, allocator);
         timingsMap.put("stateExtracted", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
-        // TODO Multithreaded done
-        this.agentStateMap.fromDataFrameMultiThreaded(state_output_df, arguments.getThreads(), executor);
-//        this.agentStateMap.fromDataFrameSingleThead(state_output_df);
+        this.agentStateMap.fromDataframe(state_output_df, arguments.getThreads(), executor);
         timingsMap.put("stateProcessed", Long.toString(System.currentTimeMillis() - millis));
         state_output_df.close();
         millis = System.currentTimeMillis();
 
-        // TODO cannot be parallelized
+        // Cannot be parallelized
         VisitResultDataFrame visit_output_df = new VisitResultDataFrame(visit_output_df_raw, allocator);
         timingsMap.put("visitsExtracted", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
-        // TODO Multithreaded done
-//        process_visit_output_single_thread(visit_output_df);
         process_visit_output(visit_output_df);
         timingsMap.put("visitsProcessed", Long.toString(System.currentTimeMillis() - millis));
         visit_output_df.close();
@@ -135,29 +137,21 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         LOGGER.log(Level.FINE, String.format(
                 "Received new visit output dataframe with %d rows", visit_output_df.getSchemaRoot().getRowCount()));
 
-        // TODO can we improve notifying of norms?
         processTickPreHooks(this.executor.getCurrentTick());
         timingsMap.put("prehook", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
-        // Multithreaded done
-//        HashMap<AgentID, List<CandidateActivity>> agentActions = this.executor.doTick();
         List<Future<DeliberationResult<CandidateActivity>>> agentActions = ((NoRescheduleBlockingTickExecutor<CandidateActivity>) this.executor).doTick(timingsMap);
-//        timingsMap.put("deliberation", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
         // Prepare results for pansim and misuse loop to set disease state on activities
-        // TODO parallelize
-//        VisitDataFrame visitDf = VisitDataFrame.fromAgentActionsMultiThread(agentActions, this.agentStateMap, allocator, arguments.getThreads(), this.executor);
-        VisitDataFrame visitDf = VisitDataFrame.fromAgentActionsSingleThread(agentActions, this.agentStateMap, this.allocator);
+        VisitDataFrame visitDf = VisitDataFrame.fromAgentActions(agentActions, this.agentStateMap, this.allocator);
         this.next_visit_df_raw = visitDf.toBytes();
         visitDf.close();
         timingsMap.put("visitsEncoded", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
-        // TODO Multithreaded done
-//        StateDataFrame stateDf = StateDataFrame.fromAgentStateMapMultiThread(this.executor, this.arguments.getThreads(), this.agentStateMap.getAllAgentStates(), this.allocator);
-        StateDataFrame stateDf = StateDataFrame.fromAgentStateMapSingleThead(this.agentStateMap.getAllAgentStates(), this.allocator);
+        StateDataFrame stateDf = StateDataFrame.fromAgentStateMap(this.agentStateMap.getAllAgentStates(), this.allocator);
         this.next_state_df_raw = stateDf.toBytes();
         stateDf.close();
         timingsMap.put("stateEncoded", Long.toString(System.currentTimeMillis() - millis));
@@ -210,13 +204,6 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         processSimulationFinishedHook(this.executor.getCurrentTick(), this.executor.getLastTickDuration());
         executor.shutdown();
         return true;
-    }
-
-    private void process_visit_output_single_thread(VisitResultDataFrame visit_output_df) {
-        for (int i = 0; i < visit_output_df.getSchemaRoot().getRowCount(); i++) {
-            LocationHistoryContext.Visit visit = visit_output_df.getAgentVisit(i);
-            this.observationNotifier.notifyVisit(visit.getPersonID(), this.executor.getCurrentTick(), visit);
-        }
     }
 
     private void process_visit_output(VisitResultDataFrame visit_output_df) {

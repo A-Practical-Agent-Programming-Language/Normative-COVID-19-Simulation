@@ -2,6 +2,7 @@ package main.java.nl.uu.iss.ga.pansim.state;
 
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import main.java.nl.uu.iss.ga.model.disease.AgentGroup;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 
 import java.util.Map;
@@ -12,13 +13,13 @@ public class AgentState {
     private static final String[] INITIAL_STATE_HEADERS_INDICES = INITIAL_STATE_HEADERS.split(ParserUtil.SPLIT_CHAR);
 
     private long pid;
-    private int group;
+    private AgentGroup group;
     private DiseaseState state;
     private DiseaseState nextState;
     private int dwell_time;
     private Random random;
 
-    public AgentState(long pid, int group, DiseaseState state, DiseaseState nextState, int dwell_time, long seed) {
+    public AgentState(long pid, AgentGroup group, DiseaseState state, DiseaseState nextState, int dwell_time, long seed) {
         this.pid = pid;
         this.group = group;
         this.state = state;
@@ -31,7 +32,7 @@ public class AgentState {
         return pid;
     }
 
-    public int getGroup() {
+    public AgentGroup getGroup() {
         return group;
     }
 
@@ -55,7 +56,7 @@ public class AgentState {
         Map<String ,String> keyValue = ParserUtil.zipLine(INITIAL_STATE_HEADERS_INDICES, line);
         return new AgentState(
                 ParserUtil.parseAsLong(keyValue.get("pid")),
-                ParserUtil.parseAsInt(keyValue.get("group")),
+                CodeTypeInterface.parseAsEnum(AgentGroup.class, keyValue.get("group")),
                 CodeTypeInterface.parseAsEnum(DiseaseState.class, keyValue.get("start_state")),
                 DiseaseState.NOT_SET,
                 -1,
