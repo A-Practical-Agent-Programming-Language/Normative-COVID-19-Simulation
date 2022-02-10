@@ -2,7 +2,10 @@ package main.java.nl.uu.iss.ga.model.norm;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import main.java.nl.uu.iss.ga.model.factor.IFactor;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
+
+import java.util.List;
 
 public abstract class NonRegimentedNorm extends Norm {
 
@@ -15,4 +18,6 @@ public abstract class NonRegimentedNorm extends Norm {
      * @return                      Value between 0 and 1, with 1 indicating a higher tendency to violate this norm
      */
     public abstract double calculateAttitude(AgentContextInterface<CandidateActivity> agentContextInterface, Activity activity);
+
+    public abstract List<IFactor> getFactors();
 }

@@ -69,5 +69,4 @@ public abstract class ModalNorm extends NonRegimentedNorm {
     abstract double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, int days);
 
     abstract double getFractionWithModeLastDays(LocationHistoryContext locationHistoryContext, long locationID, int days);
-
 }

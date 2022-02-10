@@ -6,6 +6,9 @@ import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import main.java.nl.uu.iss.ga.model.factor.FractionSymptomatic;
+import main.java.nl.uu.iss.ga.model.factor.IFactor;
+import main.java.nl.uu.iss.ga.model.factor.NOverLimit;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
@@ -28,7 +31,7 @@ import java.util.List;
  * </ul>
  */
 public class KeepGroupsSmallNorm extends NonRegimentedNorm {
-    private static final double CURVE_SLOPE_FACTOR = .4;
+    public static final double CURVE_SLOPE_FACTOR = .4;
     private static final int N_DAYS_LOOKBACK = 14; // used to be 7;
 
     private final APPLIES appliesToSetting;
@@ -65,7 +68,10 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         LocationHistoryContext historyContext = agentContextInterface.getContext(LocationHistoryContext.class);
 
         double averageSeenPreviously = historyContext.getLastDaysSeenAtAverage(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
-        double averageSymptomaticPreviously = historyContext.getLastDaysFractionSymptomatic(N_DAYS_LOOKBACK);
+
+        // Rationale here is: If you see more than 50% symptomatic people, you had better take the norm seriously.
+        // Similarly, if you don't see anybody symptomatic, that hardly changes your perspective? I'm sure this can be improved more
+        double averageSymptomaticPreviously = Math.max(1, 0.5 + historyContext.getLastDaysFractionSymptomatic(N_DAYS_LOOKBACK));
 
         // The difference between allowed and observed (larger than 0, otherwise this norm is not applicable)
         // We calculate symptomatic people double, to increase odds of adhering
@@ -155,5 +161,13 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
     @Override
     public String toString() {
         return String.format("KeepGroupsSmall[appliesTo=%s, max=%d]", appliesToSetting, maxAllowed);
+    }
+
+    @Override
+    public List<IFactor> getFactors() {
+        return Arrays.asList(
+                new FractionSymptomatic(),
+                new NOverLimit(this.maxAllowed, CURVE_SLOPE_FACTOR)
+        );
     }
 }

@@ -11,10 +11,12 @@ import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.TrackPlansContext;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.SleepGoal;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
+import main.java.nl.uu.iss.ga.simulation.agent.trigger.AdjustHAITrustGoal;
 import main.java.nl.uu.iss.ga.simulation.agent.trigger.AdjustTrustAttitudeGoal;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
@@ -126,6 +128,7 @@ public class ConfigModel {
     public void createAgents(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface) {
         this.adjustTrustAttitudeGoal =
                 new AdjustTrustAttitudeGoal(this.arguments.getFatigue(), this.arguments.getFatigueStart());
+        this.adjustHAITrustGoal = new AdjustHAITrustGoal();
 //        this.sleepGoal = new SleepGoal(5);
         for (ActivitySchedule schedule : this.activityFileReader.getActivitySchedules()) {
             schedule.splitActivitiesByDay();
@@ -133,12 +136,17 @@ public class ConfigModel {
         }
     }
 
+    private AdjustHAITrustGoal adjustHAITrustGoal;
     private AdjustTrustAttitudeGoal adjustTrustAttitudeGoal;
 //    private SleepGoal sleepGoal;
 
     private void createAgentFromSchedule(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface, ActivitySchedule schedule) {
-        boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
-        double initialGovernmentAttitude = isLiberal ? this.arguments.getLiberalTrustDistribution().sample() : this.arguments.getConservativeTrustDistribution().sample();
+//        boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
+//        double initialGovernmentAttitude = isLiberal ? this.arguments.getLiberalTrustDistribution().sample() : this.arguments.getConservativeTrustDistribution().sample();
+
+        // TODO, we want to move to one distribution. For now, we just ignore the other distribution, but for clean code, this should be refactored out of the code
+//        double initialGovernmentAttitude = this.arguments.getLiberalTrustDistribution().sample();
+        double initialGovernmentAttitude = getRandom().nextDouble();
 
         LocationEntry homeLocation = this.findHomeLocation(schedule);
 
@@ -151,6 +159,7 @@ public class ConfigModel {
                 .addContext(locationHistoryContext)
                 .addContext(beliefContext)
                 .addContext(new DayPlanContext())
+                .addContext(new TrackPlansContext())
                 .addExternalTriggerPlanScheme(new NormPlanScheme())
                 .addExternalTriggerPlanScheme(new EnvironmentTriggerPlanScheme())
                 .addGoalPlanScheme(new GoalPlanScheme());
@@ -159,10 +168,12 @@ public class ConfigModel {
                     platform.getHost(), platform.getPort(), null, null, null);
             AgentID aid = new AgentID(uri);
             Agent<CandidateActivity> agent = new Agent<>(platform, arguments, aid);
+            agent.adoptGoal(this.adjustHAITrustGoal); // We want this goal to be at the start
             for(Activity activity : schedule.getSchedule().values()) {
                 agent.adoptGoal(activity);
             }
-            agent.adoptGoal(adjustTrustAttitudeGoal);
+            // TODO disabled for HAI project
+//            agent.adoptGoal(adjustTrustAttitudeGoal);
 //            agent.adoptGoal(sleepGoal);
             this.agents.add(aid);
             this.agentStateMap.addAgent(aid, schedule.getPerson(), this.fipsCode);

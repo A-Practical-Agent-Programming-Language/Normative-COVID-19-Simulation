@@ -8,12 +8,15 @@ import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.TrackPlansContext;
+import main.java.nl.uu.iss.ga.simulation.agent.plan.AdjustHAITrustPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.AdjustTrustAttitudePlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.SleepGoal;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.SleepPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.CancelActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.ExecuteScheduledActivityPlan;
 import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.HandleTripPlan;
+import main.java.nl.uu.iss.ga.simulation.agent.trigger.AdjustHAITrustGoal;
 import main.java.nl.uu.iss.ga.simulation.agent.trigger.AdjustTrustAttitudeGoal;
 import main.java.nl.uu.iss.ga.util.tracking.activities.InfluencedActivitiesInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
@@ -23,7 +26,6 @@ import nl.uu.cs.iss.ga.sim2apl.core.plan.PlanScheme;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
@@ -38,6 +40,7 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
     public Plan<CandidateActivity> instantiate(Trigger trigger, AgentContextInterface<CandidateActivity> agentContextInterface) {
         this.agentContextInterface = agentContextInterface;
         BeliefContext context = agentContextInterface.getContext(BeliefContext.class);
+        TrackPlansContext trackPlansContext = agentContextInterface.getContext(TrackPlansContext.class);
 
         if (trigger instanceof Activity) {
             Activity activity = (Activity) trigger;
@@ -60,6 +63,7 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
                     if (candidate == null || candidate.getActivity() == null) {
                         return new CancelActivityPlan(activity);
                     } else {
+                        trackPlansContext.addLocation(candidate, norms);
                         return new ExecuteScheduledActivityPlan(candidate);
                     }
                 }
@@ -70,6 +74,8 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
             if (context.getCurrentTick() >= adjustTrustAttitudeGoal.getFatigueStart()) {
                 return new AdjustTrustAttitudePlan(adjustTrustAttitudeGoal);
             }
+        } else if (trigger instanceof AdjustHAITrustGoal) {
+            return new AdjustHAITrustPlan();
         } else if (trigger instanceof SleepGoal) {
             return new SleepPlan((SleepGoal) trigger);
         }

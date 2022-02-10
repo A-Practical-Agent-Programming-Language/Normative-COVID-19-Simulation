@@ -6,11 +6,17 @@ import main.java.nl.uu.iss.ga.model.data.Household;
 import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
+import main.java.nl.uu.iss.ga.model.factor.AccomodatedToWorkFromHome;
+import main.java.nl.uu.iss.ga.model.factor.FractionSymptomatic;
+import main.java.nl.uu.iss.ga.model.factor.IFactor;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This norm encourages agents to work from home, without enforcing it.
@@ -64,12 +70,21 @@ public class EncourageTeleworkNorm extends NonRegimentedNorm {
 
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
+        Designation designation = agentContextInterface.getContext(Person.class).getDesignation();
         return activity.getActivityType().equals(ActivityType.WORK) &&
-                agentContextInterface.getContext(Person.class).getDesignation().equals(Designation.none);
+                designation.equals(Designation.none);
     }
 
     @Override
     public String toString() {
         return String.format("EncourageTelework[lookback=%dDays,pct_able=%.2f]", N_DAYS_LOOKBACK, pct_accomodated_work_from_home);
+    }
+
+    @Override
+    public List<IFactor> getFactors() {
+        return Arrays.asList(
+                new AccomodatedToWorkFromHome(),
+                new FractionSymptomatic()
+        );
     }
 }

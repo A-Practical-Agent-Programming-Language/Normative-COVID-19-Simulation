@@ -3,9 +3,13 @@ package main.java.nl.uu.iss.ga.model.norm.nonregimented;
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.factor.IFactor;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * People stay home if they are sick, with a probability indicates by how much they are inclined to follow government
@@ -35,5 +39,10 @@ public class IfSickStayHomeNorm extends NonRegimentedNorm {
     @Override
     public String toString() {
         return "StayHomeIfSick";
+    }
+
+    @Override
+    public List<IFactor> getFactors() {
+        return Collections.emptyList();
     }
 }

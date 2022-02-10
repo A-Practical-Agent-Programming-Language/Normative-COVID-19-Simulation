@@ -2,8 +2,13 @@ package main.java.nl.uu.iss.ga.model.norm.modal;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import main.java.nl.uu.iss.ga.model.factor.FractionDistance;
+import main.java.nl.uu.iss.ga.model.factor.IFactor;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This norm is currently not used
@@ -29,5 +34,12 @@ public class EncourageDistanceNorm extends ModalNorm {
     @Override
     public boolean applicable(Activity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {
         return false;
+    }
+
+    @Override
+    public List<IFactor> getFactors() {
+        return Arrays.asList(
+                new FractionDistance()
+        );
     }
 }

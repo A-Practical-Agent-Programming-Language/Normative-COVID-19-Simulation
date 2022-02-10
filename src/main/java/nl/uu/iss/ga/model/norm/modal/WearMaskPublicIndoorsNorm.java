@@ -3,10 +3,13 @@ package main.java.nl.uu.iss.ga.model.norm.modal;
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.factor.FractionMask;
+import main.java.nl.uu.iss.ga.model.factor.IFactor;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * See @code{ModalNorm} for all reasoning
@@ -45,5 +48,12 @@ public class WearMaskPublicIndoorsNorm extends ModalNorm {
     @Override
     public String toString() {
         return "WearMaskIndoors";
+    }
+
+    @Override
+    public List<IFactor> getFactors() {
+        return Arrays.asList(
+                new FractionMask()
+        );
     }
 }

@@ -6,9 +6,13 @@ import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import main.java.nl.uu.iss.ga.model.factor.IFactor;
 import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
+
+import java.util.Collections;
+import java.util.List;
 
 public class StayHomeNorm extends NonRegimentedNorm {
 
@@ -71,5 +75,11 @@ public class StayHomeNorm extends NonRegimentedNorm {
         return String.format("StayHome[%s]",
                 this.appliesTo.equals(APPLIES.AGE) ? String.format("age >= %d", this.age) :
                         this.appliesTo);
+    }
+
+    @Override
+    public List<IFactor> getFactors() {
+        // TODO, in this case, it may be relevant if we see other people ignorign this directive, which only happens if we're not home
+        return Collections.emptyList();
     }
 }

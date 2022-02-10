@@ -5,8 +5,13 @@ import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.Person;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
+import main.java.nl.uu.iss.ga.model.factor.FractionMask;
+import main.java.nl.uu.iss.ga.model.factor.IFactor;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This is not technically a norm, but a government provision that allows the wearing of masks, which was
@@ -93,5 +98,12 @@ public class AllowWearMaskNorm extends ModalNorm {
     @Override
     public String toString() {
         return "AllowWearMask";
+    }
+
+    @Override
+    public List<IFactor> getFactors() {
+        return Arrays.asList(
+                new FractionMask()
+        );
     }
 }

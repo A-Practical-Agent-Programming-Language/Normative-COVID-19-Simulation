@@ -4,7 +4,7 @@ savevisits = false
 [simulation]
 norms = "norm-schedule.csv"
 startdate = 2020-03-01
-#iterations = 2020-06-28 # End date; Alternatively, specify the number of iterations
+iterations = 2020-06-28 # End date; Alternatively, specify the number of iterations
 diseasemodel = "../../../../calibration/external/seiar.toml"
 seed = 42
 
