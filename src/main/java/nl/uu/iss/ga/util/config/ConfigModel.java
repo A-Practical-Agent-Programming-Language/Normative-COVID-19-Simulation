@@ -141,12 +141,12 @@ public class ConfigModel {
 //    private SleepGoal sleepGoal;
 
     private void createAgentFromSchedule(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface, ActivitySchedule schedule) {
-//        boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
-//        double initialGovernmentAttitude = isLiberal ? this.arguments.getLiberalTrustDistribution().sample() : this.arguments.getConservativeTrustDistribution().sample();
+        boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
+        double initialGovernmentAttitude = isLiberal ? this.arguments.getLiberalTrustDistribution().sample() : this.arguments.getConservativeTrustDistribution().sample();
 
         // TODO, we want to move to one distribution. For now, we just ignore the other distribution, but for clean code, this should be refactored out of the code
 //        double initialGovernmentAttitude = this.arguments.getLiberalTrustDistribution().sample();
-        double initialGovernmentAttitude = getRandom().nextDouble();
+//        double initialGovernmentAttitude = getRandom().nextDouble();
 
         LocationEntry homeLocation = this.findHomeLocation(schedule);
 
