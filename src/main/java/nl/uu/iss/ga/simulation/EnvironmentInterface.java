@@ -84,7 +84,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         }
 
         this.gyrationRadius = arguments.isSuppressCalculations() ? null :
-                new GyrationRadius(this.platform.getTickExecutor(), this.arguments, this.startDate);
+                new GyrationRadius(this.platform, this.arguments, this.startDate);
     }
 
     public void setSimulationStarted() {
@@ -297,9 +297,9 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                 }
 
                 visits.get(locationID).visited.getAndIncrement();
-                if (p.isMask()) visits.get(locationID).mask.getAndDecrement();
+                if (p.isMask()) visits.get(locationID).mask.getAndIncrement();
                 if (p.isDistance()) visits.get(locationID).distance.getAndIncrement();
-                if (state.equals(DiseaseState.INFECTED_SYMPTOMATIC)) visits.get(locationID).symptomatic.getAndIncrement();
+                if (!state.equals(DiseaseState.SUSCEPTIBLE)) visits.get(locationID).symptomatic.getAndIncrement();
             }
 
             return null;

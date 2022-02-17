@@ -63,7 +63,14 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
                     if (candidate == null || candidate.getActivity() == null) {
                         return new CancelActivityPlan(activity);
                     } else {
-                        trackPlansContext.addLocation(candidate, norms);
+                        if (!(ActivityType.HOME.equals(candidate.getActivity().getActivityType()))) {
+                            // TODO Does not make sense not to update trust based on home activities?
+
+                            // Perhaps it makes sense that if you trust an agent enough to have them over at home,
+                            // we can assume they discuss what they think about the government and other people, and
+                            // trust converges for those agents? I.e., add explicit communication about trust?
+                            trackPlansContext.addLocation(candidate, norms);
+                        }
                         return new ExecuteScheduledActivityPlan(candidate);
                     }
                 }
@@ -75,7 +82,7 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
                 return new AdjustTrustAttitudePlan(adjustTrustAttitudeGoal);
             }
         } else if (trigger instanceof AdjustHAITrustGoal) {
-            return new AdjustHAITrustPlan();
+            return new AdjustHAITrustPlan(((AdjustHAITrustGoal) trigger).getDiscountFactor());
         } else if (trigger instanceof SleepGoal) {
             return new SleepPlan((SleepGoal) trigger);
         }

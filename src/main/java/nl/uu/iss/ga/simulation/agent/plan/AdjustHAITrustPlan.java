@@ -12,10 +12,17 @@ import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class AdjustHAITrustPlan extends RunOncePlan<CandidateActivity> {
 
-    private final double DISCOUNT_FACTOR_GAMMA = 0.1d;
+    private static final Logger LOGGER = Logger.getLogger(AdjustHAITrustPlan.class.getSimpleName());
+
+    private final double discountFactor;
+
+    public AdjustHAITrustPlan(double discountFactor) {
+        this.discountFactor = discountFactor;
+    }
 
     @Override
     public CandidateActivity executeOnce(PlanToAgentInterface<CandidateActivity> planToAgentInterface) throws PlanExecutionError {
@@ -71,7 +78,7 @@ public class AdjustHAITrustPlan extends RunOncePlan<CandidateActivity> {
     }
 
     private double inertia(double trust) {
-        return -4 * DISCOUNT_FACTOR_GAMMA * Math.pow(trust - 0.5, 2) + DISCOUNT_FACTOR_GAMMA;
+        return -4 * discountFactor * Math.pow(trust - 0.5, 2) + discountFactor;
     }
 
     private double average(List<Double> doubles) {

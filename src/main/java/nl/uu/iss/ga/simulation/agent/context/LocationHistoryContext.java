@@ -709,7 +709,7 @@ public class LocationHistoryContext implements Context {
          * wearing a mask
          */
         public double getLastDayFractionMask(long tick) {
-            if(this.locationHistory.containsKey(tick)) {
+            if(this.locationHistory.containsKey(tick) && this.locationHistory.get(tick).getN_contacts() > 0) {
                 return (double) this.locationHistory.get(tick).getN_mask() / this.locationHistory.get(tick).getN_contacts();
             } else {
                 return 0;
@@ -777,7 +777,7 @@ public class LocationHistoryContext implements Context {
          * practicing physical distancing
          */
         public double getLastDayFractionDistancing(long tick) {
-            if(this.locationHistory.containsKey(tick)) {
+            if(this.locationHistory.containsKey(tick) && this.locationHistory.get(tick).getN_contacts() > 0) {
                 return (double) this.locationHistory.get(tick).getN_distancing() / this.locationHistory.get(tick).getN_contacts();
             } else {
                 return 0;
@@ -854,7 +854,7 @@ public class LocationHistoryContext implements Context {
          * @return The fraction of agents of the overall number of encountered agents at this location that was visibly symptomatic
          */
         public double getLastDayFractionSymptomatic(long tick) {
-            if(this.locationHistory.containsKey(tick)) {
+            if(this.locationHistory.containsKey(tick) && this.locationHistory.get(tick).getN_contacts() > 0) {
                 return (double) this.locationHistory.get(tick).getN_symptomatic() / this.locationHistory.get(tick).getN_contacts();
             } else {
                 return 0;

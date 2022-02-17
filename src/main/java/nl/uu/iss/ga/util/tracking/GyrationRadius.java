@@ -2,11 +2,13 @@ package main.java.nl.uu.iss.ga.util.tracking;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
+import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.util.Methods;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.javatuples.Pair;
 
@@ -31,9 +33,11 @@ public class GyrationRadius {
     private static final Logger LOGGER = Logger.getLogger(GyrationRadius.class.getName());
     private final List<ConfigModel> counties;
     private final Map<String, Integer> numAgentsPerCounty = new HashMap<>();
+    private final Platform platform;
 
-    public GyrationRadius(TickExecutor<CandidateActivity> executor, ArgParse arguments, LocalDate simulationStartDate) {
-        this.executor = executor;
+    public GyrationRadius(Platform platform, ArgParse arguments, LocalDate simulationStartDate) {
+        this.platform = platform;
+        this.executor = platform.getTickExecutor();
         this.arguments = arguments;
         this.counties = arguments.getCounties();
         for(ConfigModel county : this.counties) {
@@ -50,9 +54,13 @@ public class GyrationRadius {
         LocalDate simulationDay = this.simulationStartDate.plusDays(tick);
 
         HashMap<String, Pair<Integer, Double>> perCountyRadii = new HashMap<>();
+        HashMap<String, Double> perCountyTrust = new HashMap<>();
         for (ConfigModel county : this.counties) {
-            double averageRadiusOfGyration = calculateAverageRadiusOfGyration(county, agentActions);
+            Pair<Double, Double> resultPair = calculateAverageRadiusOfGyration(county, agentActions);
+            double averageRadiusOfGyration = resultPair.getValue0();
+            double averageTrust = resultPair.getValue1();
             perCountyRadii.put(county.getName(), new Pair<>(county.getFipsCode(), averageRadiusOfGyration));
+            perCountyTrust.put(county.getName(), averageTrust);
         }
 
         for(String fips : perCountyRadii.keySet()) {
@@ -65,10 +73,10 @@ public class GyrationRadius {
                     perCountyRadii.get(fips).getValue1()));
         }
 
-        writeAveragesToFile(perCountyRadii, simulationDay);
+        writeAveragesToFile(perCountyRadii, perCountyTrust, simulationDay);
     }
 
-    private void writeAveragesToFile(HashMap<String, Pair<Integer, Double>> lastTickAverages, LocalDate date) {
+    private void writeAveragesToFile(HashMap<String, Pair<Integer, Double>> lastTickAverages, HashMap<String, Double> trust, LocalDate date) {
         boolean writeHeader = !fout.exists();
         try (
                 FileOutputStream fos = new FileOutputStream(fout, true);
@@ -78,7 +86,7 @@ public class GyrationRadius {
                 throw new IOException("Failed to create file " + fout.getName());
             }
             if (writeHeader) {
-                bw.write("date,COUNTYFP,GyrationRadiusKm,#agents\n");
+                bw.write("date,COUNTYFP,GyrationRadiusKm,trust,#agents\n");
             }
             for (String countyname : lastTickAverages.keySet()) {
                 bw.write(date.format(DateTimeFormatter.ISO_DATE));
@@ -86,6 +94,8 @@ public class GyrationRadius {
                 bw.write(Integer.toString(lastTickAverages.get(countyname).getValue0()));
                 bw.write(",");
                 bw.write(Double.toString(lastTickAverages.get(countyname).getValue1()));
+                bw.write(",");
+                bw.write(Double.toString(trust.get(countyname)));
                 bw.write(",");
                 bw.write(Integer.toString(this.numAgentsPerCounty.get(countyname)));
                 bw.write("\n");
@@ -101,12 +111,12 @@ public class GyrationRadius {
      * @param agentActions      Agent actions produced in the last time step
      * @return                  Average radius of gyration of agents in the county
      */
-    private double calculateAverageRadiusOfGyration(ConfigModel county, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+    private Pair<Double, Double> calculateAverageRadiusOfGyration(ConfigModel county, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
         List<RadiusGyrationCalculator> callables = new ArrayList<>(this.arguments.getThreads());
 
-        double total = 0; int counted = 0;
+        double total = 0; int counted = 0; double trust = 0;
         for(int i = 0; i < arguments.getThreads(); i++) {
-            callables.add(new RadiusGyrationCalculator(agentActions, county.getAgents(), i, arguments.getThreads()));
+            callables.add(new RadiusGyrationCalculator(platform, agentActions, county.getAgents(), i, arguments.getThreads()));
         }
         try {
             List<Future<RadiusSubResult>> futures = this.executor.useExecutorForTasks(callables);
@@ -114,6 +124,7 @@ public class GyrationRadius {
             for(Future<RadiusSubResult> future : futures) {
                 total += future.get().total;
                 counted += future.get().counted;
+                trust += future.get().totalTrust;
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -124,7 +135,7 @@ public class GyrationRadius {
                     "only %d %s agents of %d (%f%%) produced actions",
                     counted, county.getName(), county.getAgents().size(), counted / (double) county.getAgents().size()));
 
-        return total / counted;
+        return new Pair<>(total / counted, trust / counted);
     }
 
     private static Double calculateRadiusOfGyrationForAgent(List<CandidateActivity> activities) {
@@ -194,17 +205,20 @@ public class GyrationRadius {
 
     private static class RadiusGyrationCalculator implements Callable<RadiusSubResult> {
 
+        private final Platform platform;
         private final List<Future<DeliberationResult<CandidateActivity>>> agentActions;
         private final Set<AgentID> countyAgents;
         private final int thread;
         private final int threads_total;
 
         public RadiusGyrationCalculator(
+                Platform platform,
                 List<Future<DeliberationResult<CandidateActivity>>> agentActions,
                 List<AgentID> countyAgents,
                 int thread,
                 int threads_total
         ) {
+            this.platform = platform;
             this.agentActions = agentActions;
             this.countyAgents = new HashSet<>(countyAgents);
             this.thread = thread;
@@ -217,7 +231,7 @@ public class GyrationRadius {
             int end = (thread + 1) * this.agentActions.size() / this.threads_total;
             if (end > this.agentActions.size()) end = this.agentActions.size();
 
-            double total = 0; int counted = 0;
+            double total = 0; int counted = 0; double trust = 0;
             for(int i = start; i < end; i++) {
                 DeliberationResult<CandidateActivity> result = this.agentActions.get(i).get();
                 if(this.countyAgents.contains(result.getAgentID())) {
@@ -225,21 +239,25 @@ public class GyrationRadius {
                     if (radius != null) {
                         total += radius;
                         counted += 1;
+                        trust += ((BeliefContext) platform.getLocalAgent(result.getAgentID())
+                                .getContext(BeliefContext.class)).getPriorTrustAttitude();
                     }
                 }
             }
 
-            return new RadiusSubResult(total, counted);
+            return new RadiusSubResult(total, counted, trust);
         }
     }
 
     private static class RadiusSubResult {
         private double total;
         private int counted;
+        private double totalTrust;
 
-        public RadiusSubResult(double total, int counted) {
+        public RadiusSubResult(double total, int counted, double totalTrust) {
             this.total = total;
             this.counted = counted;
+            this.totalTrust = totalTrust;
         }
 
         public double getTotal() {

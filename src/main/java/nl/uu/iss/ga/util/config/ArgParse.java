@@ -95,6 +95,12 @@ public class ArgParse {
     @Arg(dest = "countaffectedagents")
     private boolean countaffectedagents;
 
+    @Arg(dest = "trustdiscount")
+    private double trustdiscount;
+
+    @Arg(dest = "samplerandom")
+    private boolean samplerandom;
+
     private BetaDistribution liberalTrustDistribution;
     private BetaDistribution conservativeTrustDistribution;
 
@@ -248,6 +254,14 @@ public class ArgParse {
 
     public long getFatigueStart() {
         return fatigueStart;
+    }
+
+    public double getTrustDiscountFactor() {
+        return trustdiscount;
+    }
+
+    public boolean isSampleTrustRandomly() {
+        return samplerandom;
     }
 
     public int getNode() {
@@ -406,6 +420,22 @@ public class ArgParse {
                 .setDefault(0)
                 .dest("fatiguestart")
                 .help("When (time step) to start decreasing the agent's trust using the fatigue factor");
+
+        behaviorCalibration.addArgument("--trust-discount")
+                .required(false)
+                .type(double.class)
+                .dest("trustdiscount")
+                .setDefault(0.1d)
+                .help("The discount factor gamma used for updating the trust");
+
+        behaviorCalibration.addArgument("--sample-random")
+                .type(Boolean.class)
+                .required(false)
+                .setDefault(false)
+                .action(new StoreTrueArgumentAction())
+                .dest("samplerandom")
+                .help("If this argument is present, the simulation will run sample the trust randomly and uniformly," +
+                        "if not, the two distributions for democrat and republican will be used");
 
         ArgumentGroup diseaseCalibration = parser.addArgumentGroup("Disease Calibration")
                 .description("Arguments used for calibrating the disease model");
