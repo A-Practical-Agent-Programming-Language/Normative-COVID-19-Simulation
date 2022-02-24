@@ -12,9 +12,12 @@ import java.util.function.Function;
 import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.*;
 
 public class LocationHistoryContext implements Context {
+
+    private static final Logger LOGGER = Logger.getLogger(LocationHistoryContext.class.getSimpleName());
 
     private long lastDayTick = 0;
 
@@ -919,9 +922,41 @@ public class LocationHistoryContext implements Context {
             this.personID = personID;
             this.locationID = locationID;
             this.infectionProbability = infectionProbability;
+            if (n_contacts < 0) {
+                LOGGER.severe(String.format(
+                                "Registered %d contacts for agent %d, which is negative, so setting to 0",
+                                n_contacts, personID
+                        )
+                );
+                n_contacts = 0;
+            }
             this.n_contacts = n_contacts;
+            if(n_mask < 0) {
+                LOGGER.severe(String.format(
+                                "Registered %d contacts with masks for agent %d, which is negative, so setting to 0",
+                                n_mask, personID
+                        )
+                );
+                n_mask = 0;
+            }
             this.n_mask = n_mask;
+            if (n_distancing < 0) {
+                LOGGER.severe(String.format(
+                        "Registered %d contacts who were distancing for agent %d, which is negative, so setting to 0",
+                        n_distancing, personID
+                    )
+                );
+                n_distancing = 0;
+            }
             this.n_distancing = n_distancing;
+            if (n_symptomatic < 0) {
+                LOGGER.severe(String.format(
+                        "Registered %d contacts who were coughing for agent %d, which is negative, so setting to 0",
+                        n_symptomatic, personID
+                    )
+                );
+                n_symptomatic = 0;
+            }
             this.n_symptomatic = n_symptomatic;
         }
 

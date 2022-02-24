@@ -45,6 +45,11 @@ public class AdjustHAITrustPlan extends RunOncePlan<CandidateActivity> {
 
         // Update trust
         double newTrust = calculate_trust_update(beliefContext.getPriorTrustAttitude(), factorValues);
+
+        if (newTrust < 0 || newTrust > 1 || Double.isNaN(newTrust)) {
+            LOGGER.severe("New trust out of bounds: " + newTrust);
+        }
+
         beliefContext.setPriorTrustAttitude(newTrust);
 
         // Reset tracking to get ready for a new day
@@ -60,7 +65,11 @@ public class AdjustHAITrustPlan extends RunOncePlan<CandidateActivity> {
         for(TrackPlansContext.Location location : visitedLocations) {
             List<IFactor> factors = location.getUniqueFactors();
             for(IFactor factor : factors) {
-                factorValues.add(factor.calculateValue(location.getLocationID(), locationHistoryContext));
+                double value = factor.calculateValue(location.getLocationID(), locationHistoryContext);
+                if (value < 0 || value > 1 || Double.isNaN(value)) {
+                    LOGGER.severe(String.format("Value for factor %s out of bounds: %f", factor.getClass().getSimpleName(), value));
+                }
+                factorValues.add(value);
             }
         }
 

@@ -8,7 +8,7 @@ start,norm,end,param,statement,Comment Jan,Comment Davide
 2020-03-17,StayHomeSick,,,"if with chronic health conditions or aged more than 65, self-quarantine",,
 2020-03-17,StayHome,2020-03-23,age>65,"if aged more than 65, self-quarantine",,
 2020-03-17,ReduceBusinessCapacity,2020-05-08,10,"restaurants, fitness centers, and theaters reduce capacity to 10 people, or close",We don’t have these data. Be creative? Or ignore,
-2020-03-17,BusinessClosed,2020-05-08, 7 DMV offices,close Virginia’s 75 DMV offices to the public,Ignore: we don’t have this data,
+2020-03-17,BusinessClosed,2020-05-08,7 DMV offices,close Virginia’s 75 DMV offices to the public,Ignore: we don’t have this data,
 2020-03-23,TakeawayOnly,2020-05-08,,restaurants,,
 2020-03-23,BusinessClosed,2020-05-08,NEB,"non-esential business (NEB) closed Essential retail businesses as set out below may remain open during their normal businesshours. They should comply with the Guidelines for All Business Sectors expressly incorporated by reference and linkedhere, as best practices. Employers are required to provide face coverings to employees.a. Grocery stores, pharmacies, and other retailers that sell food and beverage products or pharmacy products,including dollar stores, and department stores with grocery or pharmacy operations;","We have designations of essential jobs. This norm practically means: Unless a person has an essential job, follow the reasoning we have already implemented. Otherwise, agent will go to work. This also changes the wearMask norm/suggestion to always comply for these essential workers",
 2020-03-23,StayHome,2020-06-10,all,,,
