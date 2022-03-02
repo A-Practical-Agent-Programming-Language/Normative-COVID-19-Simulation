@@ -2,6 +2,7 @@ package main.java.nl.uu.iss.ga.util.tracking;
 
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.disease.AgentGroup;
 import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.model.norm.NormContainer;
@@ -90,7 +91,14 @@ public class ScheduleTracker {
                 new ScheduleTrackerGroup(arguments.getOutputDir(), String.format(AVERAGE_SCHEDULE_FILENAME, this.suffix) + ".csv", averageScheduleHeaders);
         this.fileObjects.put(AVERAGE_SCHEDULE_FILENAME, g);
 
-        List<String> epicurveHeaders = Arrays.stream(DiseaseState.values()).map(DiseaseState::toString).collect(Collectors.toList());
+        List<String> epicurveHeaders = new ArrayList<>();
+        for(DiseaseState state : DiseaseState.values()) {
+            epicurveHeaders.add(state.name());
+            for(AgentGroup group : AgentGroup.values()) {
+                epicurveHeaders.add(String.format("%s_%s", group, state.name()));
+            }
+        }
+
         ScheduleTrackerGroup epicurve = new ScheduleTrackerGroup(arguments.getOutputDir(), EPICURVE_FILENAME + ".csv", epicurveHeaders);
         this.fileObjects.put(EPICURVE_FILENAME, epicurve);
 
@@ -394,9 +402,16 @@ public class ScheduleTracker {
         Map<String, Integer> epicurveMap = new HashMap<>();
         for(DiseaseState state : DiseaseState.values()) {
             epicurveMap.put(state.name(), 0);
+            for(AgentGroup group : AgentGroup.values()) {
+                epicurveMap.put(String.format("%s_%s", group, state.name()), 0);
+            }
         }
+
         for(AgentState state : this.agentStateMap.getAllAgentStates()) {
             epicurveMap.put(state.getState().name(), epicurveMap.get(state.getState().name()) + 1);
+
+            String groupName = String.format("%s_%s", state.getGroup(), state.getState().name());
+            epicurveMap.put(groupName, epicurveMap.get(groupName) + 1);
         }
 
         Map<String, String> epicurveStringMap = new HashMap<>();
