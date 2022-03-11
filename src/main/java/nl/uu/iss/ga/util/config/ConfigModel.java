@@ -12,7 +12,6 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.TrackPlansContext;
-import main.java.nl.uu.iss.ga.simulation.agent.plan.SleepGoal;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
@@ -56,14 +55,14 @@ public class ConfigModel {
     private ActivityFileReader activityFileReader;
     private AgentStateMap agentStateMap;
 
-    private final ArgParse arguments;
+    private final SimulationArguments arguments;
     private final TomlTable table;
     private final String name;
     private final int fipsCode;
 
     private String outputFileName;
 
-    public ConfigModel(ArgParse arguments, String name, TomlTable table) throws Exception {
+    public ConfigModel(SimulationArguments arguments, String name, TomlTable table) throws Exception {
         this.arguments = arguments;
         this.name = name;
         this.table = table;
@@ -205,7 +204,7 @@ public class ConfigModel {
         if(this.table.contains(key)) {
             TomlArray arr = this.table.getArray(key);
             for(int i = 0; i < arr.size(); i++) {
-                files.add(ArgParse.findFile(new File(arr.getString(i))));
+                files.add(SimulationArguments.findFile(new File(arr.getString(i))));
             }
         } else if (required) {
             throw new Exception(String.format("Missing required key %s for county %s", key, this.name));
@@ -216,7 +215,7 @@ public class ConfigModel {
     private File getFile(String key, boolean required) throws Exception {
         File f = null;
         if(this.table.contains(key)) {
-            f = ArgParse.findFile(new File(this.table.getString(key)));
+            f = SimulationArguments.findFile(new File(this.table.getString(key)));
         } else if (required) {
             throw new Exception(String.format("Missing required key %s for county %s", key, this.name));
         }

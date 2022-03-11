@@ -9,7 +9,7 @@ import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.util.Methods;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
-import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
@@ -41,7 +41,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     private final AgentStateMap agentStateMap;
     private final ObservationNotifier observationNotifier;
-    private final ArgParse arguments;
+    private final SimulationArguments arguments;
 
     private final TickExecutor<CandidateActivity> executor;
 
@@ -60,7 +60,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     @SafeVarargs
     public PansimSimulationEngine(
             Platform platform,
-            ArgParse arguments,
+            SimulationArguments arguments,
             ObservationNotifier
                     observationNotifier,
             AgentStateMap agentStateMap,

@@ -4,7 +4,7 @@ import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.util.Methods;
-import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
 import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
@@ -28,14 +28,14 @@ import static java.time.format.DateTimeFormatter.ISO_DATE;
 public class GyrationRadius {
     private File fout;
     private final LocalDate simulationStartDate;
-    private final ArgParse arguments;
+    private final SimulationArguments arguments;
     private final TickExecutor<CandidateActivity> executor;
     private static final Logger LOGGER = Logger.getLogger(GyrationRadius.class.getName());
     private final List<ConfigModel> counties;
     private final Map<String, Integer> numAgentsPerCounty = new HashMap<>();
     private final Platform platform;
 
-    public GyrationRadius(Platform platform, ArgParse arguments, LocalDate simulationStartDate) {
+    public GyrationRadius(Platform platform, SimulationArguments arguments, LocalDate simulationStartDate) {
         this.platform = platform;
         this.executor = platform.getTickExecutor();
         this.arguments = arguments;

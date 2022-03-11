@@ -11,7 +11,7 @@ import main.java.nl.uu.iss.ga.pansim.state.AgentState;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.Constants;
-import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.javatuples.Pair;
@@ -36,7 +36,7 @@ public class ScheduleTracker {
 
     private static final Logger LOGGER = Logger.getLogger(ScheduleTracker.class.getName());
 
-    private final ArgParse arguments;
+    private final SimulationArguments arguments;
     private final TickExecutor<CandidateActivity> executor;
 
     public static final String AVERAGE_SCHEDULE_FILENAME = "average-schedules_%s";
@@ -59,7 +59,7 @@ public class ScheduleTracker {
 
     private final String suffix;
 
-    public ScheduleTracker(TickExecutor<CandidateActivity> executor, ArgParse arguments, AgentStateMap agentStateMap, NormScheduleReader normScheduleReader) {
+    public ScheduleTracker(TickExecutor<CandidateActivity> executor, SimulationArguments arguments, AgentStateMap agentStateMap, NormScheduleReader normScheduleReader) {
         this.executor = executor;
         this.arguments = arguments;
         this.suffix = arguments.getOutputDir().getName();

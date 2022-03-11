@@ -1,6 +1,6 @@
 package main.java.nl.uu.iss.ga.simulation;
 
-import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
@@ -8,7 +8,6 @@ import nl.uu.cs.iss.ga.sim2apl.core.tick.AbstractSimulationEngine;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -16,9 +15,9 @@ import java.util.concurrent.Future;
 public class DefaultTimingSimulationEngine<T> extends AbstractSimulationEngine<T> {
     private final TickExecutor<T> executor;
     private final ScheduleTrackerGroup timingsTracker;
-    private final ArgParse arguments;
+    private final SimulationArguments arguments;
 
-    public DefaultTimingSimulationEngine(Platform platform, ArgParse arguments, int nIterations, TickHookProcessor<T>... hookProcessors) {
+    public DefaultTimingSimulationEngine(Platform platform, SimulationArguments arguments, int nIterations, TickHookProcessor<T>... hookProcessors) {
         super(platform, nIterations, hookProcessors);
         this.executor = platform.getTickExecutor();
         this.arguments = arguments;

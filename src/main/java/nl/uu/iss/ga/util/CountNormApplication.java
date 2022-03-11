@@ -1,14 +1,12 @@
 package main.java.nl.uu.iss.ga.util;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.ActivityTime;
 import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.norm.Norm;
 import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
 import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
@@ -17,12 +15,10 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Utility class to count the number of agents throughout the simulation to which a norm applies
@@ -35,7 +31,7 @@ public class CountNormApplication {
     private final Map<String, Long> timeAffected = new HashMap<>();
     private final Platform platform;
     private final EnvironmentInterface environmentInterface;
-    private final ArgParse arguments;
+    private final SimulationArguments arguments;
     private final AgentStateMap agentStateMap;
     private final Map<String, List<Norm>> norms;
 
@@ -43,7 +39,7 @@ public class CountNormApplication {
 
     public CountNormApplication(
             Platform platform,
-            ArgParse arguments,
+            SimulationArguments arguments,
             EnvironmentInterface environmentInterface,
             AgentStateMap agentStateMap,
             Map<String, List<Norm>> norms

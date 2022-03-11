@@ -12,7 +12,7 @@ import main.java.nl.uu.iss.ga.util.CountNormApplication;
 import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
 import main.java.nl.uu.iss.ga.util.Java2APLLogger;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
-import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
 import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
@@ -31,11 +31,11 @@ public class Simulation {
     public static final LocalDateTime instantiated = LocalDateTime.now();
 
     public static void main(String[] args) {
-        ArgParse parser = new ArgParse(args);
-        new Simulation(parser);
+        SimulationArguments arguments = SimulationArguments.parseArguments(args);
+        new Simulation(arguments);
     }
 
-    private final ArgParse arguments;
+    private final SimulationArguments arguments;
     private final NormScheduleReader normScheduleReader;
 
     private Platform platform;
@@ -47,7 +47,7 @@ public class Simulation {
 
     private ObservationNotifier observationNotifier;
 
-    public Simulation(ArgParse arguments) {
+    public Simulation(SimulationArguments arguments) {
         this.arguments = arguments;
         this.normScheduleReader = new NormScheduleReader(arguments.getNormFile());
         this.tickExecutor = new NoRescheduleBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getSystemWideRandom());

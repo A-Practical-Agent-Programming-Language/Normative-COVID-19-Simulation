@@ -14,7 +14,7 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.ObservationNotifier;
-import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
 import main.java.nl.uu.iss.ga.util.tracking.GyrationRadius;
 import main.java.nl.uu.iss.ga.util.tracking.activities.InfluencedActivities;
 import main.java.nl.uu.iss.ga.util.tracking.ScheduleTracker;
@@ -48,7 +48,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     private final Set<Class<? extends Norm>> allUsedNorms;
 
     private final Platform platform;
-    private final ArgParse arguments;
+    private final SimulationArguments arguments;
     private final boolean trackVisits;
     private long currentTick = 0;
     private LocalDateTime simulationStarted;
@@ -60,7 +60,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             ObservationNotifier observationNotifier,
             AgentStateMap agentStateMap,
             NormScheduleReader normSchedule,
-            ArgParse arguments
+            SimulationArguments arguments
     ) {
         this.platform = platform;
         this.arguments = arguments;

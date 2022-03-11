@@ -30,8 +30,10 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-public class ArgParse {
-    private static final Logger LOGGER = Logger.getLogger(ArgParse.class.getName());
+public class SimulationArguments {
+    private static final Logger LOGGER = Logger.getLogger(SimulationArguments.class.getName());
+
+    private static final SimulationArguments instance = new SimulationArguments();
 
     @Arg(dest = "configuration")
     private File configuration;
@@ -111,14 +113,16 @@ public class ArgParse {
 
     private final NormContext sharedNormContext = new NormContext();
 
-    public ArgParse(String[] args) {
-        ArgumentParser p = getParser();
+    private boolean parseComplete = false;
+
+    public static SimulationArguments parseArguments(String[] args) {
+        ArgumentParser p = instance.getParser();
         try {
-            p.parseArgs(args, this);
-            verifyLogProperties();
+            p.parseArgs(args, instance);
+            instance.verifyLogProperties();
             try {
-                this.configuration = findFile(this.configuration);
-                processConfigFile(p);
+                instance.configuration = findFile(instance.configuration);
+                instance.processConfigFile(p);
             } catch (IOException e) {
                 throw new ArgumentParserException(e.getMessage(), p);
             }
@@ -126,6 +130,15 @@ public class ArgParse {
             p.handleError(e);
             System.exit(1);
         }
+        instance.parseComplete = true;
+        return instance;
+    }
+
+    public static SimulationArguments getInstance() {
+        if(instance.parseComplete) {
+            throw new IllegalStateException("SimulationArguments accessed before arguments were parsed");
+        }
+        return instance;
     }
 
     private void processConfigFile(ArgumentParser p) throws ArgumentParserException {
@@ -353,7 +366,7 @@ public class ArgParse {
         if(f.getAbsoluteFile().exists()) {
             existingFile = f;
         } else if (!f.isAbsolute()) {
-            URL r = ArgParse.class.getClassLoader().getResource(f.toString());
+            URL r = SimulationArguments.class.getClassLoader().getResource(f.toString());
             if (r != null) {
                 f = new File(r.getFile()).getAbsoluteFile();
                 if (f.exists())
