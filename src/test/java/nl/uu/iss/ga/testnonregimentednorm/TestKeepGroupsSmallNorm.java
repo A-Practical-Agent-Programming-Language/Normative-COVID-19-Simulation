@@ -62,7 +62,7 @@ public class TestKeepGroupsSmallNorm extends TestNonRegimentedNorm {
     }
 
     @RepeatedTest(100)
-    void testBelowMaxAllowedResultsInSubZeroAttitude() {
+    void testNormDoesNotApplyIfPastAverageIsBelowAllowedMax() {
         int allowed = random.nextInt(Integer.MAX_VALUE);
         int seen = random.nextInt(allowed);
         int symptomatic = random.nextInt(seen);
@@ -78,20 +78,20 @@ public class TestKeepGroupsSmallNorm extends TestNonRegimentedNorm {
         int seen = random.nextInt(Integer.MAX_VALUE);
         int allowed = random.nextInt(seen);
 
-        int s1 = random.nextInt(seen);
-        int s2 = random.nextInt(seen);
+        int symptomatic1 = random.nextInt(seen);
+        int symptomatic2 = random.nextInt(seen);
 
         KeepGroupsSmallNorm norm = new KeepGroupsSmallNorm(KeepGroupsSmallNorm.APPLIES.ALL, allowed);
 
-        setSeen(seen, s1);
+        setSeen(seen, symptomatic1);
         double a1 = norm.calculateAttitude(new AgentContextInterface<>(agent), activity);
 
-        setSeen(seen, s2);
+        setSeen(seen, symptomatic2);
         double a2 = norm.calculateAttitude(new AgentContextInterface<>(agent), activity);
 
-        assertEquals(s1 > s2, a1 < a2, String.format(
+        assertEquals(symptomatic1 > symptomatic2, a1 < a2, String.format(
                 "%f%% symptomatic seen results in attitude %f, %f%% symptomatic seen results in attitude %f",
-                (double) s1 / seen, a1, (double) s2 / seen, a2
+                (double) symptomatic1 / seen, a1, (double) symptomatic2 / seen, a2
         ));
     }
 
