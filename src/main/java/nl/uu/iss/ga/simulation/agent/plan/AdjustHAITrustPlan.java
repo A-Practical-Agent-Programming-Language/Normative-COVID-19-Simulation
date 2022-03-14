@@ -1,10 +1,10 @@
-package main.java.nl.uu.iss.ga.simulation.agent.plan;
+package nl.uu.iss.ga.simulation.agent.plan;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.factor.IFactor;
-import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.TrackPlansContext;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.factor.IFactor;
+import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
+import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import nl.uu.iss.ga.simulation.agent.context.TrackPlansContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.PlanExecutionError;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;

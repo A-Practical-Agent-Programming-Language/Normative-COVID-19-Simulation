@@ -1,12 +1,12 @@
-package main.java.nl.uu.iss.ga.model.norm.modal;
+package nl.uu.iss.ga.model.norm.modal;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
-import main.java.nl.uu.iss.ga.model.factor.FractionDistance;
-import main.java.nl.uu.iss.ga.model.factor.IFactor;
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
+import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import nl.uu.iss.ga.model.factor.FractionDistance;
+import nl.uu.iss.ga.model.factor.IFactor;
+import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 
 import java.util.Arrays;
 import java.util.List;

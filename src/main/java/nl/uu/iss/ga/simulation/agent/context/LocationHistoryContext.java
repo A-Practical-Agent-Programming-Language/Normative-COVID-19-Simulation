@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.simulation.agent.context;
+package nl.uu.iss.ga.simulation.agent.context;
 
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 
@@ -594,7 +594,7 @@ public class LocationHistoryContext implements Context {
         return fractions.isEmpty() ? 0 : fractions.stream().reduce(Double::sum).orElse(0d)  / fractions.size();
     }
 
-    static class LocationHistory {
+    public static class LocationHistory {
         private long locationID;
         private final Map<Long, Visit> locationHistory;
 

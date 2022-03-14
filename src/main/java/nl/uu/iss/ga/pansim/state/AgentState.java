@@ -1,9 +1,9 @@
-package main.java.nl.uu.iss.ga.pansim.state;
+package nl.uu.iss.ga.pansim.state;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
-import main.java.nl.uu.iss.ga.model.disease.AgentGroup;
-import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
+import nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
+import nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import nl.uu.iss.ga.model.disease.AgentGroup;
+import nl.uu.iss.ga.model.disease.DiseaseState;
 
 import java.util.Map;
 import java.util.Random;

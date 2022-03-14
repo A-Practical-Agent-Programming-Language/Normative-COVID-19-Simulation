@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.model.data.dictionary.util;
+package nl.uu.iss.ga.model.data.dictionary.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;

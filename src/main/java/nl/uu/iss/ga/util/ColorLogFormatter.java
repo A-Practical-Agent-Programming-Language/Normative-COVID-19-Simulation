@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.util;
+package nl.uu.iss.ga.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

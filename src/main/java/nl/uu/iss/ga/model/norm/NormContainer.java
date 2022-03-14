@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.model.norm;
+package nl.uu.iss.ga.model.norm;
 
 import java.time.LocalDate;
 

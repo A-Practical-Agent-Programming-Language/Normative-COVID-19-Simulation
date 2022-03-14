@@ -1,13 +1,13 @@
-package main.java.nl.uu.iss.ga.model.reader;
+package nl.uu.iss.ga.model.reader;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
-import main.java.nl.uu.iss.ga.model.data.ActivityTime;
-import main.java.nl.uu.iss.ga.model.data.TripActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
-import main.java.nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.ActivitySchedule;
+import nl.uu.iss.ga.model.data.ActivityTime;
+import nl.uu.iss.ga.model.data.TripActivity;
+import nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
+import nl.uu.iss.ga.model.data.dictionary.LocationEntry;
+import nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 
 import java.io.File;
 import java.io.FileInputStream;

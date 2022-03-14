@@ -1,18 +1,18 @@
-package main.java.nl.uu.iss.ga.util;
+package nl.uu.iss.ga.util;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.norm.Norm;
-import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
-import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
-import main.java.nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
+import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.norm.Norm;
+import nl.uu.iss.ga.pansim.state.AgentStateMap;
+import nl.uu.iss.ga.simulation.EnvironmentInterface;
+import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import nl.uu.iss.ga.util.config.ConfigModel;
+import nl.uu.iss.ga.util.config.SimulationArguments;
 
 import java.io.*;
 import java.util.*;

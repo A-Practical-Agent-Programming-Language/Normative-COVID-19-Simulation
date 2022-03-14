@@ -1,9 +1,9 @@
-package main.java.nl.uu.iss.ga.simulation.agent.context;
+package nl.uu.iss.ga.simulation.agent.context;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.factor.IFactor;
-import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
-import main.java.nl.uu.iss.ga.model.norm.Norm;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.factor.IFactor;
+import nl.uu.iss.ga.model.norm.NonRegimentedNorm;
+import nl.uu.iss.ga.model.norm.Norm;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 
 import java.util.*;

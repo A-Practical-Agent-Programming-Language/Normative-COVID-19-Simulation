@@ -1,8 +1,8 @@
-package main.java.nl.uu.iss.ga.model.data;
+package nl.uu.iss.ga.model.data;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.*;
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface;
+import nl.uu.iss.ga.model.data.dictionary.*;
+import nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface;
 
 import java.util.Map;
 

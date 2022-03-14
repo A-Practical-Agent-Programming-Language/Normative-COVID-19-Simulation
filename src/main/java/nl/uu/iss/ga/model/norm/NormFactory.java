@@ -1,14 +1,14 @@
-package main.java.nl.uu.iss.ga.model.norm;
+package nl.uu.iss.ga.model.norm;
 
-import main.java.nl.uu.iss.ga.model.norm.modal.AllowWearMaskNorm;
-import main.java.nl.uu.iss.ga.model.norm.modal.EncourageDistanceNorm;
-import main.java.nl.uu.iss.ga.model.norm.modal.MaintainDistanceNorm;
-import main.java.nl.uu.iss.ga.model.norm.modal.WearMaskPublicIndoorsNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.EncourageTeleworkNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.IfSickStayHomeNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.KeepGroupsSmallNorm;
-import main.java.nl.uu.iss.ga.model.norm.nonregimented.StayHomeNorm;
-import main.java.nl.uu.iss.ga.model.norm.regimented.*;
+import nl.uu.iss.ga.model.norm.modal.AllowWearMaskNorm;
+import nl.uu.iss.ga.model.norm.modal.EncourageDistanceNorm;
+import nl.uu.iss.ga.model.norm.modal.MaintainDistanceNorm;
+import nl.uu.iss.ga.model.norm.modal.WearMaskPublicIndoorsNorm;
+import nl.uu.iss.ga.model.norm.nonregimented.EncourageTeleworkNorm;
+import nl.uu.iss.ga.model.norm.nonregimented.IfSickStayHomeNorm;
+import nl.uu.iss.ga.model.norm.nonregimented.KeepGroupsSmallNorm;
+import nl.uu.iss.ga.model.norm.nonregimented.StayHomeNorm;
+import nl.uu.iss.ga.model.norm.regimented.*;
 
 import java.util.*;
 import java.util.logging.Level;

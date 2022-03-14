@@ -1,7 +1,7 @@
-package main.java.nl.uu.iss.ga.util.config;
+package nl.uu.iss.ga.util.config;
 
-import main.java.nl.uu.iss.ga.simulation.agent.context.NormContext;
-import main.java.nl.uu.iss.ga.util.Methods;
+import nl.uu.iss.ga.simulation.agent.context.NormContext;
+import nl.uu.iss.ga.util.Methods;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.annotation.Arg;
 import net.sourceforge.argparse4j.impl.action.StoreTrueArgumentAction;

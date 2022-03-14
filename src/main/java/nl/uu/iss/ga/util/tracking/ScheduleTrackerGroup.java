@@ -1,6 +1,6 @@
-package main.java.nl.uu.iss.ga.util.tracking;
+package nl.uu.iss.ga.util.tracking;
 
-import main.java.nl.uu.iss.ga.util.Methods;
+import nl.uu.iss.ga.util.Methods;
 
 import java.io.*;
 import java.nio.file.Paths;

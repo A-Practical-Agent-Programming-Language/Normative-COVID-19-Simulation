@@ -1,8 +1,6 @@
-package main.java.nl.uu.iss.ga.model.factor;
+package nl.uu.iss.ga.model.factor;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
+import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 
 public class FractionSymptomatic implements IFactor {
 
@@ -18,20 +16,20 @@ public class FractionSymptomatic implements IFactor {
         return obj instanceof FractionSymptomatic;
     }
 
-    private double calculateAttitudeLinear(long locationid, LocationHistoryContext context) {
-        int observedSymptomatic = context.getLastDaySeenSymptomaticAt(locationid);
-
-        // Returns likelihood to violate
-
-
-
-        return 0d;
-    }
-
-    private double calculateAttitudeComplex(long locationid, LocationHistoryContext context) {
-        double a = calculateAttitudeLinear();
-        double b = context.getLastDayFractionSymptomaticAt(locationid);
-
-        return
-    }
+//    private double calculateAttitudeLinear(long locationid, LocationHistoryContext context) {
+//        int observedSymptomatic = context.getLastDaySeenSymptomaticAt(locationid);
+//
+//        // Returns likelihood to violate
+//
+//
+//
+//        return 0d;
+//    }
+//
+//    private double calculateAttitudeComplex(long locationid, LocationHistoryContext context) {
+//        double a = calculateAttitudeLinear();
+//        double b = context.getLastDayFractionSymptomaticAt(locationid);
+//
+//        return
+//    }
 }

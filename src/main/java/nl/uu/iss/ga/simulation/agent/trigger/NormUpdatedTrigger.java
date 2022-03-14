@@ -1,6 +1,6 @@
-package main.java.nl.uu.iss.ga.simulation.agent.trigger;
+package nl.uu.iss.ga.simulation.agent.trigger;
 
-import main.java.nl.uu.iss.ga.model.norm.Norm;
+import nl.uu.iss.ga.model.norm.Norm;
 
 public class NormUpdatedTrigger extends NormTrigger {
 

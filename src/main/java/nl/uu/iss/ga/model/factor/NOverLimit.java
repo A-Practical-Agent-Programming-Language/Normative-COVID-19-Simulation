@@ -1,6 +1,6 @@
-package main.java.nl.uu.iss.ga.model.factor;
+package nl.uu.iss.ga.model.factor;
 
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 
 public class NOverLimit implements IFactor {
 

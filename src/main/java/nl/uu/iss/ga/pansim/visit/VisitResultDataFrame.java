@@ -1,7 +1,7 @@
-package main.java.nl.uu.iss.ga.pansim.visit;
+package nl.uu.iss.ga.pansim.visit;
 
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import main.java.nl.uu.iss.ga.util.Constants;
+import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import nl.uu.iss.ga.util.Constants;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.ipc.ArrowFileReader;

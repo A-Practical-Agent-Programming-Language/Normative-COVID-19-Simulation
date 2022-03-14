@@ -1,22 +1,22 @@
-package main.java.nl.uu.iss.ga;
+package nl.uu.iss.ga;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.norm.NormFactory;
-import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
-import main.java.nl.uu.iss.ga.pansim.PansimSimulationEngine;
-import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
-import main.java.nl.uu.iss.ga.simulation.DefaultTimingSimulationEngine;
-import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
-import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
-import main.java.nl.uu.iss.ga.util.CountNormApplication;
-import main.java.nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
-import main.java.nl.uu.iss.ga.util.Java2APLLogger;
-import main.java.nl.uu.iss.ga.util.ObservationNotifier;
-import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
-import main.java.nl.uu.iss.ga.util.config.ConfigModel;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.norm.NormFactory;
+import nl.uu.iss.ga.model.reader.NormScheduleReader;
+import nl.uu.iss.ga.pansim.PansimSimulationEngine;
+import nl.uu.iss.ga.pansim.state.AgentStateMap;
+import nl.uu.iss.ga.simulation.DefaultTimingSimulationEngine;
+import nl.uu.iss.ga.simulation.EnvironmentInterface;
+import nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
+import nl.uu.iss.ga.util.CountNormApplication;
+import nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
+import nl.uu.iss.ga.util.Java2APLLogger;
+import nl.uu.iss.ga.util.ObservationNotifier;
 import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.SimulationEngine;
+import nl.uu.iss.ga.util.config.ConfigModel;
+import nl.uu.iss.ga.util.config.SimulationArguments;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

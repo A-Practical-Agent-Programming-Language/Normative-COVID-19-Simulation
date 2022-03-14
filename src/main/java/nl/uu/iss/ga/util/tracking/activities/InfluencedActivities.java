@@ -1,8 +1,8 @@
-package main.java.nl.uu.iss.ga.util.tracking.activities;
+package nl.uu.iss.ga.util.tracking.activities;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
-import main.java.nl.uu.iss.ga.model.norm.Norm;
+import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import nl.uu.iss.ga.model.norm.Norm;
 
 import java.util.HashMap;
 import java.util.HashSet;

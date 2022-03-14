@@ -1,12 +1,13 @@
-package main.java.nl.uu.iss.ga.simulation;
+package nl.uu.iss.ga.simulation;
 
-import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
-import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
+
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.AbstractSimulationEngine;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
+import nl.uu.iss.ga.util.config.SimulationArguments;
+import nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 
 import java.util.HashMap;
 import java.util.List;

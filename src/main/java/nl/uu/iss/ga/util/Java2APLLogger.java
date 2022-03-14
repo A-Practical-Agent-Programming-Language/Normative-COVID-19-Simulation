@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.util;
+package nl.uu.iss.ga.util;
 
 import nl.uu.cs.iss.ga.sim2apl.core.logging.Loggable;
 

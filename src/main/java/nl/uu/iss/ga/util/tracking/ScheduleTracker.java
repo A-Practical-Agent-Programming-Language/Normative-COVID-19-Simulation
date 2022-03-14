@@ -1,19 +1,19 @@
-package main.java.nl.uu.iss.ga.util.tracking;
+package nl.uu.iss.ga.util.tracking;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
-import main.java.nl.uu.iss.ga.model.disease.AgentGroup;
-import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
-import main.java.nl.uu.iss.ga.model.norm.Norm;
-import main.java.nl.uu.iss.ga.model.norm.NormContainer;
-import main.java.nl.uu.iss.ga.model.reader.NormScheduleReader;
-import main.java.nl.uu.iss.ga.pansim.state.AgentState;
-import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
-import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
-import main.java.nl.uu.iss.ga.util.Constants;
-import main.java.nl.uu.iss.ga.util.config.SimulationArguments;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import nl.uu.iss.ga.model.disease.AgentGroup;
+import nl.uu.iss.ga.model.disease.DiseaseState;
+import nl.uu.iss.ga.model.norm.Norm;
+import nl.uu.iss.ga.model.norm.NormContainer;
+import nl.uu.iss.ga.model.reader.NormScheduleReader;
+import nl.uu.iss.ga.pansim.state.AgentState;
+import nl.uu.iss.ga.pansim.state.AgentStateMap;
+import nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
+import nl.uu.iss.ga.util.Constants;
+import nl.uu.iss.ga.util.config.SimulationArguments;
 import org.javatuples.Pair;
 
 import java.time.LocalDate;

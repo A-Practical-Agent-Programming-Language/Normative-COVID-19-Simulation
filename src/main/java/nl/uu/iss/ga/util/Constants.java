@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.util;
+package nl.uu.iss.ga.util;
 
 public class Constants {
     public static final String VISIBLE_ATTRIBUTE_SYMPTOMATIC = "coughing";
