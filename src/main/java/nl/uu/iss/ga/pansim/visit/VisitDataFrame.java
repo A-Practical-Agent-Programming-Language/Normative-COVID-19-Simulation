@@ -1,6 +1,7 @@
 package nl.uu.iss.ga.pansim.visit;
 
 import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.disease.AgentGroup;
 import nl.uu.iss.ga.model.disease.DiseaseState;
 import nl.uu.iss.ga.pansim.state.AgentStateMap;
 import nl.uu.iss.ga.util.Constants;
@@ -86,10 +87,10 @@ public class VisitDataFrame {
         this.schemaRoot = new VectorSchemaRoot(fields, vectors);
     }
 
-    public void addRow(int index, CandidateActivity activity, DiseaseState state) {
+    public void addRow(int index, CandidateActivity activity, DiseaseState state, AgentGroup group) {
         this.lid.set(index, activity.getActivity().getLocation().getLocationID());
         this.pid.set(index, activity.getActivity().getPid());
-        this.group.set(index, 0);
+        this.group.set(index, group.getCode());
         this.state.set(index, state.getCode());
         this.behavior.set(index, activity.getRiskMitigationPolicy().getCode());
         this.start_time.set(index, activity.getActivity().getStart_time().getSeconds());
@@ -163,7 +164,8 @@ public class VisitDataFrame {
             for(Future<DeliberationResult<CandidateActivity>> futureResult : agentActions) {
                     for(CandidateActivity activity : futureResult.get().getActions()) {
                         DiseaseState state = stateMap.getAgentState(futureResult.get().getAgentID()).getState();
-                        dataFrame.addRow(i, activity, state);
+                        AgentGroup group = stateMap.getAgentState(futureResult.get().getAgentID()).getGroup();
+                        dataFrame.addRow(i, activity, state, group);
                         activity.setDiseaseState(state);
                         i++;
                     }
