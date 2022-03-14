@@ -1,11 +1,11 @@
-package main.java.nl.uu.iss.ga.model.data;
+package nl.uu.iss.ga.model.data;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
-import main.java.nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
-import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
-import main.java.nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
-import main.java.nl.uu.iss.ga.model.norm.Norm;
-import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
+import nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
+import nl.uu.iss.ga.model.disease.DiseaseState;
+import nl.uu.iss.ga.model.disease.RiskMitigationPolicy;
+import nl.uu.iss.ga.model.norm.Norm;
+import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 import java.util.ArrayList;

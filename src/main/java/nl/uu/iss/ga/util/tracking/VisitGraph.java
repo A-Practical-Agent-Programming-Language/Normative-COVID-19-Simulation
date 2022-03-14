@@ -1,10 +1,10 @@
-package main.java.nl.uu.iss.ga.util.tracking;
+package nl.uu.iss.ga.util.tracking;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.pansim.state.AgentState;
-import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
-import main.java.nl.uu.iss.ga.util.Methods;
+import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.pansim.state.AgentState;
+import nl.uu.iss.ga.pansim.state.AgentStateMap;
+import nl.uu.iss.ga.util.Methods;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 
 import java.io.*;

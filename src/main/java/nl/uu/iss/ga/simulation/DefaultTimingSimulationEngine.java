@@ -1,7 +1,7 @@
-package main.java.nl.uu.iss.ga.simulation;
+package nl.uu.iss.ga.simulation;
 
-import main.java.nl.uu.iss.ga.util.config.ArgParse;
-import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
+import nl.uu.iss.ga.util.config.ArgParse;
+import nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.AbstractSimulationEngine;

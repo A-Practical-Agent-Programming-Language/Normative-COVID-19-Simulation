@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.util;
+package nl.uu.iss.ga.util;
 
 import org.apache.commons.math3.distribution.BetaDistribution;
 

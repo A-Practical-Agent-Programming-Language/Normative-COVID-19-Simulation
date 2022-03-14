@@ -1,6 +1,6 @@
-package main.java.nl.uu.iss.ga.model.data;
+package nl.uu.iss.ga.model.data;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
+import nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 
 public class ActivityTime implements Comparable<ActivityTime>, Cloneable {
 

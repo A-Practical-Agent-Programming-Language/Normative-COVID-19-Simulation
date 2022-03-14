@@ -1,9 +1,9 @@
-package main.java.nl.uu.iss.ga.model.reader;
+package nl.uu.iss.ga.model.reader;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
-import main.java.nl.uu.iss.ga.model.norm.Norm;
-import main.java.nl.uu.iss.ga.model.norm.NormContainer;
-import main.java.nl.uu.iss.ga.model.norm.NormFactory;
+import nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import nl.uu.iss.ga.model.norm.Norm;
+import nl.uu.iss.ga.model.norm.NormContainer;
+import nl.uu.iss.ga.model.norm.NormFactory;
 
 import java.io.File;
 import java.io.FileInputStream;

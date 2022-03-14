@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.model.disease;
+package nl.uu.iss.ga.model.disease;
 
 public enum RiskMitigationPolicy {
     NONE(0, false, false),

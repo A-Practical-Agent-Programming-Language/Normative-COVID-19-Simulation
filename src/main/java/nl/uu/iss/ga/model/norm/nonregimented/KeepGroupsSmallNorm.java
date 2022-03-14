@@ -1,15 +1,15 @@
-package main.java.nl.uu.iss.ga.model.norm.nonregimented;
+package nl.uu.iss.ga.model.norm.nonregimented;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.data.Person;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
-import main.java.nl.uu.iss.ga.model.data.dictionary.Designation;
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
-import main.java.nl.uu.iss.ga.model.norm.NonRegimentedNorm;
-import main.java.nl.uu.iss.ga.model.norm.Norm;
-import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.data.Person;
+import nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import nl.uu.iss.ga.model.data.dictionary.Designation;
+import nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import nl.uu.iss.ga.model.norm.NonRegimentedNorm;
+import nl.uu.iss.ga.model.norm.Norm;
+import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
+import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 import java.util.Arrays;
@@ -136,7 +136,7 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         return maxAllowed;
     }
 
-    enum APPLIES {
+    public enum APPLIES {
         NONE(false, false),
         PUBLIC(false, true),
         PRIVATE(true, false),

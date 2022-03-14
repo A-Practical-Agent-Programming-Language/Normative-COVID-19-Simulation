@@ -1,7 +1,7 @@
-package main.java.nl.uu.iss.ga.model.norm;
+package nl.uu.iss.ga.model.norm;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 
 public abstract class NonRegimentedNorm extends Norm {

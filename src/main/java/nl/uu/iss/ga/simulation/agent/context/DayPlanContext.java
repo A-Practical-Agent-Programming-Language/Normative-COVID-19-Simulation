@@ -1,8 +1,8 @@
-package main.java.nl.uu.iss.ga.simulation.agent.context;
+package nl.uu.iss.ga.simulation.agent.context;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.data.TripActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.data.TripActivity;
+import nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 
 import java.util.ArrayList;

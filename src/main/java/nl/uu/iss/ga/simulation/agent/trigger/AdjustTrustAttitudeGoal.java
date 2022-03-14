@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.simulation.agent.trigger;
+package nl.uu.iss.ga.simulation.agent.trigger;
 
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;

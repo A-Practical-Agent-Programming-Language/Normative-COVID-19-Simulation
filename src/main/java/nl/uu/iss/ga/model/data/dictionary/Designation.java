@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.model.data.dictionary;
+package nl.uu.iss.ga.model.data.dictionary;
 
 public enum  Designation {
     military,

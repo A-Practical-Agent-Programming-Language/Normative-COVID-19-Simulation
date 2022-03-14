@@ -1,4 +1,4 @@
-package main.java.nl.uu.iss.ga.simulation;
+package nl.uu.iss.ga.simulation;
 
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;

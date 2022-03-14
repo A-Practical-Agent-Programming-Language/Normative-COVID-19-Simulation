@@ -1,6 +1,6 @@
-package main.java.nl.uu.iss.ga.model.data.dictionary;
+package nl.uu.iss.ga.model.data.dictionary;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
+import nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 
 public enum TransportMode implements CodeTypeInterface {
     NOT_ASCERTAINED(-9),

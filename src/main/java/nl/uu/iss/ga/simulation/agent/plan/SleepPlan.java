@@ -1,6 +1,6 @@
-package main.java.nl.uu.iss.ga.simulation.agent.plan;
+package nl.uu.iss.ga.simulation.agent.plan;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.PlanExecutionError;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;

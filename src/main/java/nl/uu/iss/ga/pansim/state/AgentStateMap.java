@@ -1,10 +1,10 @@
-package main.java.nl.uu.iss.ga.pansim.state;
+package nl.uu.iss.ga.pansim.state;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.data.Person;
-import main.java.nl.uu.iss.ga.model.disease.AgentGroup;
-import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
-import main.java.nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.data.Person;
+import nl.uu.iss.ga.model.disease.AgentGroup;
+import nl.uu.iss.ga.model.disease.DiseaseState;
+import nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 

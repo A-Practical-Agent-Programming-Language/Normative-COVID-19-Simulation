@@ -1,7 +1,7 @@
-package main.java.nl.uu.iss.ga.model.data.dictionary;
+package nl.uu.iss.ga.model.data.dictionary;
 
-import main.java.nl.uu.iss.ga.model.data.ActivityTime;
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
+import nl.uu.iss.ga.model.data.ActivityTime;
+import nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 
 import java.time.LocalDate;
 

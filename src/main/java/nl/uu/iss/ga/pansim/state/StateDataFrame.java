@@ -1,9 +1,9 @@
-package main.java.nl.uu.iss.ga.pansim.state;
+package nl.uu.iss.ga.pansim.state;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
-import main.java.nl.uu.iss.ga.model.disease.AgentGroup;
-import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
+import nl.uu.iss.ga.model.disease.AgentGroup;
+import nl.uu.iss.ga.model.disease.DiseaseState;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.*;

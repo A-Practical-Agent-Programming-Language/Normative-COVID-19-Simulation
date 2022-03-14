@@ -1,7 +1,7 @@
-package main.java.nl.uu.iss.ga.model.reader;
+package nl.uu.iss.ga.model.reader;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
-import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import nl.uu.iss.ga.model.data.dictionary.LocationEntry;
+import nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 
 import java.io.File;
 import java.io.FileInputStream;

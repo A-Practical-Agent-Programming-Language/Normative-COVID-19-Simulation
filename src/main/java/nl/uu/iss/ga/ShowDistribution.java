@@ -1,6 +1,6 @@
-package main.java.nl.uu.iss.ga;
+package nl.uu.iss.ga;
 
-import main.java.nl.uu.iss.ga.util.Methods;
+import nl.uu.iss.ga.util.Methods;
 import org.apache.commons.math3.distribution.BetaDistribution;
 
 import java.util.Map;

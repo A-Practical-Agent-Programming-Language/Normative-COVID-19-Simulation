@@ -1,8 +1,8 @@
-package main.java.nl.uu.iss.ga.model.norm.regimented;
+package nl.uu.iss.ga.model.norm.regimented;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.norm.Norm;
+import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.norm.Norm;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 @Deprecated
 public class BeachesClosedNorm extends Norm {

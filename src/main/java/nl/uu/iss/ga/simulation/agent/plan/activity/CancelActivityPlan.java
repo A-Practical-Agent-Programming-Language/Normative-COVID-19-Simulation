@@ -1,13 +1,13 @@
-package main.java.nl.uu.iss.ga.simulation.agent.plan.activity;
+package nl.uu.iss.ga.simulation.agent.plan.activity;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
-import main.java.nl.uu.iss.ga.model.data.ActivityTime;
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
-import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
-import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
+import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.ActivitySchedule;
+import nl.uu.iss.ga.model.data.ActivityTime;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
+import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
+import nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;

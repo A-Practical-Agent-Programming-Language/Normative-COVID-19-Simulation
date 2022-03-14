@@ -1,6 +1,6 @@
-package main.java.nl.uu.iss.ga.util;
+package nl.uu.iss.ga.util;
 
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 

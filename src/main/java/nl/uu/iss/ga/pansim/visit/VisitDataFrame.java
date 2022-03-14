@@ -1,9 +1,9 @@
-package main.java.nl.uu.iss.ga.pansim.visit;
+package nl.uu.iss.ga.pansim.visit;
 
-import main.java.nl.uu.iss.ga.model.data.CandidateActivity;
-import main.java.nl.uu.iss.ga.model.disease.DiseaseState;
-import main.java.nl.uu.iss.ga.pansim.state.AgentStateMap;
-import main.java.nl.uu.iss.ga.util.Constants;
+import nl.uu.iss.ga.model.data.CandidateActivity;
+import nl.uu.iss.ga.model.disease.DiseaseState;
+import nl.uu.iss.ga.pansim.state.AgentStateMap;
+import nl.uu.iss.ga.util.Constants;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.apache.arrow.memory.BufferAllocator;
