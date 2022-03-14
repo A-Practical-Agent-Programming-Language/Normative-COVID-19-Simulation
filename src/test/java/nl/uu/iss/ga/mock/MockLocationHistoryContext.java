@@ -26,19 +26,33 @@ public class MockLocationHistoryContext {
 
         LocationHistoryContext locationHistoryContext = mock(LocationHistoryContext.class);
 
-        when(locationHistoryContext.getLastDaysSeenAt(anyInt(), anyLong())).thenReturn(seen);
-        when(locationHistoryContext.getLastDaysSeenSymptomaticAt(anyInt(), anyLong())).thenReturn(symptomatic);
-        when(locationHistoryContext.getLastDaysSeenDistancingAt(anyInt(), anyLong())).thenReturn(behavior);
-        when(locationHistoryContext.getLastDaysSeenMaskAt(anyInt(), anyLong())).thenReturn(behavior);
-
         when(locationHistoryContext.getLastDaySeen()).thenReturn(seen);
         when(locationHistoryContext.getLastDaySeenSymptomatic()).thenReturn(symptomatic);
         when(locationHistoryContext.getLastDaySeenMask()).thenReturn(behavior);
         when(locationHistoryContext.getLastDaySeenDistancing()).thenReturn(behavior);
 
+        when(locationHistoryContext.getLastDaySeenAt(anyLong())).thenReturn(seen);
+        when(locationHistoryContext.getLastDaySeenSymptomaticAt(anyLong())).thenReturn(symptomatic);
+        when(locationHistoryContext.getLastDaySeenMaskAt(anyLong())).thenReturn(behavior);
+        when(locationHistoryContext.getLastDaySeenDistancingAt(anyLong())).thenReturn(behavior);
+
+        when(locationHistoryContext.getLastDaysSeen(anyInt())).thenReturn(seen);
+        when(locationHistoryContext.getLastDaysSeenSymptomatic(anyInt())).thenReturn(symptomatic);
+        when(locationHistoryContext.getLastDaysSeenMask(anyInt())).thenReturn(behavior);
+        when(locationHistoryContext.getLastDaysSeenDistancing(anyInt())).thenReturn(behavior);
+
+        when(locationHistoryContext.getLastDaysSeenAt(anyInt(), anyLong())).thenReturn(seen);
+        when(locationHistoryContext.getLastDaysSeenSymptomaticAt(anyInt(), anyLong())).thenReturn(symptomatic);
+        when(locationHistoryContext.getLastDaysSeenDistancingAt(anyInt(), anyLong())).thenReturn(behavior);
+        when(locationHistoryContext.getLastDaysSeenMaskAt(anyInt(), anyLong())).thenReturn(behavior);
+
         when(locationHistoryContext.getLastDayFractionDistancing()).thenReturn((double) behavior / seen);
         when(locationHistoryContext.getLastDayFractionMask()).thenReturn((double) behavior / seen);
         when(locationHistoryContext.getLastDayFractionSymptomatic()).thenReturn((double) symptomatic / seen);
+
+        when(locationHistoryContext.getLastDayFractionDistancingAt(anyLong())).thenReturn((double) behavior / seen);
+        when(locationHistoryContext.getLastDayFractionMaskAt(anyLong())).thenReturn((double) behavior / seen);
+        when(locationHistoryContext.getLastDayFractionSymptomaticAt(anyLong())).thenReturn((double) symptomatic / seen);
 
         when(locationHistoryContext.getLastDaysFractionDistancing(anyInt())).thenReturn((double) behavior / seen);
         when(locationHistoryContext.getLastDaysFractionMask(anyInt())).thenReturn((double) behavior / seen);

@@ -78,8 +78,10 @@ public class TestKeepGroupsSmallNorm extends TestNonRegimentedNorm {
         int seen = random.nextInt(Integer.MAX_VALUE);
         int allowed = random.nextInt(seen);
 
-        int symptomatic1 = random.nextInt(seen);
-        int symptomatic2 = random.nextInt(seen);
+        // We ensure symptomatic is less than 50%, because above that, the factor becomes 1. If that is the case
+        // for both, we expect no difference.
+        int symptomatic1 = random.nextInt(seen / 2);
+        int symptomatic2 = random.nextInt(seen / 2);
 
         KeepGroupsSmallNorm norm = new KeepGroupsSmallNorm(KeepGroupsSmallNorm.APPLIES.ALL, allowed);
 

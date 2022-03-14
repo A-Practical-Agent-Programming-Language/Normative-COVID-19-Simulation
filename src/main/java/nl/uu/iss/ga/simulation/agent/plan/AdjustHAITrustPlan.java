@@ -26,14 +26,6 @@ public class AdjustHAITrustPlan extends RunOncePlan<CandidateActivity> {
 
     @Override
     public CandidateActivity executeOnce(PlanToAgentInterface<CandidateActivity> planToAgentInterface) throws PlanExecutionError {
-        /*
-         * TODO:
-         *  - Associate all locations with an activity or activity type, to which we can apply the corresponding norm
-         *  - For each location, apply all factors that are relevant according to the active norms
-         *  - Calculate the global attitude for the activity
-         *  - Calculate the global attitude for the day (just average over all factors, multiplied by trust?)
-
-         */
 
         // Acquire relevant contexts
         BeliefContext beliefContext = planToAgentInterface.getContext(BeliefContext.class);
@@ -58,7 +50,7 @@ public class AdjustHAITrustPlan extends RunOncePlan<CandidateActivity> {
         return null;
     }
 
-    private List<Double> getFactorValues(TrackPlansContext trackPlansContext, LocationHistoryContext locationHistoryContext) {
+    public static List<Double> getFactorValues(TrackPlansContext trackPlansContext, LocationHistoryContext locationHistoryContext) {
         List<Double> factorValues = new ArrayList<>();
         Collection<TrackPlansContext.Location> visitedLocations = trackPlansContext.getLocationBasedActivities();
 
@@ -90,7 +82,7 @@ public class AdjustHAITrustPlan extends RunOncePlan<CandidateActivity> {
         return -4 * discountFactor * Math.pow(trust - 0.5, 2) + discountFactor;
     }
 
-    private double average(List<Double> doubles) {
+    public static double average(List<Double> doubles) {
         double sum = 0;
         for(Double d : doubles) {
             sum += d;

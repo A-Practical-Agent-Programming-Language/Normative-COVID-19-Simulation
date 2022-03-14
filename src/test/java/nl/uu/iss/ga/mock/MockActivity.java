@@ -1,6 +1,7 @@
 package nl.uu.iss.ga.mock;
 
 import nl.uu.iss.ga.model.data.Activity;
+import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.model.data.dictionary.Designation;
 import nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 
@@ -17,5 +18,12 @@ public class MockActivity {
         when(activity.getLocation()).thenReturn(locationEntry);
 
         return activity;
+    }
+
+    public static CandidateActivity getMockCandidateActivity() {
+        CandidateActivity candidateActivity = mock(CandidateActivity.class);
+        Activity activity = getMockActivity();
+        when(candidateActivity.getActivity()).thenReturn(activity);
+        return candidateActivity;
     }
 }

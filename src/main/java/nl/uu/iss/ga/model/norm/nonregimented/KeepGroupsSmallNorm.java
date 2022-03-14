@@ -69,9 +69,9 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
 
         double averageSeenPreviously = historyContext.getLastDaysSeenAtAverage(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
 
-        // Rationale here is: If you see more than 50% symptomatic people, you had better take the norm seriously.
-        // Similarly, if you don't see anybody symptomatic, that hardly changes your perspective? I'm sure this can be improved more
-        double averageSymptomaticPreviously = Math.max(1, 0.5 + historyContext.getLastDaysFractionSymptomatic(N_DAYS_LOOKBACK));
+        // Rationale here is: The more symptomatic agents you see, the less you trust that the norm has effect, so the
+        // less you start following the norm
+        double averageSymptomaticPreviously = Math.min(1, 0.5 + historyContext.getLastDaysFractionSymptomatic(N_DAYS_LOOKBACK));
 
         // The difference between allowed and observed (larger than 0, otherwise this norm is not applicable)
         // We calculate symptomatic people double, to increase odds of adhering
