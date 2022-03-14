@@ -1,10 +1,8 @@
 package nl.uu.iss.ga.pansim.state;
 
-import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import nl.uu.iss.ga.model.disease.AgentGroup;
 import nl.uu.iss.ga.model.disease.DiseaseState;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.ipc.ArrowFileReader;
@@ -16,10 +14,8 @@ import org.apache.arrow.vector.util.ByteArrayReadableSeekableByteChannel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public class StateDataFrame {
     private BigIntVector pid;
