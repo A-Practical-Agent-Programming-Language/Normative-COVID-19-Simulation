@@ -94,7 +94,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>main.java.nl.uu.iss.ga.Simulation</mainClass>
+                            <mainClass>nl.uu.iss.ga.Simulation</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
