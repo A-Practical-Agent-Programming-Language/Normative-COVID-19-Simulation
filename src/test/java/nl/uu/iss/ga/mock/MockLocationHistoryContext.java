@@ -25,7 +25,12 @@ public class MockLocationHistoryContext {
         when(beliefContext.getPriorTrustAttitude()).thenReturn(0d);
 
         LocationHistoryContext locationHistoryContext = mock(LocationHistoryContext.class);
+        update(locationHistoryContext, seen, symptomatic, behavior);
 
+        return locationHistoryContext;
+    }
+
+    public static void update(LocationHistoryContext locationHistoryContext, int seen, int symptomatic, int behavior) {
         when(locationHistoryContext.getLastDaySeen()).thenReturn(seen);
         when(locationHistoryContext.getLastDaySeenSymptomatic()).thenReturn(symptomatic);
         when(locationHistoryContext.getLastDaySeenMask()).thenReturn(behavior);
@@ -62,7 +67,15 @@ public class MockLocationHistoryContext {
         when(locationHistoryContext.getLastDaysFractionMaskAt(anyInt(), anyLong())).thenReturn((double) behavior / seen);
         when(locationHistoryContext.getLastDaysFractionSymptomaticAt(anyInt(), anyLong())).thenReturn((double)  symptomatic / seen);
 
-        return locationHistoryContext;
+        when(locationHistoryContext.getLastDaysSeenAverage(anyInt())).thenReturn((double)seen);
+        when(locationHistoryContext.getLastDaysSeenDistancingAverage(anyInt())).thenReturn((double)behavior);
+        when(locationHistoryContext.getLastDaysSeenMaskAverage(anyInt())).thenReturn((double)behavior);
+        when(locationHistoryContext.getLastDaysSeenSymptomaticAverage(anyInt())).thenReturn((double)symptomatic);
+
+        when(locationHistoryContext.getLastDaysSeenAtAverage(anyInt(), anyLong())).thenReturn((double)seen);
+        when(locationHistoryContext.getLastDaysSeenDistancingAverageAt(anyInt(), anyLong())).thenReturn((double)behavior);
+        when(locationHistoryContext.getLastDaysSeenMaskAverageAt(anyInt(), anyLong())).thenReturn((double)behavior);
+        when(locationHistoryContext.getLastDaysSeenSymptomaticAverageAt(anyInt(), anyLong())).thenReturn((double)symptomatic);
     }
 
     @Test

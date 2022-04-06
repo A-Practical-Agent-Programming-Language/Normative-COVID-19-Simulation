@@ -6,10 +6,12 @@ import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.model.data.dictionary.LocationEntry;
+import nl.uu.iss.ga.pansim.state.AgentStateMap;
 import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.iss.ga.util.Methods;
 import nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.iss.ga.util.config.SimulationArguments;
+import nl.uu.iss.ga.util.tracking.activities.TrustLogger;
 import org.javatuples.Pair;
 
 import java.io.*;
@@ -26,19 +28,21 @@ import java.util.stream.Collectors;
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 
 public class GyrationRadius {
-    private File fout;
+    private final File fout;
     private final LocalDate simulationStartDate;
     private final SimulationArguments arguments;
+    private final AgentStateMap agentStateMap;
     private final TickExecutor<CandidateActivity> executor;
     private static final Logger LOGGER = Logger.getLogger(GyrationRadius.class.getName());
     private final List<ConfigModel> counties;
     private final Map<String, Integer> numAgentsPerCounty = new HashMap<>();
     private final Platform platform;
 
-    public GyrationRadius(Platform platform, SimulationArguments arguments, LocalDate simulationStartDate) {
+    public GyrationRadius(Platform platform, SimulationArguments arguments, LocalDate simulationStartDate, AgentStateMap agentStateMap) {
         this.platform = platform;
         this.executor = platform.getTickExecutor();
         this.arguments = arguments;
+        this.agentStateMap = agentStateMap;
         this.counties = arguments.getCounties();
         for(ConfigModel county : this.counties) {
             this.numAgentsPerCounty.put(county.getName(), county.getPersonReader().getPersons().size());
@@ -52,11 +56,16 @@ public class GyrationRadius {
 
     public void processSimulationDay(long tick, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
         LocalDate simulationDay = this.simulationStartDate.plusDays(tick);
-
+        TrustLogger trustLogger = null;
+        try {
+            trustLogger = new TrustLogger(tick, agentStateMap);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to create trust logger for time step " + tick, e);
+        }
         HashMap<String, Pair<Integer, Double>> perCountyRadii = new HashMap<>();
         HashMap<String, Double> perCountyTrust = new HashMap<>();
         for (ConfigModel county : this.counties) {
-            Pair<Double, Double> resultPair = calculateAverageRadiusOfGyration(county, agentActions);
+            Pair<Double, Double> resultPair = calculateAverageRadiusOfGyration(county, agentActions, trustLogger);
             double averageRadiusOfGyration = resultPair.getValue0();
             double averageTrust = resultPair.getValue1();
             perCountyRadii.put(county.getName(), new Pair<>(county.getFipsCode(), averageRadiusOfGyration));
@@ -71,6 +80,10 @@ public class GyrationRadius {
                     tick,
                     fips,
                     perCountyRadii.get(fips).getValue1()));
+        }
+
+        if (trustLogger != null) {
+            trustLogger.close();
         }
 
         writeAveragesToFile(perCountyRadii, perCountyTrust, simulationDay);
@@ -111,12 +124,12 @@ public class GyrationRadius {
      * @param agentActions      Agent actions produced in the last time step
      * @return                  Average radius of gyration of agents in the county
      */
-    private Pair<Double, Double> calculateAverageRadiusOfGyration(ConfigModel county, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+    private Pair<Double, Double> calculateAverageRadiusOfGyration(ConfigModel county, List<Future<DeliberationResult<CandidateActivity>>> agentActions, TrustLogger trustLogger) {
         List<RadiusGyrationCalculator> callables = new ArrayList<>(this.arguments.getThreads());
 
         double total = 0; int counted = 0; double trust = 0;
         for(int i = 0; i < arguments.getThreads(); i++) {
-            callables.add(new RadiusGyrationCalculator(platform, agentActions, county.getAgents(), i, arguments.getThreads()));
+            callables.add(new RadiusGyrationCalculator(platform, agentActions, county.getAgents(), trustLogger, i, arguments.getThreads()));
         }
         try {
             List<Future<RadiusSubResult>> futures = this.executor.useExecutorForTasks(callables);
@@ -208,6 +221,7 @@ public class GyrationRadius {
         private final Platform platform;
         private final List<Future<DeliberationResult<CandidateActivity>>> agentActions;
         private final Set<AgentID> countyAgents;
+        private final TrustLogger trustLogger;
         private final int thread;
         private final int threads_total;
 
@@ -215,12 +229,14 @@ public class GyrationRadius {
                 Platform platform,
                 List<Future<DeliberationResult<CandidateActivity>>> agentActions,
                 List<AgentID> countyAgents,
+                TrustLogger trustLogger,
                 int thread,
                 int threads_total
         ) {
             this.platform = platform;
             this.agentActions = agentActions;
             this.countyAgents = new HashSet<>(countyAgents);
+            this.trustLogger = trustLogger;
             this.thread = thread;
             this.threads_total = threads_total;
         }
@@ -239,8 +255,12 @@ public class GyrationRadius {
                     if (radius != null) {
                         total += radius;
                         counted += 1;
-                        trust += ((BeliefContext) platform.getLocalAgent(result.getAgentID())
+                        double thisAgentTrust = ((BeliefContext) platform.getLocalAgent(result.getAgentID())
                                 .getContext(BeliefContext.class)).getPriorTrustAttitude();
+                        trust += thisAgentTrust;
+                        if (trustLogger != null) {
+                            trustLogger.processAgent(result.getAgentID(), thisAgentTrust);
+                        }
                     }
                 }
             }

@@ -4,11 +4,12 @@ import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 
 public class FractionSymptomatic implements IFactor {
 
-    private static final float ALPHA = 0.2f;
+    public static final float ALPHA = 0.2f;
+    public static final boolean USE_LINEAR_APPROACH = true;
 
     @Override
     public double calculateValue(long locationid, LocationHistoryContext context) {
-        return Math.max(1, context.getLastDayFractionSymptomaticAt(locationid) + 0.5);
+        return 1 - calculateAttitude(locationid, context, 1);
     }
 
     @Override
@@ -16,20 +17,41 @@ public class FractionSymptomatic implements IFactor {
         return obj instanceof FractionSymptomatic;
     }
 
-//    private double calculateAttitudeLinear(long locationid, LocationHistoryContext context) {
-//        int observedSymptomatic = context.getLastDaySeenSymptomaticAt(locationid);
-//
-//        // Returns likelihood to violate
-//
-//
-//
-//        return 0d;
-//    }
-//
-//    private double calculateAttitudeComplex(long locationid, LocationHistoryContext context) {
-//        double a = calculateAttitudeLinear();
-//        double b = context.getLastDayFractionSymptomaticAt(locationid);
-//
-//        return
-//    }
+    public static double calculateAttitude(long locationid, LocationHistoryContext context, int days_lookback) {
+        if (USE_LINEAR_APPROACH) {
+            return calculateAttitudeLinear(locationid, context, days_lookback);
+        } else {
+            return calculateAttitudeComplex(locationid, context, days_lookback);
+        }
+    }
+
+    /**
+     * Calculates the trust factor of an agent based on number of symptomatic agents encountered in a time period
+     * at a specific location.
+     *
+     * This method returns *negative evidence*, i.e., the probability to violate a norm.
+     * Keep in mind that the norm_violation_posterior requires *positive* evidence.
+     *
+     * @param locationid
+     * @param context
+     * @return
+     */
+    private static double calculateAttitudeLinear(long locationid, LocationHistoryContext context, int days_lookback) {
+        int observedSymptomatic = context.getLastDaysSeenSymptomaticAt(days_lookback, locationid);
+        return Math.min(FractionSymptomatic.ALPHA * observedSymptomatic, 1);
+    }
+    /**
+     * Calculates the trust factor of an agent based on number and fraction of symptomatic agents encountered in
+     * a time period at a specific location. The larger the fraction is, the more important this fraction becomes,
+     * compared to the raw number of symptomatic agents seen (regardless of the total number of agents encountered)
+     *
+     * This method returns *negative evidence*, i.e., the probability to violate a norm.
+     * Keep in mind that the norm_violation_posterior requires *positive* evidence.
+     */
+    private static double calculateAttitudeComplex(long locationid, LocationHistoryContext context, int days_lookback) {
+        double a = calculateAttitudeLinear(locationid, context, days_lookback);
+        double b = context.getLastDaysFractionSymptomaticAt(days_lookback, locationid);
+
+        return (1-b) * a + b * b;
+    }
 }

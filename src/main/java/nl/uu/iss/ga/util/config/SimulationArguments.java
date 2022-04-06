@@ -135,7 +135,7 @@ public class SimulationArguments {
     }
 
     public static SimulationArguments getInstance() {
-        if(instance.parseComplete) {
+        if(!instance.parseComplete) {
             throw new IllegalStateException("SimulationArguments accessed before arguments were parsed");
         }
         return instance;

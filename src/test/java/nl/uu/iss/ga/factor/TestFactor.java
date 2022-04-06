@@ -1,5 +1,6 @@
 package nl.uu.iss.ga.factor;
 
+import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.iss.ga.mock.MockLocationHistoryContext;
 import nl.uu.iss.ga.model.factor.FractionMask;
 import nl.uu.iss.ga.model.factor.FractionSymptomatic;
@@ -31,8 +32,8 @@ public class TestFactor  {
             int comparingValue2,
             String comparingValueName
     ) {
-            double v1 = factor.calculateValue(anyInt(), context1);
-            double v2 = factor.calculateValue(anyInt(), context2);
+            double v1 = factor.calculateValue(1L, context1);
+            double v2 = factor.calculateValue(1L, context2);
 
             int lowInfected = Math.min(comparingValue1, comparingValue2);
             int highInfected = Math.max(comparingValue1, comparingValue2);
@@ -120,21 +121,26 @@ public class TestFactor  {
 
         @RepeatedTest(100)
         void testMoreSymptomaticDecreasesTrust() {
-            int seen = random.nextInt(Integer.MAX_VALUE);
-            int behavior = random.nextInt(seen);
-            int infected1 = random.nextInt(seen/2);
-            int infected2 = random.nextInt(seen/2);
+            int infected1 = random.nextInt((int) Math.floor(1d / FractionSymptomatic.ALPHA));
+            int infected2 = random.nextInt((int) Math.floor(1d / FractionSymptomatic.ALPHA));
 
-            LocationHistoryContext locationHistoryContext1 = MockLocationHistoryContext.getLocationHistoryContext(seen, infected1, behavior);
-            LocationHistoryContext locationHistoryContext2 = MockLocationHistoryContext.getLocationHistoryContext(seen, infected2, behavior);
+            int sMax = Math.max(infected1, infected2);
+            int seen = (int) (sMax + random.nextDouble() * ((sMax * 10) - sMax));
+            int behavior = seen > 0 ? random.nextInt(seen) : 0;
 
-            testValueForContext1LowerThanForContext2(
-                    new FractionSymptomatic(),
-                    locationHistoryContext1,
-                    locationHistoryContext2,
-                    infected1,
-                    infected2,
-                    "infected"
+            FractionSymptomatic factor = new FractionSymptomatic();
+
+            LocationHistoryContext context = MockLocationHistoryContext.getLocationHistoryContext(seen, infected1, behavior);
+            double a1 = factor.calculateValue(1L, context);
+
+            MockLocationHistoryContext.update(context, seen, infected2, 0);
+            double a2 = factor.calculateValue(1L, context);
+
+            assertEquals(infected1 > infected2, a1 < a2,
+                    String.format(
+                            "%d symptomatic expected to decrease attitude %f compared to %d symptomatic. Got %f",
+                            infected1, a1, infected2, a2
+                    )
             );
         }
     }

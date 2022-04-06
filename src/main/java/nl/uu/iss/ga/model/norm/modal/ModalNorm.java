@@ -3,7 +3,6 @@ package nl.uu.iss.ga.model.norm.modal;
 import nl.uu.iss.ga.model.data.Activity;
 import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.model.norm.NonRegimentedNorm;
-import nl.uu.iss.ga.model.norm.Norm;
 import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
@@ -53,7 +52,7 @@ public abstract class ModalNorm extends NonRegimentedNorm {
 
         fractionMode = Math.min(fractionMode, 1);
 
-        return Norm.norm_violation_posterior(beliefContext.getPriorTrustAttitude(), fractionMode);
+        return NonRegimentedNorm.norm_violation_posterior(beliefContext.getPriorTrustAttitude(), fractionMode);
 
         // Factors
 //        fractionMode = Math.max(1 - fractionMode, 0);

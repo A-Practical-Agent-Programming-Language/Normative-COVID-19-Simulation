@@ -4,9 +4,11 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.iss.ga.model.data.Activity;
 import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import nl.uu.iss.ga.model.factor.FractionSymptomatic;
 import nl.uu.iss.ga.model.factor.IFactor;
 import nl.uu.iss.ga.model.norm.NonRegimentedNorm;
 import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
+import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,12 +20,21 @@ import java.util.List;
  * Applies to all activities that take place outside the home environment
  */
 public class IfSickStayHomeNorm extends NonRegimentedNorm {
+
+
     @Override
     public double calculateAttitude(AgentContextInterface<CandidateActivity> agentContextInterface, Activity activity) {
         BeliefContext beliefContext = agentContextInterface.getContext(BeliefContext.class);
-        // TODO ideally we use the severity of the symptoms, but we do not have that data
-        return 1 - beliefContext.getPriorTrustAttitude();
+        LocationHistoryContext locationHistoryContext = agentContextInterface.getContext(LocationHistoryContext.class);
+        double trust = beliefContext.getPriorTrustAttitude();
+        long lid = activity.getLocation().getLocationID();
+
+        // Note that negative evidence is returned, not positive evidence as required in the violation posterior
+        double factor = FractionSymptomatic.calculateAttitude(lid, locationHistoryContext, N_DAYS_LOOKBACK);
+        return NonRegimentedNorm.norm_violation_posterior(trust, 1 - factor);
     }
+
+
 
     @Override
     public CandidateActivity transformActivity(CandidateActivity activity, AgentContextInterface<CandidateActivity> agentContextInterface) {

@@ -11,7 +11,6 @@ import nl.uu.iss.ga.model.factor.AccomodatedToWorkFromHome;
 import nl.uu.iss.ga.model.factor.FractionSymptomatic;
 import nl.uu.iss.ga.model.factor.IFactor;
 import nl.uu.iss.ga.model.norm.NonRegimentedNorm;
-import nl.uu.iss.ga.model.norm.Norm;
 import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 
@@ -30,8 +29,6 @@ import java.util.List;
  */
 public class EncourageTeleworkNorm extends NonRegimentedNorm {
 
-    public static final int N_DAYS_LOOKBACK = 14; // used to be 10;
-
     //https://www.pewresearch.org/fact-tank/2020/03/20/before-the-coronavirus-telework-was-an-optional-benefit-mostly-for-the-affluent-few/
     // https://www.bls.gov/opub/mlr/2020/article/ability-to-work-from-home.htm
     public static final double pct_accomodated_work_from_home = .45;
@@ -48,7 +45,7 @@ public class EncourageTeleworkNorm extends NonRegimentedNorm {
         // How many symptomatic people were there at the office previously
         double fractionSymptomatic = historyContext.getLastDaysFractionSymptomaticAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
 
-        return Norm.norm_violation_posterior(gtf, fractionSymptomatic, pct_accomodated_work_from_home);
+        return NonRegimentedNorm.norm_violation_posterior(gtf, fractionSymptomatic, pct_accomodated_work_from_home);
 
         // TODO Household income as proxy for how likely they can work from home?
 

@@ -11,7 +11,6 @@ import nl.uu.iss.ga.model.factor.FractionSymptomatic;
 import nl.uu.iss.ga.model.factor.IFactor;
 import nl.uu.iss.ga.model.factor.NOverLimit;
 import nl.uu.iss.ga.model.norm.NonRegimentedNorm;
-import nl.uu.iss.ga.model.norm.Norm;
 import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 
@@ -32,7 +31,6 @@ import java.util.List;
  */
 public class KeepGroupsSmallNorm extends NonRegimentedNorm {
     public static final double CURVE_SLOPE_FACTOR = .4;
-    private static final int N_DAYS_LOOKBACK = 14; // used to be 7;
 
     private final APPLIES appliesToSetting;
     private final int maxAllowed;
@@ -71,7 +69,7 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
 
         // Rationale here is: The more symptomatic agents you see, the less you trust that the norm has effect, so the
         // less you start following the norm
-        double averageSymptomaticPreviously = Math.min(1, 0.5 + historyContext.getLastDaysFractionSymptomatic(N_DAYS_LOOKBACK));
+        double averageSymptomaticPreviously = 1 - FractionSymptomatic.calculateAttitude(activity.getLocation().getLocationID(), historyContext, N_DAYS_LOOKBACK);
 
         // The difference between allowed and observed (larger than 0, otherwise this norm is not applicable)
         // We calculate symptomatic people double, to increase odds of adhering
@@ -82,7 +80,7 @@ public class KeepGroupsSmallNorm extends NonRegimentedNorm {
         // Normalize the difference to be between 0 and 1, with smaller differences more likely to be ignored
         double normalizedDiff = 1 - (1 / (CURVE_SLOPE_FACTOR * diff + 1)); //https://www.desmos.com/calculator/rcfitmh0ms
 
-        return Norm.norm_violation_posterior(beliefContext.getPriorTrustAttitude(), normalizedDiff, averageSymptomaticPreviously);
+        return NonRegimentedNorm.norm_violation_posterior(beliefContext.getPriorTrustAttitude(), normalizedDiff, averageSymptomaticPreviously);
     }
 
     @Override

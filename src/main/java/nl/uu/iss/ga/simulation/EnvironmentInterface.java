@@ -85,7 +85,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         }
 
         this.gyrationRadius = arguments.isSuppressCalculations() ? null :
-                new GyrationRadius(this.platform, this.arguments, this.startDate);
+                new GyrationRadius(this.platform, this.arguments, this.startDate, this.agentStateMap);
     }
 
     public void setSimulationStarted() {

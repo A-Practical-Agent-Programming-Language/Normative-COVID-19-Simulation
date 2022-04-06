@@ -31,8 +31,8 @@ public class Simulation {
     public static final LocalDateTime instantiated = LocalDateTime.now();
 
     public static void main(String[] args) {
-        SimulationArguments arguments = SimulationArguments.parseArguments(args);
-        new Simulation(arguments);
+        SimulationArguments.parseArguments(args);
+        new Simulation();
     }
 
     private final SimulationArguments arguments;
@@ -47,8 +47,8 @@ public class Simulation {
 
     private ObservationNotifier observationNotifier;
 
-    public Simulation(SimulationArguments arguments) {
-        this.arguments = arguments;
+    public Simulation() {
+        this.arguments = SimulationArguments.getInstance();
         this.normScheduleReader = new NormScheduleReader(arguments.getNormFile());
         this.tickExecutor = new NoRescheduleBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getSystemWideRandom());
 

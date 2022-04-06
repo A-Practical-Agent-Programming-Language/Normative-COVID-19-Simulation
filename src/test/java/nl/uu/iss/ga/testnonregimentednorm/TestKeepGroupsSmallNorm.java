@@ -2,11 +2,10 @@ package nl.uu.iss.ga.testnonregimentednorm;
 
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.iss.ga.mock.MockAgent;
+import nl.uu.iss.ga.mock.MockLocationHistoryContext;
+import nl.uu.iss.ga.model.factor.FractionSymptomatic;
 import nl.uu.iss.ga.model.norm.nonregimented.KeepGroupsSmallNorm;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,26 +73,24 @@ public class TestKeepGroupsSmallNorm extends TestNonRegimentedNorm {
     }
 
     @RepeatedTest(100)
-    void testMoreSymptomaticDecreasesAttitude() {
-        int seen = random.nextInt(Integer.MAX_VALUE);
+    void testMoreSymptomaticIncreasesAttitude() {
+        int seen = random.nextInt(100) + 1; // Avoid none seen as it tells us nothing
         int allowed = random.nextInt(seen);
 
-        // We ensure symptomatic is less than 50%, because above that, the factor becomes 1. If that is the case
-        // for both, we expect no difference.
-        int symptomatic1 = random.nextInt(seen / 2);
-        int symptomatic2 = random.nextInt(seen / 2);
+        int symptomatic1 = random.nextInt(Math.min(seen, (int) Math.floor(1d / FractionSymptomatic.ALPHA)));
+        int symptomatic2 = random.nextInt(Math.min(seen, (int) Math.floor(1d / FractionSymptomatic.ALPHA)));
 
         KeepGroupsSmallNorm norm = new KeepGroupsSmallNorm(KeepGroupsSmallNorm.APPLIES.ALL, allowed);
 
-        setSeen(seen, symptomatic1);
+        MockLocationHistoryContext.update(context, seen, symptomatic1, 0);
         double a1 = norm.calculateAttitude(new AgentContextInterface<>(agent), activity);
 
-        setSeen(seen, symptomatic2);
+        MockLocationHistoryContext.update(context, seen, symptomatic2, 0);
         double a2 = norm.calculateAttitude(new AgentContextInterface<>(agent), activity);
 
-        assertEquals(symptomatic1 > symptomatic2, a1 < a2, String.format(
-                "%f%% symptomatic seen results in attitude %f, %f%% symptomatic seen results in attitude %f",
-                (double) symptomatic1 / seen, a1, (double) symptomatic2 / seen, a2
+        assertEquals(symptomatic1 > symptomatic2, a1 > a2, String.format(
+                "%d (%f%%) symptomatic seen results in attitude %f, %d (%f%%) symptomatic seen results in attitude %f",
+                symptomatic1, (double) symptomatic1 / seen, a1, symptomatic2, (double) symptomatic2 / seen, a2
         ));
     }
 
