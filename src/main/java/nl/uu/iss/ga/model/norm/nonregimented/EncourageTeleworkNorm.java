@@ -35,7 +35,7 @@ public class EncourageTeleworkNorm extends NonRegimentedNorm {
 
     @Override
     public double calculateAttitude(AgentContextInterface<CandidateActivity> agentContextInterface, Activity activity) {
-        LocationHistoryContext historyContext = agentContextInterface.getContext(LocationHistoryContext.class);
+        LocationHistoryContext locationHistoryContext = agentContextInterface.getContext(LocationHistoryContext.class);
         Person person = agentContextInterface.getContext(Person.class);
         Household household = person.getHousehold();
 
@@ -43,7 +43,9 @@ public class EncourageTeleworkNorm extends NonRegimentedNorm {
         double gtf = agentContextInterface.getContext(BeliefContext.class).getPriorTrustAttitude();
 
         // How many symptomatic people were there at the office previously
-        double fractionSymptomatic = historyContext.getLastDaysFractionSymptomaticAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
+//        double fractionSymptomatic = historyContext.getLastDaysFractionSymptomaticAt(N_DAYS_LOOKBACK, activity.getLocation().getLocationID());
+        long lid = activity.getLocation().getLocationID();
+        double fractionSymptomatic = 1 - FractionSymptomatic.calculateAttitude(lid, locationHistoryContext, N_DAYS_LOOKBACK);
 
         return NonRegimentedNorm.norm_violation_posterior(gtf, fractionSymptomatic, pct_accomodated_work_from_home);
 
