@@ -3,8 +3,10 @@ package nl.uu.iss.ga.testnonregimentednorm;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.iss.ga.mock.MockAgent;
 import nl.uu.iss.ga.mock.MockLocationHistoryContext;
+import nl.uu.iss.ga.mock.MockSimulationArguments;
 import nl.uu.iss.ga.model.factor.FractionSymptomatic;
 import nl.uu.iss.ga.model.norm.nonregimented.IfSickStayHomeNorm;
+import nl.uu.iss.ga.util.config.SimulationArguments;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -12,6 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @DisplayName("Norm: If Sick Stay Home")
@@ -20,6 +23,7 @@ public class TestIfSickStayHomeNorm extends TestNonRegimentedNorm {
     @BeforeAll
     void beforeAll() {
         norm = new IfSickStayHomeNorm();
+        MockSimulationArguments.ensureInstance(false);
     }
 
     @RepeatedTest(100)
@@ -34,7 +38,6 @@ public class TestIfSickStayHomeNorm extends TestNonRegimentedNorm {
 
     @RepeatedTest(100)
     void testIncreasedFractionSymptomaticIncreasesAttitude() {
-
         double trust = random.nextDouble();
         MockAgent.setTrust(agent, trust);
         int s1 = random.nextInt((int) Math.floor(1d / FractionSymptomatic.ALPHA));

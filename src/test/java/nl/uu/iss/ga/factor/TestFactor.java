@@ -2,6 +2,7 @@ package nl.uu.iss.ga.factor;
 
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.iss.ga.mock.MockLocationHistoryContext;
+import nl.uu.iss.ga.mock.MockSimulationArguments;
 import nl.uu.iss.ga.model.factor.FractionMask;
 import nl.uu.iss.ga.model.factor.FractionSymptomatic;
 import nl.uu.iss.ga.model.factor.IFactor;
@@ -9,8 +10,10 @@ import nl.uu.iss.ga.model.factor.NOverLimit;
 import nl.uu.iss.ga.model.norm.nonregimented.KeepGroupsSmallNorm;
 import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.iss.ga.testnonregimentednorm.TestNonRegimentedNorm;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -117,7 +120,13 @@ public class TestFactor  {
     }
 
     @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class TestFractionSymptomatic {
+
+        @BeforeAll
+        public void beforeAll() {
+            MockSimulationArguments.ensureInstance(false);
+        }
 
         @RepeatedTest(100)
         void testMoreSymptomaticDecreasesTrust() {

@@ -100,6 +100,9 @@ public class SimulationArguments {
     @Arg(dest = "trustdiscount")
     private double trustdiscount;
 
+    @Arg(dest = "linearsymptomaticfactor")
+    private boolean linearsymptomaticfactor;
+
     @Arg(dest = "samplerandom")
     private boolean samplerandom;
 
@@ -271,6 +274,10 @@ public class SimulationArguments {
 
     public double getTrustDiscountFactor() {
         return trustdiscount;
+    }
+
+    public boolean getLinearSymptomaticFactor() {
+        return linearsymptomaticfactor;
     }
 
     public boolean isSampleTrustRandomly() {
@@ -449,6 +456,17 @@ public class SimulationArguments {
                 .dest("samplerandom")
                 .help("If this argument is present, the simulation will run sample the trust randomly and uniformly," +
                         "if not, the two distributions for democrat and republican will be used");
+
+        behaviorCalibration.addArgument("--use-linear-for-symptomatic-factor")
+                .type(Boolean.class)
+                .required(false)
+                .setDefault(false)
+                .action(new StoreTrueArgumentAction())
+                .dest("linearsymptomaticfactor")
+                .help("If set to true, the linear approach for calculating the factor value of how" +
+                        "many other symptomatic agents have been observed is used. If set to false (default), a more complex" +
+                        "method, that also takes into account what fraction of the total population this was, is " +
+                        "used");
 
         ArgumentGroup diseaseCalibration = parser.addArgumentGroup("Disease Calibration")
                 .description("Arguments used for calibrating the disease model");

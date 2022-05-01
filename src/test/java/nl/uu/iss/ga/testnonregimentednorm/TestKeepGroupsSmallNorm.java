@@ -3,6 +3,7 @@ package nl.uu.iss.ga.testnonregimentednorm;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.iss.ga.mock.MockAgent;
 import nl.uu.iss.ga.mock.MockLocationHistoryContext;
+import nl.uu.iss.ga.mock.MockSimulationArguments;
 import nl.uu.iss.ga.model.factor.FractionSymptomatic;
 import nl.uu.iss.ga.model.norm.nonregimented.KeepGroupsSmallNorm;
 import org.junit.jupiter.api.*;
@@ -21,6 +22,7 @@ public class TestKeepGroupsSmallNorm extends TestNonRegimentedNorm {
 
     @BeforeEach
     void beforeEach() {
+        MockSimulationArguments.ensureInstance(false);
         double trust = random.nextDouble();
         MockAgent.setTrust(agent, trust);
     }
@@ -73,7 +75,7 @@ public class TestKeepGroupsSmallNorm extends TestNonRegimentedNorm {
     }
 
     @RepeatedTest(100)
-    void testMoreSymptomaticIncreasesAttitude() {
+    void testMoreSymptomaticDecreasesAttitude() {
         int seen = random.nextInt(100) + 1; // Avoid none seen as it tells us nothing
         int allowed = random.nextInt(seen);
 
@@ -88,7 +90,7 @@ public class TestKeepGroupsSmallNorm extends TestNonRegimentedNorm {
         MockLocationHistoryContext.update(context, seen, symptomatic2, 0);
         double a2 = norm.calculateAttitude(new AgentContextInterface<>(agent), activity);
 
-        assertEquals(symptomatic1 > symptomatic2, a1 > a2, String.format(
+        assertEquals(symptomatic1 > symptomatic2, a1 < a2, String.format(
                 "%d (%f%%) symptomatic seen results in attitude %f, %d (%f%%) symptomatic seen results in attitude %f",
                 symptomatic1, (double) symptomatic1 / seen, a1, symptomatic2, (double) symptomatic2 / seen, a2
         ));

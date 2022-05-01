@@ -1,15 +1,25 @@
 package nl.uu.iss.ga.model.factor;
 
 import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
+import nl.uu.iss.ga.util.config.SimulationArguments;
 
 public class FractionSymptomatic implements IFactor {
 
     public static final float ALPHA = 0.2f;
-    public static final boolean USE_LINEAR_APPROACH = true;
 
     @Override
     public double calculateValue(long locationid, LocationHistoryContext context) {
         return 1 - calculateAttitude(locationid, context, 1);
+    }
+
+    /**
+     * Returns true if the linear approach of calculating the attitude change based on number of symptomatic agents
+     * observed. Returns false if also the fraction of symptomatic agents should be included
+     *
+     * @return boolean
+     */
+    public static boolean getUseLinearApproach() {
+        return SimulationArguments.getInstance().getLinearSymptomaticFactor();
     }
 
     @Override
@@ -18,7 +28,7 @@ public class FractionSymptomatic implements IFactor {
     }
 
     public static double calculateAttitude(long locationid, LocationHistoryContext context, int days_lookback) {
-        if (USE_LINEAR_APPROACH) {
+        if (getUseLinearApproach()) {
             return calculateAttitudeLinear(locationid, context, days_lookback);
         } else {
             return calculateAttitudeComplex(locationid, context, days_lookback);
