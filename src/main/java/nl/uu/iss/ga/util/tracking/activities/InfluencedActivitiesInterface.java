@@ -15,7 +15,7 @@ public interface InfluencedActivitiesInterface {
 
     void setNInfected(int nInfected);
 
-    long getTick();
+    long getTimeStep();
 
     void activityCancelled(Activity activity, Norm norm);
 

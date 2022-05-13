@@ -4,7 +4,7 @@ package nl.uu.iss.ga.simulation;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
+import nl.uu.cs.iss.ga.sim2apl.core.step.EnvironmentInterface;
 import nl.uu.iss.ga.Simulation;
 import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
@@ -36,9 +36,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class EnvironmentInterface implements TickHookProcessor<CandidateActivity> {
+public class PansimEnvironmentInterface implements EnvironmentInterface<CandidateActivity> {
 
-    private static final Logger LOGGER = Logger.getLogger(EnvironmentInterface.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PansimEnvironmentInterface.class.getName());
 
     private final AgentStateMap agentStateMap;
     private final Map<LocalDate, List<NormContainer>> normSchedule;
@@ -51,12 +51,12 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     private final Platform platform;
     private final SimulationArguments arguments;
     private final boolean trackVisits;
-    private long currentTick = 0;
+    private long currentTimeStep = 0;
     private LocalDateTime simulationStarted;
     private final LocalDate startDate;
     private DayOfWeek today = DayOfWeek.MONDAY;
 
-    public EnvironmentInterface(
+    public PansimEnvironmentInterface(
             Platform platform,
             ObservationNotifier observationNotifier,
             AgentStateMap agentStateMap,
@@ -71,7 +71,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.sharedNormContext = arguments.getSharedNormContext();
         this.observationNotifier = observationNotifier;
         this.scheduleTracker = arguments.isSuppressCalculations() ? null : new ScheduleTracker(
-                this.platform.getTickExecutor(),
+                this.platform.getStepExecutor(),
                 this.arguments,
                 this.agentStateMap,
                 normSchedule);
@@ -92,8 +92,8 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
         this.simulationStarted = LocalDateTime.now();
     }
 
-    public long getCurrentTick() {
-        return currentTick;
+    public long getCurrentTimeStep() {
+        return currentTimeStep;
     }
 
     public DayOfWeek getToday() {
@@ -109,31 +109,31 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     }
 
     @Override
-    public void tickPreHook(long tick) {
-        this.currentTick = tick;
+    public void stepStarting(long timeStep) {
+        this.currentTimeStep = timeStep;
         if (this.startDate == null) {
-            this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTick % 7 + 1));
+            this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTimeStep % 7 + 1));
         } else {
-            this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
+            this.today = DayOfWeek.fromDate(this.startDate.plusDays(timeStep));
         }
 
-        String date = this.startDate.plusDays(tick).format(DateTimeFormatter.ISO_DATE);
+        String date = this.startDate.plusDays(timeStep).format(DateTimeFormatter.ISO_DATE);
 
-        if(tick < arguments.getDiseaseSeedDays() && arguments.isDiseaseSeeding()) {
+        if(timeStep < arguments.getDiseaseSeedDays() && arguments.isDiseaseSeeding()) {
                     agentStateMap.seed_infections(date, arguments.getSystemWideRandom(), arguments.getDiseaseSeedNumAgentsPerDay());
-        } else if(arguments.getAdditionalDiseaseSeedNumber() != null && tick % arguments.getAdditionalEveryOtherDays() == 0) {
+        } else if(arguments.getAdditionalDiseaseSeedNumber() != null && timeStep % arguments.getAdditionalEveryOtherDays() == 0) {
             agentStateMap.seed_infections(date, arguments.getSystemWideRandom(), arguments.getAdditionalDiseaseSeedNumber());
         }
 
         // Reset tracker for influenced activities
         GoalPlanScheme.influencedActivitiesTracker = arguments.isSuppressCalculations() ?
-                new SuppressCalculationsActivityTracker() : new InfluencedActivities(tick, this.allUsedNorms);
+                new SuppressCalculationsActivityTracker() : new InfluencedActivities(timeStep, this.allUsedNorms);
 
         processNormUpdates();
     }
 
     private void processNormUpdates() {
-        LocalDate today = this.startDate.plusDays(this.currentTick);
+        LocalDate today = this.startDate.plusDays(this.currentTimeStep);
         if(this.normSchedule.containsKey(today)) {
             for(NormContainer norm : this.normSchedule.get(today)) {
                 if(norm.getStartDate().equals(today)) {
@@ -152,26 +152,26 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
     }
 
     @Override
-    public void tickPostHook(long tick, int lastTickDuration, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+    public void stepFinished(long timeStep, int lastTimeStepDuration, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
         LOGGER.log(Level.FINE, String.format(
-                "Tick %d took %d milliseconds for %d agents (roughly %fms per agent)",
-                tick, lastTickDuration, agentActions.size(), (double) lastTickDuration / agentActions.size()));
+                "Time step %d took %d milliseconds for %d agents (roughly %fms per agent)",
+                timeStep, lastTimeStepDuration, agentActions.size(), (double) lastTimeStepDuration / agentActions.size()));
 
 
         if(!arguments.isSuppressCalculations()) {
-            process_past_tick(tick, lastTickDuration, agentActions); // TODO update references
+            processPastTimeStep(timeStep, lastTimeStepDuration, agentActions); // TODO update references
         }
     }
 
     /**
      * Single-threaded operations to process the result of a simulation time step
      */
-    private void process_past_tick(long tick, int lastTickDuration, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+    private void processPastTimeStep(long timeStep, int lastTimeStepDuration, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
 
         long startCalculate = System.currentTimeMillis();
 
         // Calculate and store radius of gyration
-        this.gyrationRadius.processSimulationDay(tick, agentActions);
+        this.gyrationRadius.processSimulationDay(timeStep, agentActions);
         LOGGER.log(Level.FINE, String.format(
                 "Calculated and stored radius of gyration in %d milliseconds", System.currentTimeMillis() - startCalculate
         ));
@@ -186,7 +186,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
         if(this.arguments.writeGraph()){
             startCalculate = System.currentTimeMillis();
-            String date = this.startDate.plusDays(tick).format(DateTimeFormatter.ISO_DATE);
+            String date = this.startDate.plusDays(timeStep).format(DateTimeFormatter.ISO_DATE);
             try {
                 VisitGraph vg = new VisitGraph(date, agentActions, this.agentStateMap);
                 vg.createVisitEdges(this.arguments.getOutputDir());
@@ -202,13 +202,13 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
 
         // Calculate and store effects of norms on activities
         startCalculate = System.currentTimeMillis();
-        this.scheduleTracker.processTick(this.startDate.plusDays(tick), agentActions);
+        this.scheduleTracker.processTimeStep(this.startDate.plusDays(timeStep), agentActions);
         LOGGER.log(Level.FINE, String.format(
                 "Stored schedule tracking logs in %d milliseconds", System.currentTimeMillis() - startCalculate));
     }
 
     @Override
-    public void simulationFinishedHook(long l, int i) {
+    public void simulationFinished(long l, int i) {
         Duration startupDuration = Duration.between(Simulation.instantiated, this.simulationStarted);
         Duration simulationDuration = Duration.between(this.simulationStarted, LocalDateTime.now());
         Duration combinedDuration = Duration.between(Simulation.instantiated, LocalDateTime.now());
@@ -246,7 +246,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             callables.add(new GetVisitsCallable(atomicIndex, agentActions, visits));
         }
         try {
-            this.platform.getTickExecutor().useExecutorForTasks(callables);
+            this.platform.getStepExecutor().useExecutorForTasks(callables);
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Failed to extract location visits");
         }
@@ -260,7 +260,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
             callables.add(new NotifyVisitsCallable(atomicIndex, agentActions, thisRoundVisits));
         }
         try {
-            this.platform.getTickExecutor().useExecutorForTasks(callables);
+            this.platform.getStepExecutor().useExecutorForTasks(callables);
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Failed to notify agents of location visits");
         }
@@ -332,7 +332,7 @@ public class EnvironmentInterface implements TickHookProcessor<CandidateActivity
                         tv.mask.get(),
                         tv.distance.get()
                 );
-                EnvironmentInterface.this.observationNotifier.notifyVisit(result.getAgentID(), EnvironmentInterface.this.currentTick, v);
+                PansimEnvironmentInterface.this.observationNotifier.notifyVisit(result.getAgentID(), PansimEnvironmentInterface.this.currentTimeStep, v);
             }
 
             return null;

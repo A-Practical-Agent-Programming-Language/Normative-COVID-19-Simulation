@@ -79,7 +79,7 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
             }
         } else if (trigger instanceof AdjustTrustAttitudeGoal) {
             AdjustTrustAttitudeGoal adjustTrustAttitudeGoal = (AdjustTrustAttitudeGoal) trigger;
-            if (context.getCurrentTick() >= adjustTrustAttitudeGoal.getFatigueStart()) {
+            if (context.getCurrentTimeStep() >= adjustTrustAttitudeGoal.getFatigueStart()) {
                 return new AdjustTrustAttitudePlan(adjustTrustAttitudeGoal);
             }
         } else if (trigger instanceof AdjustHAITrustGoal) {

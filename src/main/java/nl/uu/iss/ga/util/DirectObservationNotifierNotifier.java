@@ -24,13 +24,13 @@ public class DirectObservationNotifierNotifier implements ObservationNotifier {
     }
 
     @Override
-    public void notifyVisit(AgentID agentID, long tick, LocationHistoryContext.Visit visit) {
-        this.agentHistoryContextMap.get(agentID).addVisit(tick, visit);
+    public void notifyVisit(AgentID agentID, long timeStep, LocationHistoryContext.Visit visit) {
+        this.agentHistoryContextMap.get(agentID).addVisit(timeStep, visit);
     }
 
     @Override
-    public void notifyVisit(long pid, long tick, LocationHistoryContext.Visit visit) {
-        this.agentHistoryContextMap.get(this.pidAgentMap.get(pid)).addVisit(tick, visit);
+    public void notifyVisit(long pid, long timeStep, LocationHistoryContext.Visit visit) {
+        this.agentHistoryContextMap.get(this.pidAgentMap.get(pid)).addVisit(timeStep, visit);
     }
 
     public void addLocationHistoryContext(AgentID aid, long pid, LocationHistoryContext locationHistoryContext) {

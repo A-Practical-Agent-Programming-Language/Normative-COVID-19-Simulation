@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class InfluencedActivities implements InfluencedActivitiesInterface {
 
-    private final long tick;
+    private final long timeStep;
 
     private int deltaCases = 0;
     private int nInfected = 0;
@@ -22,8 +22,8 @@ public class InfluencedActivities implements InfluencedActivitiesInterface {
     private final ConcurrentHashMap<ActivityType, AtomicInteger> cancelledActivities = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<ActivityType, AtomicInteger> continuedActivities = new ConcurrentHashMap<>();
 
-    public InfluencedActivities(long tick, Set<Class<? extends Norm>> norms) {
-        this.tick = tick;
+    public InfluencedActivities(long timeStep, Set<Class<? extends Norm>> norms) {
+        this.timeStep = timeStep;
         for(Class<? extends Norm> n : norms) {
             ConcurrentHashMap<ActivityType, AtomicInteger> map = new ConcurrentHashMap<>();
             for(ActivityType type : ActivityType.values()) {
@@ -56,8 +56,8 @@ public class InfluencedActivities implements InfluencedActivitiesInterface {
     }
 
     @Override
-    public long getTick() {
-        return tick;
+    public long getTimeStep() {
+        return timeStep;
     }
 
     @Override

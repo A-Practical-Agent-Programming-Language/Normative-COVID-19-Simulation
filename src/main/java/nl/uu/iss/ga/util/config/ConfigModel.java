@@ -11,7 +11,7 @@ import nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import nl.uu.iss.ga.model.reader.*;
 import nl.uu.iss.ga.pansim.state.AgentStateMap;
-import nl.uu.iss.ga.simulation.EnvironmentInterface;
+import nl.uu.iss.ga.simulation.PansimEnvironmentInterface;
 import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
@@ -124,14 +124,14 @@ public class ConfigModel {
         };
     }
 
-    public void createAgents(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface) {
+    public void createAgents(Platform platform, ObservationNotifier observationNotifier, PansimEnvironmentInterface pansimEnvironmentInterface) {
         this.adjustTrustAttitudeGoal =
                 new AdjustTrustAttitudeGoal(this.arguments.getFatigue(), this.arguments.getFatigueStart());
         this.adjustHAITrustGoal = new AdjustHAITrustGoal(arguments.getTrustDiscountFactor());
 //        this.sleepGoal = new SleepGoal(5);
         for (ActivitySchedule schedule : this.activityFileReader.getActivitySchedules()) {
             schedule.splitActivitiesByDay();
-            createAgentFromSchedule(platform, observationNotifier, environmentInterface, schedule);
+            createAgentFromSchedule(platform, observationNotifier, pansimEnvironmentInterface, schedule);
         }
     }
 
@@ -139,7 +139,7 @@ public class ConfigModel {
     private AdjustTrustAttitudeGoal adjustTrustAttitudeGoal;
 //    private SleepGoal sleepGoal;
 
-    private void createAgentFromSchedule(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface, ActivitySchedule schedule) {
+    private void createAgentFromSchedule(Platform platform, ObservationNotifier observationNotifier, PansimEnvironmentInterface environmentInterface, ActivitySchedule schedule) {
         double initialGovernmentAttitude;
         if (arguments.isSampleTrustRandomly()) {
             initialGovernmentAttitude = getRandom().nextDouble();

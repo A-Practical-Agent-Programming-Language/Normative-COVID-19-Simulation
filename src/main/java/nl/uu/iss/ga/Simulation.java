@@ -1,20 +1,20 @@
 package nl.uu.iss.ga;
 
+import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
+import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
+import nl.uu.cs.iss.ga.sim2apl.core.step.SimulationEngine;
 import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.model.norm.NormFactory;
 import nl.uu.iss.ga.model.reader.NormScheduleReader;
 import nl.uu.iss.ga.pansim.PansimSimulationEngine;
 import nl.uu.iss.ga.pansim.state.AgentStateMap;
 import nl.uu.iss.ga.simulation.DefaultTimingSimulationEngine;
-import nl.uu.iss.ga.simulation.EnvironmentInterface;
-import nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
+import nl.uu.iss.ga.simulation.NoRescheduleBlockingStepExecutor;
+import nl.uu.iss.ga.simulation.PansimEnvironmentInterface;
 import nl.uu.iss.ga.util.CountNormApplication;
 import nl.uu.iss.ga.util.DirectObservationNotifierNotifier;
 import nl.uu.iss.ga.util.Java2APLLogger;
 import nl.uu.iss.ga.util.ObservationNotifier;
-import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
-import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.SimulationEngine;
 import nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.iss.ga.util.config.SimulationArguments;
 
@@ -39,8 +39,8 @@ public class Simulation {
     private final NormScheduleReader normScheduleReader;
 
     private Platform platform;
-    private NoRescheduleBlockingTickExecutor<CandidateActivity> tickExecutor;
-    private EnvironmentInterface environmentInterface;
+    private final NoRescheduleBlockingStepExecutor<CandidateActivity> stepExecutor;
+    private PansimEnvironmentInterface pansimEnvironmentInterface;
     private SimulationEngine<CandidateActivity> simulationEngine;
 
     private AgentStateMap agentStateMap;
@@ -50,7 +50,7 @@ public class Simulation {
     public Simulation() {
         this.arguments = SimulationArguments.getInstance();
         this.normScheduleReader = new NormScheduleReader(arguments.getNormFile());
-        this.tickExecutor = new NoRescheduleBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getSystemWideRandom());
+        this.stepExecutor = new NoRescheduleBlockingStepExecutor<>(this.arguments.getThreads(), this.arguments.getSystemWideRandom());
 
         if(arguments.isCountAffectedAgents()) {
             arguments.setSuppressCalculations(true);
@@ -60,21 +60,21 @@ public class Simulation {
         preparePlatform();
 
         for(ConfigModel county : this.arguments.getCounties()) {
-            county.createAgents(this.platform, this.observationNotifier, this.environmentInterface);
+            county.createAgents(this.platform, this.observationNotifier, this.pansimEnvironmentInterface);
         }
 
         if (arguments.isCountAffectedAgents()) {
             CountNormApplication normCounter = new CountNormApplication(
                     this.platform,
                     this.arguments,
-                    this.environmentInterface,
+                    this.pansimEnvironmentInterface,
                     this.agentStateMap,
                     NormFactory.instantiateAllNorms()
             );
             normCounter.writeAffectedAgentsToFile();
             System.exit(0);
         } else {
-            this.environmentInterface.setSimulationStarted();
+            this.pansimEnvironmentInterface.setSimulationStarted();
             this.simulationEngine.start();
         }
     }
@@ -84,7 +84,7 @@ public class Simulation {
             List<Callable<Void>> callables = new ArrayList<>();
             arguments.getCounties().forEach(x -> callables.add(x.getAsyncLoadFiles()));
             try {
-                this.tickExecutor.useExecutorForTasks(callables);
+                this.stepExecutor.useExecutorForTasks(callables);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Failed to read files", e);
                 System.exit(9);
@@ -99,12 +99,12 @@ public class Simulation {
     }
 
     private void preparePlatform() {
-        DefaultMessenger messenger = new DefaultMessenger();
+        DefaultMessenger<CandidateActivity> messenger = new DefaultMessenger<>();
 
-        this.platform = Platform.newPlatform(tickExecutor, messenger);
+        this.platform = Platform.newPlatform(stepExecutor, messenger);
         this.platform.setLogger(new Java2APLLogger());
         this.observationNotifier = new DirectObservationNotifierNotifier(this.platform);
-        this.environmentInterface = new EnvironmentInterface(
+        this.pansimEnvironmentInterface = new PansimEnvironmentInterface(
                 platform,
                 this.observationNotifier,
                 this.agentStateMap,
@@ -116,11 +116,11 @@ public class Simulation {
 
     private SimulationEngine<CandidateActivity> getLocalSimulationEngine() {
 //        return new DefaultSimulationEngine<>(this.platform, (int)arguments.getIterations(), this.environmentInterface);
-        return new DefaultTimingSimulationEngine<>(this.platform, this.arguments, (int)this.arguments.getIterations(), this.environmentInterface);
+        return new DefaultTimingSimulationEngine<>(this.platform, this.arguments, (int)this.arguments.getIterations(), this.pansimEnvironmentInterface);
     }
 
     private SimulationEngine<CandidateActivity> getPansimSimulationEngine() {
-        return new PansimSimulationEngine(this.platform, this.arguments, this.observationNotifier, this.agentStateMap, this.environmentInterface);
+        return new PansimSimulationEngine(this.platform, this.arguments, this.observationNotifier, this.agentStateMap, this.pansimEnvironmentInterface);
     }
 
     private AgentStateMap mergeStateMaps() {

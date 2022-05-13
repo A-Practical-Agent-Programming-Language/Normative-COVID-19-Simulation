@@ -2,15 +2,15 @@ package nl.uu.iss.ga.pansim;
 
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.AbstractSimulationEngine;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
+import nl.uu.cs.iss.ga.sim2apl.core.step.AbstractSimulationEngine;
+import nl.uu.cs.iss.ga.sim2apl.core.step.EnvironmentInterface;
+import nl.uu.cs.iss.ga.sim2apl.core.step.StepExecutor;
 import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.pansim.state.AgentStateMap;
 import nl.uu.iss.ga.pansim.state.StateDataFrame;
 import nl.uu.iss.ga.pansim.visit.VisitDataFrame;
 import nl.uu.iss.ga.pansim.visit.VisitResultDataFrame;
-import nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
+import nl.uu.iss.ga.simulation.NoRescheduleBlockingStepExecutor;
 import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.iss.ga.util.Methods;
 import nl.uu.iss.ga.util.ObservationNotifier;
@@ -43,12 +43,12 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     private final ObservationNotifier observationNotifier;
     private final SimulationArguments arguments;
 
-    private final TickExecutor<CandidateActivity> executor;
+    private final StepExecutor<CandidateActivity> executor;
 
     private byte[] next_state_df_raw;
     private byte[] next_visit_df_raw;
 
-    private long tickEnd = -1;
+    private long stepEnd = -1;
     private final ScheduleTrackerGroup timingsTracker;
 
     private String parentDir;
@@ -61,17 +61,16 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     public PansimSimulationEngine(
             Platform platform,
             SimulationArguments arguments,
-            ObservationNotifier
-                    observationNotifier,
+            ObservationNotifier observationNotifier,
             AgentStateMap agentStateMap,
-            TickHookProcessor<CandidateActivity>... processors
+            EnvironmentInterface<CandidateActivity>... environmentInterfaces
     ) {
-        super(platform, processors);
+        super(platform, environmentInterfaces);
         this.gatewayServer = new GatewayServer(this);
         this.agentStateMap = agentStateMap;
         this.arguments = arguments;
         this.observationNotifier = observationNotifier;
-        this.executor = platform.getTickExecutor();
+        this.executor = platform.getStepExecutor();
         if(arguments.saveStateDataFrames()) {
             this.parentDir = prepare_output(STATE_DATAFRAME_DIR_NAME);
         }
@@ -82,15 +81,15 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         this.timingsTracker = new ScheduleTrackerGroup(
                 arguments.getOutputDir(),
                 "timings.csv",
-                List.of("tick", "pansim", "stateExtracted", "visitsExtracted",
-                        "visitsProcessed","prehook",
+                List.of("timestep", "pansim", "stateExtracted", "visitsExtracted",
+                        "visitsProcessed","stepStarting",
                         "reassignPointer", // TODO remove if not using DefaultTimingSimulaitonEngine
                         "deliberation",
-                        "visitsEncoded", "stateEncoded", "posthook")
+                        "visitsEncoded", "stateEncoded", "stepFinished")
                 );
     }
 
-    private void runFirstTick() {
+    private void runFirstTimeStep() {
         try {
             byte[] first_state_df_raw = StateDataFrame.fromAgentStateMap(
                     this.agentStateMap.getAllAgentStates(),
@@ -109,8 +108,8 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         long millis = System.currentTimeMillis();
 
         HashMap<String, String> timingsMap = new HashMap<>();
-        timingsMap.put("tick", Integer.toString(this.executor.getCurrentTick()));
-        timingsMap.put("pansim", this.tickEnd > -1 ? Long.toString(millis - tickEnd) : "");
+        timingsMap.put("timestep", Integer.toString(this.executor.getCurrentTimeStep()));
+        timingsMap.put("pansim", this.stepEnd > -1 ? Long.toString(millis - stepEnd) : "");
 
         // Cannot be parallelized
         StateDataFrame state_output_df = new StateDataFrame(cur_state_df_raw, allocator);
@@ -137,11 +136,11 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         LOGGER.log(Level.FINE, String.format(
                 "Received new visit output dataframe with %d rows", visit_output_df.getSchemaRoot().getRowCount()));
 
-        processTickPreHooks(this.executor.getCurrentTick());
-        timingsMap.put("prehook", Long.toString(System.currentTimeMillis() - millis));
+        processStepStarting(this.executor.getCurrentTimeStep());
+        timingsMap.put("stepStarting", Long.toString(System.currentTimeMillis() - millis));
         millis = System.currentTimeMillis();
 
-        List<Future<DeliberationResult<CandidateActivity>>> agentActions = ((NoRescheduleBlockingTickExecutor<CandidateActivity>) this.executor).doTick(timingsMap);
+        List<Future<DeliberationResult<CandidateActivity>>> agentActions = ((NoRescheduleBlockingStepExecutor<CandidateActivity>) this.executor).doTimeStep(timingsMap);
         millis = System.currentTimeMillis();
 
         // Prepare results for pansim and misuse loop to set disease state on activities
@@ -167,26 +166,26 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
         millis = System.currentTimeMillis();
         // TODO don't parallelize, as we suppress calculations anyway when doing scaling?
-        processTickPostHook(this.executor.getCurrentTick() - 1, this.executor.getLastTickDuration(), agentActions);
-        timingsMap.put("posthook", Long.toString(System.currentTimeMillis() - millis));
+        processStepFinished(this.executor.getCurrentTimeStep() - 1, this.executor.getLastTimeStepDuration(), agentActions);
+        timingsMap.put("stepFinished", Long.toString(System.currentTimeMillis() - millis));
 
         this.timingsTracker.writeKeyMapToFile(
-                arguments.getStartdate().plusDays(this.executor.getCurrentTick()),
+                arguments.getStartdate().plusDays(this.executor.getCurrentTimeStep()),
                 timingsMap
         );
 
-        this.tickEnd = System.currentTimeMillis();
+        this.stepEnd = System.currentTimeMillis();
     }
 
     public byte[] getNextStateDataFrame() {
         LOGGER.log(Level.FINE, String.format(
-                "Returning state dataframe for tick %d", this.executor.getCurrentTick()));
+                "Returning state dataframe for time step %d", this.executor.getCurrentTimeStep()));
         return next_state_df_raw;
     }
 
     public byte[] getNextVisitDataFrame() {
         LOGGER.log(Level.FINE, String.format(
-                "Returning next visit dataframe for tick %d", this.executor.getCurrentTick()));
+                "Returning next visit dataframe for time step %d", this.executor.getCurrentTimeStep()));
         return next_visit_df_raw;
     }
 
@@ -201,7 +200,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     public boolean cleanup() throws Exception{
         LOGGER.log(Level.INFO, "Pansim sent cleanup signal.");
-        processSimulationFinishedHook(this.executor.getCurrentTick(), this.executor.getLastTickDuration());
+        processSimulationFinishedHook(this.executor.getCurrentTimeStep(), this.executor.getLastTimeStepDuration());
         executor.shutdown();
         return true;
     }
@@ -209,14 +208,14 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     private void process_visit_output(VisitResultDataFrame visit_output_df) {
         List<Callable<Void>> runnables = new ArrayList<>();
         for(int i = 0; i < this.arguments.getThreads(); i++) {
-            runnables.add(new ProcessVisitOutput(observationNotifier, visit_output_df, i, arguments.getThreads(), executor.getCurrentTick()));
+            runnables.add(new ProcessVisitOutput(observationNotifier, visit_output_df, i, arguments.getThreads(), executor.getCurrentTimeStep()));
         }
 
         try {
             this.executor.useExecutorForTasks(runnables);
         } catch (InterruptedException e) {
             e.printStackTrace();
-            LOGGER.log(Level.SEVERE, "Failed to process tick visits concurrently. Exiting");
+            LOGGER.log(Level.SEVERE, "Failed to process time step visits concurrently. Exiting");
             LOGGER.log(Level.SEVERE, e.getMessage());
             System.exit(10);
         }
@@ -228,12 +227,12 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
         VisitResultDataFrame dataFrame;
         private final int thread;
         private final int threads_total;
-        int currentTick;
+        int currentTimeStep;
 
-        public ProcessVisitOutput(ObservationNotifier notifier, VisitResultDataFrame dataFrame, int i, int threads, int currentTick) {
+        public ProcessVisitOutput(ObservationNotifier notifier, VisitResultDataFrame dataFrame, int i, int threads, int currentTimeStep) {
             this.notifier = notifier;
             this.dataFrame = dataFrame;
-            this.currentTick = currentTick;
+            this.currentTimeStep = currentTimeStep;
             this.thread = i;
             this.threads_total = threads;
         }
@@ -246,7 +245,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
             for(int i = start; i < end; i++) {
                 LocationHistoryContext.Visit visit = this.dataFrame.getAgentVisit(i);
-                this.notifier.notifyVisit(visit.getPersonID(), currentTick, visit);
+                this.notifier.notifyVisit(visit.getPersonID(), currentTimeStep, visit);
             }
             return null;
         }
@@ -254,7 +253,7 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
 
     @Override
     public boolean start() {
-        runFirstTick();
+        runFirstTimeStep();
         gatewayServer.addListener(new GatewayServerListener() {
             @Override
             public void connectionError(Exception e) { }
@@ -305,8 +304,8 @@ public class PansimSimulationEngine extends AbstractSimulationEngine<CandidateAc
     }
 
     private void write_state_dataframes(String subDir, byte[] current_state_df_raw, byte[] next_state_df_raw) {
-        File fout_pansim = Paths.get(this.parentDir, subDir, String.format("%s_tick_%03d_pansim.raw", subDir, this.executor.getCurrentTick())).toFile();
-        File fout_behavior = Paths.get(this.parentDir, subDir, String.format("%s_tick_%03d_behavior.raw", subDir, this.executor.getCurrentTick())).toFile();
+        File fout_pansim = Paths.get(this.parentDir, subDir, String.format("%s_timestep_%03d_pansim.raw", subDir, this.executor.getCurrentTimeStep())).toFile();
+        File fout_behavior = Paths.get(this.parentDir, subDir, String.format("%s_timestep_%03d_behavior.raw", subDir, this.executor.getCurrentTimeStep())).toFile();
 
         write_state_dataframe_to_file(current_state_df_raw, fout_pansim);
         write_state_dataframe_to_file(next_state_df_raw, fout_behavior);

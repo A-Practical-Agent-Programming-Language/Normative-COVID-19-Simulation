@@ -19,25 +19,25 @@ public class LocationHistoryContext implements Context {
 
     private static final Logger LOGGER = Logger.getLogger(LocationHistoryContext.class.getSimpleName());
 
-    private long lastDayTick = 0;
+    private long lastDayTimeStep = 0;
 
     private Map<Long, LocationHistory> locationHistory = new ConcurrentHashMap<>();
 
     /**
      * Add a new visit to the agent visit history
-     * @param tick      Timestep of the visit
+     * @param timeStep      Time step of the visit
      * @param visit     Visit
      */
-    public void addVisit(long tick, Visit visit) {
-        this.lastDayTick = tick;
+    public void addVisit(long timeStep, Visit visit) {
+        this.lastDayTimeStep = timeStep;
         if(!this.locationHistory.containsKey(visit.getLocationID())) {
             this.locationHistory.put(visit.getLocationID(), new LocationHistory(visit.getLocationID()));
         }
-        this.locationHistory.get(visit.getLocationID()).addVisit(tick, visit);
+        this.locationHistory.get(visit.getLocationID()).addVisit(timeStep, visit);
     }
 
-    public void setLastDayTick(int lastDayTick) {
-        this.lastDayTick = lastDayTick;
+    public void setLastDayTimeStep(int lastDayTimeStep) {
+        this.lastDayTimeStep = lastDayTimeStep;
     }
 
     /**
@@ -48,18 +48,18 @@ public class LocationHistoryContext implements Context {
      *                      agent did not visit the location during the last time step
      */
     public @Nullable Visit getLastVisit(long locationID) {
-        return this.getVisit(locationID, this.lastDayTick);
+        return this.getVisit(locationID, this.lastDayTimeStep);
     }
 
     /**
      * Get a visit from a specific time step
      * @param locationID    ID of the location for which to find the visit of the specified time step
-     * @param tick          Time step for which to find the visit object
+     * @param timeStep          Time step for which to find the visit object
      * @return              Visit object for specified location on specified time step, or null if the agent did not
      *                      visit the location during that time step
      */
-    public Visit getVisit(long locationID, long tick) {
-        return this.locationHistory.get(locationID).getVisit(tick);
+    public Visit getVisit(long locationID, long timeStep) {
+        return this.locationHistory.get(locationID).getVisit(timeStep);
     }
 
     /**
@@ -73,7 +73,7 @@ public class LocationHistoryContext implements Context {
      */
     public List<Visit> getLastDaysVisits(long locationID, int n) {
         List<Visit> visitHistory = new ArrayList<>();
-        for(long i = this.lastDayTick - n; i < this.lastDayTick; i++) {
+        for(long i = this.lastDayTimeStep - n; i < this.lastDayTimeStep; i++) {
             Visit visit = getVisit(locationID, i);
             if(visit != null) {
                 visitHistory.add(visit);
@@ -105,7 +105,7 @@ public class LocationHistoryContext implements Context {
      * @return  Number of encountered agent at the specified location
      */
     public int getLastDaySeenAt(long locationID) {
-        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDaySeen(this.lastDayTick) : 0;
+        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDaySeen(this.lastDayTimeStep) : 0;
     }
 
     /**
@@ -129,7 +129,7 @@ public class LocationHistoryContext implements Context {
      */
     public int getLastDaysSeenAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysSeen(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysSeen(this.lastDayTimeStep, n) : 0;
     }
 
     /**
@@ -140,7 +140,7 @@ public class LocationHistoryContext implements Context {
      */
     public double getLastDaysSeenAverage(int n) {
         Supplier<Stream<Double>> s = () -> this.locationHistory.values().stream()
-                .map(x -> x.getLastDaysSeenAverage(this.lastDayTick, n)).filter(x -> x != 0d);
+                .map(x -> x.getLastDaysSeenAverage(this.lastDayTimeStep, n)).filter(x -> x != 0d);
         return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
     }
 
@@ -157,7 +157,7 @@ public class LocationHistoryContext implements Context {
      */
     public double getLastDaysSeenAtAverage(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysSeenAverage(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysSeenAverage(this.lastDayTimeStep, n) : 0;
     }
 
     /*
@@ -185,7 +185,7 @@ public class LocationHistoryContext implements Context {
      * @return  Number of encountered agent at the specified location who were seen wearing a mask
      */
     public int getLastDaySeenMaskAt(long locationID) {
-        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDaySeenMask(this.lastDayTick) : 0;
+        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDaySeenMask(this.lastDayTimeStep) : 0;
     }
 
     /**
@@ -214,7 +214,7 @@ public class LocationHistoryContext implements Context {
      */
     public int getLastDaysSeenMaskAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysSeenMask(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysSeenMask(this.lastDayTimeStep, n) : 0;
     }
 
     /**
@@ -246,7 +246,7 @@ public class LocationHistoryContext implements Context {
      */
     public double getLastDaysSeenMaskAverageAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysSeenMaskAverage(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysSeenMaskAverage(this.lastDayTimeStep, n) : 0;
     }
 
     /**
@@ -266,7 +266,7 @@ public class LocationHistoryContext implements Context {
      * @return Fraction of total number of encountered agents seen wearing a mask at the specified location
      */
     public double getLastDayFractionMaskAt(long locationID) {
-        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDayFractionMask(this.lastDayTick) : 0;
+        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDayFractionMask(this.lastDayTimeStep) : 0;
     }
 
     /**
@@ -290,7 +290,7 @@ public class LocationHistoryContext implements Context {
      */
     public double getLastDaysFractionMaskAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysFractionMask(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysFractionMask(this.lastDayTimeStep, n) : 0;
     }
 
     /*
@@ -318,7 +318,7 @@ public class LocationHistoryContext implements Context {
      * @return  Number of encountered agent at the specified location who were seen practicing physical distancing
      */
     public int getLastDaySeenDistancingAt(long locationID) {
-        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDaySeenDistancing(this.lastDayTick) : 0;
+        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDaySeenDistancing(this.lastDayTimeStep) : 0;
     }
 
     /**
@@ -347,7 +347,7 @@ public class LocationHistoryContext implements Context {
      */
     public int getLastDaysSeenDistancingAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysSeenDistancing(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysSeenDistancing(this.lastDayTimeStep, n) : 0;
     }
 
     /**
@@ -379,7 +379,7 @@ public class LocationHistoryContext implements Context {
      */
     public double getLastDaysSeenDistancingAverageAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysSeenDistancingAverage(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysSeenDistancingAverage(this.lastDayTimeStep, n) : 0;
     }
 
     /**
@@ -399,7 +399,7 @@ public class LocationHistoryContext implements Context {
      * @return Fraction of total number of encountered agents seen practicing physical distancing at the specified location
      */
     public double getLastDayFractionDistancingAt(long locationID) {
-        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDayFractionDistancing(this.lastDayTick) : 0;
+        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDayFractionDistancing(this.lastDayTimeStep) : 0;
     }
 
     /**
@@ -424,7 +424,7 @@ public class LocationHistoryContext implements Context {
      */
     public double getLastDaysFractionDistancingAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysFractionDistancing(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysFractionDistancing(this.lastDayTimeStep, n) : 0;
     }
 
     /*
@@ -457,7 +457,7 @@ public class LocationHistoryContext implements Context {
      * @return  Number of encountered agent at the specified location who were visibly symptomatic
      */
     public int getLastDaySeenSymptomaticAt(long locationID) {
-        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDaySeenSymptomatic(this.lastDayTick) : 0;
+        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDaySeenSymptomatic(this.lastDayTimeStep) : 0;
     }
 
     /**
@@ -491,7 +491,7 @@ public class LocationHistoryContext implements Context {
      */
     public int getLastDaysSeenSymptomaticAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysSeenSymptomatic(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysSeenSymptomatic(this.lastDayTimeStep, n) : 0;
     }
 
     /**
@@ -527,7 +527,7 @@ public class LocationHistoryContext implements Context {
      */
     public double getLastDaysSeenSymptomaticAverageAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysSeenSymptomaticAverage(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysSeenSymptomaticAverage(this.lastDayTimeStep, n) : 0;
     }
 
     /**
@@ -550,7 +550,7 @@ public class LocationHistoryContext implements Context {
      * @return Fraction of total number of encountered agents who were visibly symptomatic at the specified location
      */
     public double getLastDayFractionSymptomaticAt(long locationID) {
-        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDayFractionSymptomatic(this.lastDayTick) : 0;
+        return this.locationHistory.containsKey(locationID) ? this.locationHistory.get(locationID).getLastDayFractionSymptomatic(this.lastDayTimeStep) : 0;
     }
 
     /**
@@ -579,7 +579,7 @@ public class LocationHistoryContext implements Context {
      */
     public double getLastDaysFractionSymptomaticAt(int n, long locationID) {
         return this.locationHistory.containsKey(locationID) ?
-                this.locationHistory.get(locationID).getLastDaysFractionSymptomatic(this.lastDayTick, n) : 0;
+                this.locationHistory.get(locationID).getLastDaysFractionSymptomatic(this.lastDayTimeStep, n) : 0;
     }
 
     /*
@@ -608,21 +608,21 @@ public class LocationHistoryContext implements Context {
 
         /**
          * Register a visit to the location of this object
-         * @param tick  Time step the visit took place
+         * @param timeStep  Time step the visit took place
          * @param visit Visit object to register
          */
-        public void addVisit(long tick, Visit visit) {
-            this.locationHistory.put(tick, visit);
+        public void addVisit(long timeStep, Visit visit) {
+            this.locationHistory.put(timeStep, visit);
         }
 
         /**
          * Get a visit for this location at the specified time step.
          *
-         * @param tick  Time step the visit took place
+         * @param timeStep  Time step the visit took place
          * @return      Visit information, or null if the agent did not visit this location at the specified time step
          */
-        public Visit getVisit(long tick) {
-            return this.locationHistory.get(tick);
+        public Visit getVisit(long timeStep) {
+            return this.locationHistory.get(timeStep);
         }
 
         /**
@@ -635,32 +635,32 @@ public class LocationHistoryContext implements Context {
 
         /**
          * Get the number of agents encountered at the specified time step
-         * @param tick  Time step
+         * @param timeStep  Time step
          * @return  Number of agents encountered at the specified time step, or 0 if the agent did not visit this
          * location during the specified time step
          */
-        public int getLastDaySeen(long tick) {
-            return this.locationHistory.containsKey(tick) ? this.locationHistory.get(tick).getN_contacts() : 0;
+        public int getLastDaySeen(long timeStep) {
+            return this.locationHistory.containsKey(timeStep) ? this.locationHistory.get(timeStep).getN_contacts() : 0;
         }
 
         /**
          * Get the number of agents encountered at this location in the specified range of time steps
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Number of agents encountered at this location in the specified range of time steps
          */
-        public int getLastDaysSeen(long lastTick, int n) {
-            return getCountForDaysStream(lastTick, n, this::getLastDaySeen).get().reduce(Integer::sum).orElse(0);
+        public int getLastDaysSeen(long lastTimeStep, int n) {
+            return getCountForDaysStream(lastTimeStep, n, this::getLastDaySeen).get().reduce(Integer::sum).orElse(0);
         }
 
         /**
          * Get the average number of agents encountered at this location in the specified range of time steps
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Average number of agents encountered at this location in the specified range of time steps
          */
-        public double getLastDaysSeenAverage(long lastTick, int n) {
-            Supplier<IntStream> s = getCountForDaysStream(lastTick, n, this::getLastDaySeen);
+        public double getLastDaysSeenAverage(long lastTimeStep, int n) {
+            Supplier<IntStream> s = getCountForDaysStream(lastTimeStep, n, this::getLastDaySeen);
             return s.get().count() > 0 ? (double) s.get().reduce(Integer::sum).orElse(0) / s.get().count() : 0;
         }
 
@@ -672,34 +672,34 @@ public class LocationHistoryContext implements Context {
 
         /**
          * Get the number of agents encountered at the specified time step seen wearing a mask
-         * @param tick  Time step
+         * @param timeStep  Time step
          * @return  Number of agents encountered at the specified time step seen wearing a mask,
          * or 0 if the agent did not visit this
          * location during the specified time step
          */
-        public int getLastDaySeenMask(long tick) {
-            return this.locationHistory.containsKey(tick) ? this.locationHistory.get(tick).getN_mask() : 0;
+        public int getLastDaySeenMask(long timeStep) {
+            return this.locationHistory.containsKey(timeStep) ? this.locationHistory.get(timeStep).getN_mask() : 0;
         }
 
         /**
          * Get the number of agents encountered at this location seen wearing a mask in the specified range of time steps
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Number of agents seen wearing a mask at this location in the specified range of time steps
          */
-        public int getLastDaysSeenMask(long lastTick, int n) {
-            return getCountForDaysStream(lastTick, n, this::getLastDaySeenMask).get().reduce(Integer::sum).orElse(0);
+        public int getLastDaysSeenMask(long lastTimeStep, int n) {
+            return getCountForDaysStream(lastTimeStep, n, this::getLastDaySeenMask).get().reduce(Integer::sum).orElse(0);
         }
 
         /**
          * Get the average number of agents seen wearing a mask at this location in the specified
          * range of time steps
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Average number of agents seen wearing a mask at this location in the specified range of time steps
          */
-        public double getLastDaysSeenMaskAverage(long lastTick, int n) {
-            Supplier<IntStream> s = getCountForDaysStream(lastTick, n, this::getLastDaySeenMask);
+        public double getLastDaysSeenMaskAverage(long lastTimeStep, int n) {
+            Supplier<IntStream> s = getCountForDaysStream(lastTimeStep, n, this::getLastDaySeenMask);
             return s.get().count() > 0 ? (double) s.get().reduce(Integer::sum).orElse(0) / s.get().count() : 0;
         }
 
@@ -707,13 +707,13 @@ public class LocationHistoryContext implements Context {
          * Get the fraction of agents seen wearing a mask of the overall number of encountered agents at this location
          * at the specified time step.
          *
-         * @param tick The time step
+         * @param timeStep The time step
          * @return The fraction of agents of the overall number of encountered agents at this location that was seen
          * wearing a mask
          */
-        public double getLastDayFractionMask(long tick) {
-            if(this.locationHistory.containsKey(tick) && this.locationHistory.get(tick).getN_contacts() > 0) {
-                return (double) this.locationHistory.get(tick).getN_mask() / this.locationHistory.get(tick).getN_contacts();
+        public double getLastDayFractionMask(long timeStep) {
+            if(this.locationHistory.containsKey(timeStep) && this.locationHistory.get(timeStep).getN_contacts() > 0) {
+                return (double) this.locationHistory.get(timeStep).getN_mask() / this.locationHistory.get(timeStep).getN_contacts();
             } else {
                 return 0;
             }
@@ -722,12 +722,12 @@ public class LocationHistoryContext implements Context {
         /**
          * Get the average fraction of agents seen wearing a mask at this location in the specified
          * range of time steps
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Average number of agents seen wearing a mask at this location in the specified range of time steps
          */
-        public double getLastDaysFractionMask(long lastTick, int n) {
-            Supplier<DoubleStream> s = getFractionOfSeenStream(lastTick, n, this::getLastDayFractionMask);
+        public double getLastDaysFractionMask(long lastTimeStep, int n) {
+            Supplier<DoubleStream> s = getFractionOfSeenStream(lastTimeStep, n, this::getLastDayFractionMask);
             return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
         }
 
@@ -739,35 +739,35 @@ public class LocationHistoryContext implements Context {
 
         /**
          * Get the number of agents encountered at the specified time step seen practicing physical distancing
-         * @param tick  Time step
+         * @param timeStep  Time step
          * @return  Number of agents encountered at the specified time step seen practicing physical distancing,
          * or 0 if the agent did not visit this
          * location during the specified time step
          */
-        public int getLastDaySeenDistancing(long tick) {
-            return this.locationHistory.containsKey(tick) ? this.locationHistory.get(tick).getN_distancing() : 0;
+        public int getLastDaySeenDistancing(long timeStep) {
+            return this.locationHistory.containsKey(timeStep) ? this.locationHistory.get(timeStep).getN_distancing() : 0;
         }
 
         /**
          * Get the number of agents encountered at this location seen practicing physical distancing in the specified range of time steps
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Number of agents seen practicing physical distancing at this location in the specified range of time steps
          */
-        public int getLastDaysSeenDistancing(long lastTick, int n) {
-            return getCountForDaysStream(lastTick, n, this::getLastDaySeenDistancing).get().reduce(Integer::sum).orElse(0);
+        public int getLastDaysSeenDistancing(long lastTimeStep, int n) {
+            return getCountForDaysStream(lastTimeStep, n, this::getLastDaySeenDistancing).get().reduce(Integer::sum).orElse(0);
         }
 
         /**
          * Get the average number of agents seen practicing physical distancing at this location in the specified
          * range of time steps
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTImeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Average number of agents seen practicing physical distancing at
          * this location in the specified range of time steps
          */
-        public double getLastDaysSeenDistancingAverage(long lastTick, int n) {
-            Supplier<IntStream> s = getCountForDaysStream(lastTick, n, this::getLastDaySeenDistancing);
+        public double getLastDaysSeenDistancingAverage(long lastTImeStep, int n) {
+            Supplier<IntStream> s = getCountForDaysStream(lastTImeStep, n, this::getLastDaySeenDistancing);
             return s.get().count() > 0 ? (double) s.get().reduce(Integer::sum).orElse(0) / s.get().count() : 0;
         }
 
@@ -775,13 +775,13 @@ public class LocationHistoryContext implements Context {
          * Get the fraction of agents seen practicing physical distancing of the overall number of encountered agents at this location
          * at the specified time step.
          *
-         * @param tick The time step
+         * @param timeStep The time step
          * @return The fraction of agents of the overall number of encountered agents at this location that was seen
          * practicing physical distancing
          */
-        public double getLastDayFractionDistancing(long tick) {
-            if(this.locationHistory.containsKey(tick) && this.locationHistory.get(tick).getN_contacts() > 0) {
-                return (double) this.locationHistory.get(tick).getN_distancing() / this.locationHistory.get(tick).getN_contacts();
+        public double getLastDayFractionDistancing(long timeStep) {
+            if(this.locationHistory.containsKey(timeStep) && this.locationHistory.get(timeStep).getN_contacts() > 0) {
+                return (double) this.locationHistory.get(timeStep).getN_distancing() / this.locationHistory.get(timeStep).getN_contacts();
             } else {
                 return 0;
             }
@@ -790,12 +790,12 @@ public class LocationHistoryContext implements Context {
         /**
          * Get the average fraction of agents seen practicing physical distancing at this location in the specified
          * range of time steps
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Average number of agents seen practicing physical distancing at this location in the specified range of time steps
          */
-        public double getLastDaysFractionDistancing(long lastTick, int n) {
-            Supplier<DoubleStream> s = getFractionOfSeenStream(lastTick, n, this::getLastDayFractionDistancing);
+        public double getLastDaysFractionDistancing(long lastTimeStep, int n) {
+            Supplier<DoubleStream> s = getFractionOfSeenStream(lastTimeStep, n, this::getLastDayFractionDistancing);
             return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
         }
 
@@ -810,13 +810,13 @@ public class LocationHistoryContext implements Context {
          *
          * Visible symptoms can only occur in this simulation if the observed agent is actually infected.
          *
-         * @param tick  Time step
+         * @param timeStep  Time step
          * @return  Number of agents encountered at the specified time step that were visibly symptomatic,
          * or 0 if the agent did not visit this
          * location during the specified time step
          */
-        public int getLastDaySeenSymptomatic(long tick) {
-            return this.locationHistory.containsKey(tick) ? this.locationHistory.get(tick).getN_symptomatic() : 0;
+        public int getLastDaySeenSymptomatic(long timeStep) {
+            return this.locationHistory.containsKey(timeStep) ? this.locationHistory.get(timeStep).getN_symptomatic() : 0;
         }
 
         /**
@@ -824,12 +824,12 @@ public class LocationHistoryContext implements Context {
          *
          * Visible symptoms can only occur in this simulation if the observed agent is actually infected.
          *
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Number of agents that were visibly symptomatic at this location in the specified range of time steps
          */
-        public int getLastDaysSeenSymptomatic(long lastTick, int n) {
-            return getCountForDaysStream(lastTick, n, this::getLastDaySeenSymptomatic).get().reduce(Integer::sum).orElse(0);
+        public int getLastDaysSeenSymptomatic(long lastTimeStep, int n) {
+            return getCountForDaysStream(lastTimeStep, n, this::getLastDaySeenSymptomatic).get().reduce(Integer::sum).orElse(0);
         }
 
         /**
@@ -838,12 +838,12 @@ public class LocationHistoryContext implements Context {
          *
          * Visible symptoms can only occur in this simulation if the observed agent is actually infected.
          *
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Average number of agents that were visibly symptomatic at this location in the specified range of time steps
          */
-        public double getLastDaysSeenSymptomaticAverage(long lastTick, int n) {
-            Supplier<IntStream> s = getCountForDaysStream(lastTick, n, this::getLastDaySeenSymptomatic);
+        public double getLastDaysSeenSymptomaticAverage(long lastTimeStep, int n) {
+            Supplier<IntStream> s = getCountForDaysStream(lastTimeStep, n, this::getLastDaySeenSymptomatic);
             return s.get().count() > 0 ? (double) s.get().reduce(Integer::sum).orElse(0) / s.get().count() : 0;
         }
 
@@ -853,12 +853,12 @@ public class LocationHistoryContext implements Context {
          *
          * Visible symptoms can only occur in this simulation if the observed agent is actually infected.
          *
-         * @param tick The time step
+         * @param timeStep The time step
          * @return The fraction of agents of the overall number of encountered agents at this location that was visibly symptomatic
          */
-        public double getLastDayFractionSymptomatic(long tick) {
-            if(this.locationHistory.containsKey(tick) && this.locationHistory.get(tick).getN_contacts() > 0) {
-                return (double) this.locationHistory.get(tick).getN_symptomatic() / this.locationHistory.get(tick).getN_contacts();
+        public double getLastDayFractionSymptomatic(long timeStep) {
+            if(this.locationHistory.containsKey(timeStep) && this.locationHistory.get(timeStep).getN_contacts() > 0) {
+                return (double) this.locationHistory.get(timeStep).getN_symptomatic() / this.locationHistory.get(timeStep).getN_contacts();
             } else {
                 return 0;
             }
@@ -870,12 +870,12 @@ public class LocationHistoryContext implements Context {
          *
          * Visible symptoms can only occur in this simulation if the observed agent is actually infected.
          *
-         * @param lastTick  The time step (inclusive) that ends the range
+         * @param lastTimeStep  The time step (inclusive) that ends the range
          * @param n         The time step (inclusive) that starts the range
          * @return          Average number of agents that were visibly symptomatic at this location in the specified range of time steps
          */
-        public double getLastDaysFractionSymptomatic(long lastTick, int n) {
-            Supplier<DoubleStream> s = getFractionOfSeenStream(lastTick, n, this::getLastDayFractionSymptomatic);
+        public double getLastDaysFractionSymptomatic(long lastTimeStep, int n) {
+            Supplier<DoubleStream> s = getFractionOfSeenStream(lastTimeStep, n, this::getLastDayFractionSymptomatic);
             return s.get().count() > 0 ? s.get().reduce(Double::sum).orElse(0d) / s.get().count() : 0;
         }
 
@@ -885,14 +885,14 @@ public class LocationHistoryContext implements Context {
          * ==================================
          */
 
-        private Supplier<IntStream> getCountForDaysStream(long lastTick, int n, LongToIntFunction f) {
-            return () -> LongStream.rangeClosed(lastTick - n, lastTick)
+        private Supplier<IntStream> getCountForDaysStream(long lastTimeStep, int n, LongToIntFunction f) {
+            return () -> LongStream.rangeClosed(lastTimeStep - n, lastTimeStep)
                     .filter(this.locationHistory::containsKey)
                     .mapToInt(f);
         }
 
-        private Supplier<DoubleStream> getFractionOfSeenStream(long lastTick, int n, LongToDoubleFunction f) {
-            return () -> LongStream.rangeClosed(lastTick - n, lastTick)
+        private Supplier<DoubleStream> getFractionOfSeenStream(long lastTimeStep, int n, LongToDoubleFunction f) {
+            return () -> LongStream.rangeClosed(lastTimeStep - n, lastTimeStep)
                     .filter(this.locationHistory::containsKey)
                     .mapToDouble(f)
                     .filter(x -> x != 0d);
