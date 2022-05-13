@@ -1,12 +1,11 @@
 package nl.uu.iss.ga.pansim.visit;
 
+import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.model.disease.AgentGroup;
 import nl.uu.iss.ga.model.disease.DiseaseState;
 import nl.uu.iss.ga.pansim.state.AgentStateMap;
 import nl.uu.iss.ga.util.Constants;
-import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.ipc.ArrowFileWriter;
@@ -18,7 +17,6 @@ import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 

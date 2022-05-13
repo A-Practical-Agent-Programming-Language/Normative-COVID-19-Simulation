@@ -23,7 +23,6 @@ import nl.uu.cs.iss.ga.sim2apl.core.plan.PlanScheme;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
@@ -67,7 +66,7 @@ public class GoalPlanScheme implements PlanScheme<CandidateActivity> {
             }
         } else if (trigger instanceof AdjustTrustAttitudeGoal) {
             AdjustTrustAttitudeGoal adjustTrustAttitudeGoal = (AdjustTrustAttitudeGoal) trigger;
-            if (context.getCurrentTick() >= adjustTrustAttitudeGoal.getFatigueStart()) {
+            if (context.getCurrentTimeStep() >= adjustTrustAttitudeGoal.getFatigueStart()) {
                 return new AdjustTrustAttitudePlan(adjustTrustAttitudeGoal);
             }
         } else if (trigger instanceof SleepGoal) {

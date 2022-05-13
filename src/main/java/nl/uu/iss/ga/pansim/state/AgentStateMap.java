@@ -6,7 +6,7 @@ import nl.uu.iss.ga.model.disease.AgentGroup;
 import nl.uu.iss.ga.model.disease.DiseaseState;
 import nl.uu.iss.ga.util.tracking.ScheduleTrackerGroup;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
+import nl.uu.cs.iss.ga.sim2apl.core.step.StepExecutor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,7 +72,7 @@ public class AgentStateMap {
         }
     }
 
-    public void fromDataframe(StateDataFrame dataFrame, int threads, TickExecutor<CandidateActivity> executor) {
+    public void fromDataframe(StateDataFrame dataFrame, int threads, StepExecutor<CandidateActivity> executor) {
         List<Callable<Vector<Integer>>> callables = new ArrayList<>();
         for(int i = 0; i < threads; i++) {
             callables.add(new FromDataFrameCallable(dataFrame, threads, i));

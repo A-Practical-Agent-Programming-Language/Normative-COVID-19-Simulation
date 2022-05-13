@@ -1,8 +1,8 @@
 package nl.uu.iss.ga.dataframe;
 
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.DefaultBlockingTickExecutor;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
+import nl.uu.cs.iss.ga.sim2apl.core.step.DefaultBlockingStepExecutor;
+import nl.uu.cs.iss.ga.sim2apl.core.step.StepExecutor;
 import nl.uu.iss.ga.model.data.CandidateActivity;
 import nl.uu.iss.ga.pansim.state.AgentState;
 import nl.uu.iss.ga.pansim.state.AgentStateMap;
@@ -38,8 +38,8 @@ public class TestStateDataFrame extends TestDataFrame {
         StateDataFrame df_read;
         try {
             df_read = new StateDataFrame(bytes, allocator);
-            TickExecutor<CandidateActivity> tickExecutor = new DefaultBlockingTickExecutor<>(threads, new Random(seed));
-            targetStateMap.fromDataframe(df_read, threads, tickExecutor);
+            StepExecutor<CandidateActivity> StepExecutor = new DefaultBlockingStepExecutor<>(threads, new Random(seed));
+            targetStateMap.fromDataframe(df_read, threads, StepExecutor);
 
             compareAgentStateMaps(sourceStateMap, targetStateMap);
 

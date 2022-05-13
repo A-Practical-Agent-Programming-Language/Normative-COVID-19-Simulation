@@ -2,7 +2,7 @@ package nl.uu.iss.ga.simulation.agent.context;
 
 import nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import nl.uu.iss.ga.model.data.dictionary.LocationEntry;
-import nl.uu.iss.ga.simulation.EnvironmentInterface;
+import nl.uu.iss.ga.simulation.PansimEnvironmentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 
@@ -13,16 +13,16 @@ import java.util.Random;
  */
 public class BeliefContext implements Context {
     private AgentID me;
-    private final EnvironmentInterface environmentInterface;
+    private final PansimEnvironmentInterface pansimEnvironmentInterface;
     private double priorTrustAttitude;
     private final LocationEntry homeLocation;
 
     public BeliefContext(
-            EnvironmentInterface environmentInterface,
+            PansimEnvironmentInterface pansimEnvironmentInterface,
             LocationEntry homeLocation,
             double priorTrustAttitude
     ) {
-        this.environmentInterface = environmentInterface;
+        this.pansimEnvironmentInterface = pansimEnvironmentInterface;
         this.homeLocation = homeLocation;
         this.priorTrustAttitude = priorTrustAttitude;
     }
@@ -32,15 +32,15 @@ public class BeliefContext implements Context {
     }
 
     public DayOfWeek getToday() {
-        return this.environmentInterface.getToday();
+        return this.pansimEnvironmentInterface.getToday();
     }
 
-    public long getCurrentTick() {
-        return this.environmentInterface.getCurrentTick();
+    public long getCurrentTimeStep() {
+        return this.pansimEnvironmentInterface.getCurrentTimeStep();
     }
 
     public Random getRandom() {
-        return this.environmentInterface.getRnd(this.me);
+        return this.pansimEnvironmentInterface.getRnd(this.me);
     }
 
     public double getPriorTrustAttitude() {
@@ -56,6 +56,6 @@ public class BeliefContext implements Context {
     }
 
     public boolean isSymptomatic() {
-        return this.environmentInterface.isSymptomatic(this.me);
+        return this.pansimEnvironmentInterface.isSymptomatic(this.me);
     }
 }

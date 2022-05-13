@@ -23,7 +23,7 @@ public class SuppressCalculationsActivityTracker implements InfluencedActivities
     }
 
     @Override
-    public long getTick() {
+    public long getTimeStep() {
         return 0;
     }
 

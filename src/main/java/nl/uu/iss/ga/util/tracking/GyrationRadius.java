@@ -7,7 +7,7 @@ import nl.uu.iss.ga.util.config.ArgParse;
 import nl.uu.iss.ga.util.config.ConfigModel;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
+import nl.uu.cs.iss.ga.sim2apl.core.step.StepExecutor;
 import org.javatuples.Pair;
 
 import java.io.*;
@@ -27,12 +27,12 @@ public class GyrationRadius {
     private File fout;
     private final LocalDate simulationStartDate;
     private final ArgParse arguments;
-    private final TickExecutor<CandidateActivity> executor;
+    private final StepExecutor<CandidateActivity> executor;
     private static final Logger LOGGER = Logger.getLogger(GyrationRadius.class.getName());
     private final List<ConfigModel> counties;
     private final Map<String, Integer> numAgentsPerCounty = new HashMap<>();
 
-    public GyrationRadius(TickExecutor<CandidateActivity> executor, ArgParse arguments, LocalDate simulationStartDate) {
+    public GyrationRadius(StepExecutor<CandidateActivity> executor, ArgParse arguments, LocalDate simulationStartDate) {
         this.executor = executor;
         this.arguments = arguments;
         this.counties = arguments.getCounties();
@@ -46,8 +46,8 @@ public class GyrationRadius {
         }
     }
 
-    public void processSimulationDay(long tick, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
-        LocalDate simulationDay = this.simulationStartDate.plusDays(tick);
+    public void processSimulationDay(long timeStep, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+        LocalDate simulationDay = this.simulationStartDate.plusDays(timeStep);
 
         HashMap<String, Pair<Integer, Double>> perCountyRadii = new HashMap<>();
         for (ConfigModel county : this.counties) {
@@ -57,10 +57,10 @@ public class GyrationRadius {
 
         for(String fips : perCountyRadii.keySet()) {
             LOGGER.log(Level.INFO, String.format(
-                    "%s %s (tick %d): [%s] %f",
+                    "%s %s (timeStep %d): [%s] %f",
                     simulationDay.getDayOfWeek().name(),
                     simulationDay.format(ISO_DATE),
-                    tick,
+                    timeStep,
                     fips,
                     perCountyRadii.get(fips).getValue1()));
         }
@@ -68,7 +68,7 @@ public class GyrationRadius {
         writeAveragesToFile(perCountyRadii, simulationDay);
     }
 
-    private void writeAveragesToFile(HashMap<String, Pair<Integer, Double>> lastTickAverages, LocalDate date) {
+    private void writeAveragesToFile(HashMap<String, Pair<Integer, Double>> lastTimeStepAverages, LocalDate date) {
         boolean writeHeader = !fout.exists();
         try (
                 FileOutputStream fos = new FileOutputStream(fout, true);
@@ -80,12 +80,12 @@ public class GyrationRadius {
             if (writeHeader) {
                 bw.write("date,COUNTYFP,GyrationRadiusKm,#agents\n");
             }
-            for (String countyname : lastTickAverages.keySet()) {
+            for (String countyname : lastTimeStepAverages.keySet()) {
                 bw.write(date.format(DateTimeFormatter.ISO_DATE));
                 bw.write(",");
-                bw.write(Integer.toString(lastTickAverages.get(countyname).getValue0()));
+                bw.write(Integer.toString(lastTimeStepAverages.get(countyname).getValue0()));
                 bw.write(",");
-                bw.write(Double.toString(lastTickAverages.get(countyname).getValue1()));
+                bw.write(Double.toString(lastTimeStepAverages.get(countyname).getValue1()));
                 bw.write(",");
                 bw.write(Integer.toString(this.numAgentsPerCounty.get(countyname)));
                 bw.write("\n");
@@ -128,7 +128,7 @@ public class GyrationRadius {
     }
 
     private static Double calculateRadiusOfGyrationForAgent(List<CandidateActivity> activities) {
-        List<LocationEntry> locations = getLocationsForAgentForTick(activities);
+        List<LocationEntry> locations = getLocationsForAgentForTimeStep(activities);
         OptionalDouble centroidLatitude = locations.stream().map(LocationEntry::getLatitude).mapToDouble(a -> a).average();
         OptionalDouble centroidLongitude = locations.stream().map(LocationEntry::getLongitude).mapToDouble(a -> a).average();
         double sqsum = 0.0;
@@ -148,10 +148,10 @@ public class GyrationRadius {
     /**
      * Extract the locationEntry objects from the string encoding an action.
      *
-     * @param actions List of actions of an agent produced during this tick
-     * @return List of locations visited by the agents during this tick
+     * @param actions List of actions of an agent produced during this time step
+     * @return List of locations visited by the agents during this time step
      */
-    private static List<LocationEntry> getLocationsForAgentForTick(List<CandidateActivity> actions) {
+    private static List<LocationEntry> getLocationsForAgentForTimeStep(List<CandidateActivity> actions) {
         return actions.stream()
                 .map(x -> x.getActivity().getLocation())
                 .filter(x -> !(x.getLongitude() == 0d && x.getLatitude() == 0d))

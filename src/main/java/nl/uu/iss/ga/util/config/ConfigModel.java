@@ -7,11 +7,10 @@ import nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import nl.uu.iss.ga.model.reader.*;
 import nl.uu.iss.ga.pansim.state.AgentStateMap;
-import nl.uu.iss.ga.simulation.EnvironmentInterface;
+import nl.uu.iss.ga.simulation.PansimEnvironmentInterface;
 import nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
-import nl.uu.iss.ga.simulation.agent.plan.SleepGoal;
 import nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import nl.uu.iss.ga.simulation.agent.planscheme.NormPlanScheme;
@@ -123,27 +122,27 @@ public class ConfigModel {
         };
     }
 
-    public void createAgents(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface) {
+    public void createAgents(Platform platform, ObservationNotifier observationNotifier, PansimEnvironmentInterface pansimEnvironmentInterface) {
         this.adjustTrustAttitudeGoal =
                 new AdjustTrustAttitudeGoal(this.arguments.getFatigue(), this.arguments.getFatigueStart());
 //        this.sleepGoal = new SleepGoal(5);
         for (ActivitySchedule schedule : this.activityFileReader.getActivitySchedules()) {
             schedule.splitActivitiesByDay();
-            createAgentFromSchedule(platform, observationNotifier, environmentInterface, schedule);
+            createAgentFromSchedule(platform, observationNotifier, pansimEnvironmentInterface, schedule);
         }
     }
 
     private AdjustTrustAttitudeGoal adjustTrustAttitudeGoal;
 //    private SleepGoal sleepGoal;
 
-    private void createAgentFromSchedule(Platform platform, ObservationNotifier observationNotifier, EnvironmentInterface environmentInterface, ActivitySchedule schedule) {
+    private void createAgentFromSchedule(Platform platform, ObservationNotifier observationNotifier, PansimEnvironmentInterface pansimEnvironmentInterface, ActivitySchedule schedule) {
         boolean isLiberal = this.householdReader.getHouseholds().get(schedule.getHousehold()).isLiberal();
         double initialGovernmentAttitude = isLiberal ? this.arguments.getLiberalTrustDistribution().sample() : this.arguments.getConservativeTrustDistribution().sample();
 
         LocationEntry homeLocation = this.findHomeLocation(schedule);
 
         LocationHistoryContext locationHistoryContext = new LocationHistoryContext();
-        BeliefContext beliefContext = new BeliefContext(environmentInterface, homeLocation, initialGovernmentAttitude);
+        BeliefContext beliefContext = new BeliefContext(pansimEnvironmentInterface, homeLocation, initialGovernmentAttitude);
         AgentArguments<CandidateActivity> arguments = new AgentArguments<CandidateActivity>()
                 .addContext(this.personReader.getPersons().get(schedule.getPerson()))
                 .addContext(schedule)

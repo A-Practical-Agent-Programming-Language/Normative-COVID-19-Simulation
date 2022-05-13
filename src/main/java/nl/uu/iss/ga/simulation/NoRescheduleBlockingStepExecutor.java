@@ -3,28 +3,28 @@ package nl.uu.iss.ga.simulation;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationRunnable;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
+import nl.uu.cs.iss.ga.sim2apl.core.step.StepExecutor;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-public class NoRescheduleBlockingTickExecutor<T> implements TickExecutor<T> {
+public class NoRescheduleBlockingStepExecutor<T> implements StepExecutor<T> {
 
-    private int tick;
+    private int timeStep;
     private int stepDuration;
     private Random random;
     private final ExecutorService executor;
 
     private Queue<DeliberationRunnable<T>> scheduledRunnables;
 
-    public NoRescheduleBlockingTickExecutor(int nThreads) {
-        this.tick = 0;
+    public NoRescheduleBlockingStepExecutor(int nThreads) {
+        this.timeStep = 0;
         this.executor = Executors.newFixedThreadPool(nThreads);
         this.scheduledRunnables = new ConcurrentLinkedQueue<>();
     }
 
-    public NoRescheduleBlockingTickExecutor(int nThreads, Random random) {
+    public NoRescheduleBlockingStepExecutor(int nThreads, Random random) {
         this(nThreads);
         this.random = random;
     }
@@ -33,17 +33,17 @@ public class NoRescheduleBlockingTickExecutor<T> implements TickExecutor<T> {
         return this.executor.invokeAll(tasks);
     }
 
-    public boolean scheduleForNextTick(DeliberationRunnable<T> agentDeliberationRunnable) {
+    public boolean scheduleForNextTimeStep(DeliberationRunnable<T> agentDeliberationRunnable) {
         this.scheduledRunnables.add(agentDeliberationRunnable);
         return true;
     }
 
     @Override
-    public List<Future<DeliberationResult<T>>> doTick() {
-        return doTick(new HashMap<>());
+    public List<Future<DeliberationResult<T>>> doTimeStep() {
+        return doTimeStep(new HashMap<>());
     }
 
-    public List<Future<DeliberationResult<T>>> doTick(HashMap<String, String> timingsMap) {
+    public List<Future<DeliberationResult<T>>> doTimeStep(HashMap<String, String> timingsMap) {
 
         long millis = System.currentTimeMillis();
         Queue<DeliberationRunnable<T>> runnables;
@@ -82,20 +82,20 @@ public class NoRescheduleBlockingTickExecutor<T> implements TickExecutor<T> {
         }
 
         this.stepDuration = (int)(System.currentTimeMillis() - startTime);
-        ++this.tick;
+        ++this.timeStep;
 //        return agentPlanActions;
         return currentAgentFutures;
     }
 
-    public int getCurrentTick() {
-        return this.tick;
+    public int getCurrentTimeStep() {
+        return this.timeStep;
     }
 
     public boolean isRunning() {
         return false;
     }
 
-    public int getLastTickDuration() {
+    public int getLastTimeStepDuration() {
         return this.stepDuration;
     }
 

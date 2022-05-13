@@ -13,7 +13,7 @@ import nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import nl.uu.iss.ga.util.Constants;
 import nl.uu.iss.ga.util.config.ArgParse;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
-import nl.uu.cs.iss.ga.sim2apl.core.tick.TickExecutor;
+import nl.uu.cs.iss.ga.sim2apl.core.step.StepExecutor;
 import org.javatuples.Pair;
 
 import java.time.LocalDate;
@@ -37,7 +37,7 @@ public class ScheduleTracker {
     private static final Logger LOGGER = Logger.getLogger(ScheduleTracker.class.getName());
 
     private final ArgParse arguments;
-    private final TickExecutor<CandidateActivity> executor;
+    private final StepExecutor<CandidateActivity> executor;
 
     public static final String AVERAGE_SCHEDULE_FILENAME = "average-schedules_%s";
     public static final String EPICURVE_FILENAME = "epicurve.sim2apl";
@@ -59,7 +59,7 @@ public class ScheduleTracker {
 
     private final String suffix;
 
-    public ScheduleTracker(TickExecutor<CandidateActivity> executor, ArgParse arguments, AgentStateMap agentStateMap, NormScheduleReader normScheduleReader) {
+    public ScheduleTracker(StepExecutor<CandidateActivity> executor, ArgParse arguments, AgentStateMap agentStateMap, NormScheduleReader normScheduleReader) {
         this.executor = executor;
         this.arguments = arguments;
         this.suffix = arguments.getOutputDir().getName();
@@ -135,7 +135,7 @@ public class ScheduleTracker {
      * @param simulationDay Date of the current simulation day
      * @param agentActions  Actions produced by the agents during this simulation day
      */
-    public void processTick(LocalDate simulationDay, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
+    public void processTimeStep(LocalDate simulationDay, List<Future<DeliberationResult<CandidateActivity>>> agentActions) {
         List<String> changedNorms = findDayNorms(simulationDay);
 
         // Write to files what percentage of each type of activity was cancelled

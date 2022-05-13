@@ -1,12 +1,10 @@
 package nl.uu.iss.ga.util;
 
 import nl.uu.iss.ga.model.data.Activity;
-import nl.uu.iss.ga.model.data.ActivityTime;
 import nl.uu.iss.ga.model.data.CandidateActivity;
-import nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import nl.uu.iss.ga.model.norm.Norm;
 import nl.uu.iss.ga.pansim.state.AgentStateMap;
-import nl.uu.iss.ga.simulation.EnvironmentInterface;
+import nl.uu.iss.ga.simulation.PansimEnvironmentInterface;
 import nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import nl.uu.iss.ga.util.config.ArgParse;
 import nl.uu.iss.ga.util.config.ConfigModel;
@@ -17,12 +15,10 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Utility class to count the number of agents throughout the simulation to which a norm applies
@@ -34,7 +30,7 @@ public class CountNormApplication {
     private final Map<String, Integer> agentsAffected = new HashMap<>();
     private final Map<String, Long> timeAffected = new HashMap<>();
     private final Platform platform;
-    private final EnvironmentInterface environmentInterface;
+    private final PansimEnvironmentInterface pansimEnvironmentInterface;
     private final ArgParse arguments;
     private final AgentStateMap agentStateMap;
     private final Map<String, List<Norm>> norms;
@@ -44,19 +40,19 @@ public class CountNormApplication {
     public CountNormApplication(
             Platform platform,
             ArgParse arguments,
-            EnvironmentInterface environmentInterface,
+            PansimEnvironmentInterface pansimEnvironmentInterface,
             AgentStateMap agentStateMap,
             Map<String, List<Norm>> norms
     ) {
         this.platform = platform;
         this.arguments = arguments;
-        this.environmentInterface = environmentInterface;
+        this.pansimEnvironmentInterface = pansimEnvironmentInterface;
         this.agentStateMap = agentStateMap;
         this.norms = norms;
         this.outputFile = getFileName();
 
         // Artificially pretend 7 days already went by, so location history becomes active
-        this.environmentInterface.tickPreHook(7);
+        this.pansimEnvironmentInterface.stepStarting(7);
 
         prepareNormCount();
 
@@ -67,7 +63,7 @@ public class CountNormApplication {
             callables.add(new GroupedActivityHistoryContextAdder(locationIds, groupedActivities, i, arguments.getThreads()));
         }
         try {
-            this.platform.getTickExecutor().useExecutorForTasks(callables);
+            this.platform.getStepExecutor().useExecutorForTasks(callables);
             LOGGER.log(Level.INFO, String.format("Processed all visits using %d threads", arguments.getThreads()));
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Failed to process visits", e);
@@ -82,7 +78,7 @@ public class CountNormApplication {
         for(Agent<CandidateActivity> agent : agents.values()) {
             AgentContextInterface<CandidateActivity> agentContextInterface = new AgentContextInterface<>(agent);
             List<Activity> activities = getAgentActivities(agent);
-            agentContextInterface.getContext(LocationHistoryContext.class).setLastDayTick(8);
+            agentContextInterface.getContext(LocationHistoryContext.class).setLastDayTimeStep(8);
             for(String normString : norms.keySet()) {
                 long duration = normAffectsAgent(agentContextInterface, activities, norms.get(normString));
                 if(duration > 0) {
